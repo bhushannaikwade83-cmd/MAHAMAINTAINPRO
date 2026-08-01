@@ -4,7 +4,6 @@ import '../widgets/custom_footer.dart';
 import 'emergency_sos_screen.dart';
 import 'profile_screen.dart';
 import 'ai_chat_screen.dart';
-import 'home_screen.dart';
 
 class SocietyDashboardScreen extends StatefulWidget {
   const SocietyDashboardScreen({Key? key}) : super(key: key);
@@ -413,13 +412,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
           // Navigate based on footer selection
           switch (index) {
             case 0:
-              // Home - navigate to home dashboard
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => HomeScreen(onLogout: _onLogout),
-                ),
-              );
+              // Home - stay on Society Dashboard
               break;
             case 1:
               // SOS
@@ -458,10 +451,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
         },
       ),
     );
-  }
-
-  void _onLogout() {
-    // Logout handler - can be extended later
   }
 
   Widget _buildStatCard(String value, String label, Color color) {
