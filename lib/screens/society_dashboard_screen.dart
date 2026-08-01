@@ -3,6 +3,7 @@ import '../config/app_theme.dart';
 import '../widgets/custom_footer.dart';
 import 'emergency_sos_screen.dart';
 import 'profile_screen.dart';
+import 'ai_chat_screen.dart';
 
 class SocietyDashboardScreen extends StatefulWidget {
   const SocietyDashboardScreen({Key? key}) : super(key: key);
@@ -409,14 +410,43 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
           setState(() => _footerSelectedIndex = index);
 
           // Navigate based on footer selection
-          if (index == 4) {
-            // Profile
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileScreen(),
-              ),
-            );
+          switch (index) {
+            case 0:
+              // Home - stay on society dashboard
+              break;
+            case 1:
+              // SOS
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EmergencySosScreen(),
+                ),
+              );
+              break;
+            case 2:
+              // AI Chat
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AiChatScreen(),
+                ),
+              );
+              break;
+            case 3:
+              // Society - stay here
+              break;
+            case 4:
+              // Profile
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+              break;
+            case 5:
+              // Settings/Logout
+              break;
           }
         },
       ),
