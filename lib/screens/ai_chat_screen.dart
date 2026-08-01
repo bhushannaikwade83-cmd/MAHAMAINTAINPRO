@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../widgets/custom_footer.dart';
+import 'profile_screen.dart';
+import 'emergency_sos_screen.dart';
 
 class Message {
   final String text;
@@ -320,22 +322,36 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
           switch (index) {
             case 0:
-              // TODO: Navigate to Home
+              // Home - navigate back to search/home screen
+              Navigator.pop(context);
               break;
             case 1:
-              // TODO: Navigate to Bookings
+              // SOS
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EmergencySosScreen(),
+                ),
+              );
               break;
             case 2:
               // Already on AI Chat
               break;
             case 3:
-              // TODO: Navigate to History
+              // Society/Bookings - pop back
+              Navigator.pop(context);
               break;
             case 4:
-              // TODO: Navigate to Profile
+              // Profile
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
               break;
             case 5:
-              // TODO: Navigate to Settings
+              // Settings/Logout
               break;
           }
         },
