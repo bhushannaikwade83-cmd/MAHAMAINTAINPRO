@@ -417,7 +417,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HomeScreen(onLogout: _onLogout),
+                  builder: (context) => HomeScreen(onLogout: _onLogout),
                 ),
               );
               break;
