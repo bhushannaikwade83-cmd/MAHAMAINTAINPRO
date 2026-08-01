@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../widgets/custom_footer.dart';
 import 'emergency_sos_screen.dart';
+import 'profile_screen.dart';
 
 class SocietyDashboardScreen extends StatefulWidget {
   const SocietyDashboardScreen({Key? key}) : super(key: key);
@@ -406,6 +407,17 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
         selectedIndex: _footerSelectedIndex,
         onNavItemTap: (index) {
           setState(() => _footerSelectedIndex = index);
+
+          // Navigate based on footer selection
+          if (index == 4) {
+            // Profile
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(),
+              ),
+            );
+          }
         },
       ),
     );
