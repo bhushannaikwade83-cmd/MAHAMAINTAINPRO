@@ -406,21 +406,8 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
         selectedIndex: _footerSelectedIndex,
         onNavItemTap: (index) {
           setState(() => _footerSelectedIndex = index);
-
-          // Navigate based on footer selection
-          if (index == 0) { // Home
-            Navigator.pop(context, 0);
-          } else if (index == 1) { // Search
-            Navigator.pop(context, 1);
-          } else if (index == 2) { // AI Chat
-            Navigator.pop(context, 2);
-          } else if (index == 3) { // Society
-            // Already on society screen
-          } else if (index == 4) { // Bookings
-            Navigator.pop(context, 4);
-          } else if (index == 5) { // Profile
-            Navigator.pop(context, 5);
-          }
+          // Just update local state - no navigation needed
+          // Society dashboard is self-contained
         },
       ),
     );
