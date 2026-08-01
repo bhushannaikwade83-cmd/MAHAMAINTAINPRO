@@ -314,13 +314,30 @@ class _AiChatScreenState extends State<AiChatScreen> {
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
         onNavItemTap: (index) {
-          setState(() => _footerSelectedIndex = index);
-          if (index == 0) 
-          else if (index == 1) 
-          else if (index == 2) 
-          else if (index == 3) 
-          else if (index == 4) 
-          else if (index == 5) 
+          setState(() {
+            _footerSelectedIndex = index;
+          });
+
+          switch (index) {
+            case 0:
+              // TODO: Navigate to Home
+              break;
+            case 1:
+              // TODO: Navigate to Bookings
+              break;
+            case 2:
+              // Already on AI Chat
+              break;
+            case 3:
+              // TODO: Navigate to History
+              break;
+            case 4:
+              // TODO: Navigate to Profile
+              break;
+            case 5:
+              // TODO: Navigate to Settings
+              break;
+          }
         },
       ),
     );
