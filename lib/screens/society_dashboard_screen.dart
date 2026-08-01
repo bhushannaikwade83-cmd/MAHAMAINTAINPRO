@@ -406,8 +406,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
         selectedIndex: _footerSelectedIndex,
         onNavItemTap: (index) {
           setState(() => _footerSelectedIndex = index);
-          // Just update local state - no navigation needed
-          // Society dashboard is self-contained
         },
       ),
     );
