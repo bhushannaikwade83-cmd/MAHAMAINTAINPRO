@@ -420,8 +420,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+              
+              
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
             child: const Text('Back to Home'),

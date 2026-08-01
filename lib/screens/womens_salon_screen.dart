@@ -603,17 +603,17 @@ class _WomensSalonScreenState extends State<WomensSalonScreen>
         onNavItemTap: (index) {
           setState(() => _footerSelectedIndex = index);
           if (index == 0) {
-            Navigator.pop(context, 0);
+            
           } else if (index == 1) {
-            Navigator.pop(context, 1);
+            
           } else if (index == 2) {
-            Navigator.pop(context, 2);
+            
           } else if (index == 3) {
-            Navigator.pop(context, 3);
+            
           } else if (index == 4) {
-            Navigator.pop(context, 4);
+            
           } else if (index == 5) {
-            Navigator.pop(context, 5);
+            
           }
         },
       ),

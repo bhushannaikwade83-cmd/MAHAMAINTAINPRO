@@ -85,7 +85,7 @@ class _SocietyRegistrationScreenState extends State<SocietyRegistrationScreen> {
 
         Future.delayed(const Duration(milliseconds: 500), () {
           widget.onRegistrationComplete();
-          Navigator.pop(context);
+          
         });
       }
     }
