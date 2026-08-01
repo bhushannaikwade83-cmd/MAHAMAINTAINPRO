@@ -437,12 +437,15 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               break;
             case 4:
               // Profile
+              print('📱 Navigating to Profile Screen from Society Dashboard...');
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ProfileScreen(),
                 ),
-              );
+              ).then((_) {
+                print('✅ Returned from Profile Screen');
+              });
               break;
             case 5:
               // Settings/Logout

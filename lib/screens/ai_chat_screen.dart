@@ -343,12 +343,15 @@ class _AiChatScreenState extends State<AiChatScreen> {
               break;
             case 4:
               // Profile
+              print('📱 Navigating to Profile Screen...');
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ProfileScreen(),
                 ),
-              );
+              ).then((_) {
+                print('✅ Returned from Profile Screen');
+              });
               break;
             case 5:
               // Settings/Logout
