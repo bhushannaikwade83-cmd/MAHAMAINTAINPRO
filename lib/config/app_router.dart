@@ -18,19 +18,27 @@ class AppRouter {
         final isLoggingIn = state.matchedLocation == '/login' ||
             state.matchedLocation == '/otp';
 
-        if (isAuthenticated) {
-          return '/dashboard';
-        }
-
+        // If on login/OTP screens, stay there
         if (isLoggingIn) {
           return null;
         }
 
-        if (isSelectingRole || !_roleSelected) {
+        // If authenticated and role selected, go to dashboard
+        if (isAuthenticated && _roleSelected && _selectedRole != null) {
+          return '/dashboard';
+        }
+
+        // If role not selected, go to role selection
+        if (!_roleSelected || _selectedRole == null) {
           return '/';
         }
 
-        return '/login';
+        // If role selected but not authenticated, go to login
+        if (_roleSelected && !isAuthenticated) {
+          return '/login';
+        }
+
+        return null;
       },
       routes: [
         GoRoute(
