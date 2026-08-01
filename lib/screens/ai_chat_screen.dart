@@ -338,10 +338,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
               // Already on AI Chat
               break;
             case 3:
-              // Society/Bookings - pop back
-              Navigator.pop(context);
-              break;
-            case 4:
               // Profile
               print('📱 Navigating to Profile Screen...');
               Navigator.push(
@@ -352,9 +348,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
               ).then((_) {
                 print('✅ Returned from Profile Screen');
               });
-              break;
-            case 5:
-              // Settings/Logout
               break;
           }
         },
