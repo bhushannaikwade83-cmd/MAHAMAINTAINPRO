@@ -51,7 +51,10 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 // Back Button
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    child: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 // Title with emoji and badge if new
