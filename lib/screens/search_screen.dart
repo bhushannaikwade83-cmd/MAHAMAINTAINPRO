@@ -752,6 +752,21 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  void _openWhatsAppComplaint() {
+    final message = Uri.encodeComponent('Hi, I have a complaint regarding our society.');
+    final whatsappUrl = 'https://wa.me/919876543210?text=$message';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening WhatsApp...'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 1),
+      ),
+    );
+    // In a real app, you would use: launchUrl(Uri.parse(whatsappUrl))
+    // For now, just show the message
+  }
+
   Widget _buildSocietyCard({
     required String emoji,
     required String name,
@@ -760,9 +775,13 @@ class _SearchScreenState extends State<SearchScreen> {
   }) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Opening $name...')),
-        );
+        if (name == 'Complaint') {
+          _openWhatsAppComplaint();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Opening $name...')),
+          );
+        }
       },
       child: Stack(
         children: [
