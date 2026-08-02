@@ -57,6 +57,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final message = Uri.encodeComponent('Hi, I have a complaint regarding our society.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Opening WhatsApp...'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        },
+        backgroundColor: Colors.green.shade600,
+        child: const Icon(Icons.chat_bubble, color: Colors.white, size: 28),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
