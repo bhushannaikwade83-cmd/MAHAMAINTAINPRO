@@ -1,13 +1,191 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
+import 'society_registration_screen.dart';
+import 'emergency_sos_screen.dart';
 
-class SocietyScreen extends StatelessWidget {
+class SocietyScreen extends StatefulWidget {
   const SocietyScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SocietyScreen> createState() => _SocietyScreenState();
+}
+
+class _SocietyScreenState extends State<SocietyScreen> {
+  bool _isSocietyRegistered = false;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
+
+    // If society not registered, show registration prompt
+    if (!_isSocietyRegistered) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Column(
+          children: [
+            // Header
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppTheme.saffron, AppTheme.saffronDark],
+                ),
+              ),
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 12,
+                left: 16,
+                right: 16,
+                bottom: 20,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Society Hub 🏢',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Register to access community features',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Unregistered State
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Lock Icon
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: AppTheme.saffron.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Icon(
+                          Icons.lock,
+                          size: 50,
+                          color: AppTheme.saffron,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      Text(
+                        'Society Not Registered',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      Text(
+                        'Register your society to unlock all community features like visitor gate management, parking, announcements, and more.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Register Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final result = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SocietyRegistrationScreen(
+                                  onRegistrationComplete: () {
+                                    setState(() => _isSocietyRegistered = true);
+                                  },
+                                ),
+                              ),
+                            );
+                            if (result == true) {
+                              setState(() => _isSocietyRegistered = true);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.saffron,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: Text(
+                            'Register Society Now',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // SOS Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const EmergencySosScreen(),
+                              ),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.red.shade600, width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            '🚨 Emergency SOS (Always Available)',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -73,13 +251,23 @@ class SocietyScreen extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const EmergencySosScreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text('🚨', style: TextStyle(fontSize: 20)),
                             ),
-                            child: Text('🔔', style: TextStyle(fontSize: 20)),
                           ),
                           const SizedBox(width: 8),
                           Container(
@@ -88,7 +276,7 @@ class SocietyScreen extends StatelessWidget {
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text('🌙', style: TextStyle(fontSize: 20)),
+                            child: Text('🔔', style: TextStyle(fontSize: 20)),
                           ),
                         ],
                       ),
