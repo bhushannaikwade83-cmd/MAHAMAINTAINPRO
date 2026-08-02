@@ -15,6 +15,12 @@ class _SearchScreenState extends State<SearchScreen> {
   bool isDarkMode = false;
   int notificationCount = 3;
 
+  // Dark mode color getters
+  Color get bgColor => isDarkMode ? const Color(0xFF1A1A1A) : Colors.white;
+  Color get cardColor => isDarkMode ? const Color(0xFF2A2A2A) : Colors.white;
+  Color get textColor => isDarkMode ? Colors.white : Colors.black;
+  Color get textSecondaryColor => isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
+
   final List<Map<String, dynamic>> personalServices = [
     {'emoji': '⚡', 'name': 'Insta Help', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFE5E5)},
     {'emoji': '💇‍♀️', 'name': 'Women\'s Salon', 'hindi': 'सौंदर्य', 'time': '', 'color': Color(0xFFFFF0E5)},
@@ -48,12 +54,6 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
-
-    // Dark mode colors
-    final bgColor = isDarkMode ? const Color(0xFF1A1A1A) : Colors.white;
-    final cardColor = isDarkMode ? const Color(0xFF2A2A2A) : Colors.white;
-    final textColor = isDarkMode ? Colors.white : Colors.black;
-    final textSecondaryColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
 
     return Scaffold(
       backgroundColor: bgColor,
