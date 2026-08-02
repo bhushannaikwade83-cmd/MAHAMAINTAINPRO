@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import 'live_tracking_screen.dart';
-import 'service_detail_screen.dart';
+import 'service_category_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -387,13 +387,15 @@ class _SearchScreenState extends State<SearchScreen> {
   }) {
     return GestureDetector(
       onTap: () {
+        final categoryServices = _getServicesForCategory(name, emoji);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ServiceDetailScreen(
-              serviceName: name,
-              serviceEmoji: emoji,
-              description: 'At-home beauty & wellness services',
+            builder: (context) => ServiceCategoryScreen(
+              categoryName: name,
+              categoryEmoji: emoji,
+              description: _getCategoryDescription(name),
+              services: categoryServices,
             ),
           ),
         );
@@ -538,6 +540,94 @@ class _SearchScreenState extends State<SearchScreen> {
         ],
       ),
     );
+  }
+
+  String _getCategoryDescription(String categoryName) {
+    final descriptions = {
+      "Women's Salon": "At-home beauty & wellness services",
+      "Cleaning": "Deep clean, kitchen, bathroom & more",
+      "Painting": "Interior, exterior, waterproofing & texture",
+      "AC & Appliance": "AC, fridge, washing machine, TV & more",
+      "Electric / Plumb": "46-min response • All home repairs",
+      "Vehicle Care": "Car & bike wash, detailing, AC & repairs",
+      "Food & Catering": "Home cook, tiffin, party catering & more",
+      "Health & Care": "Nurse, physio, blood test & elder care",
+      "Pooja Services": "Pandit, pooja samagri & full setup",
+      "Festival Services": "Ganpati, Diwali, Navratri & all festivals",
+      "Pest Control": "Safe, effective & certified treatments",
+      "Smart Society": "Gate, lift, CCTV, AMC & management",
+      "Real Estate": "Buy, sell, rent & property services",
+      "Hologram": "3D hologram display, events & branding",
+      "Tours & Travels": "Car rentals, tour packages & professional drivers",
+    };
+    return descriptions[categoryName] ?? "Professional services";
+  }
+
+  List<Map<String, dynamic>> _getServicesForCategory(String categoryName, String emoji) {
+    final servicesMap = {
+      "Women's Salon": [
+        {'name': 'Hair Cut & Styling (Women)', 'emoji': '✂️', 'duration': '45-60 min', 'rating': 4.9, 'price': 399},
+        {'name': 'Facial (Basic / D-Tan)', 'emoji': '🧴', 'duration': '60 min', 'rating': 4.8, 'price': 499},
+        {'name': 'Full Body Waxing', 'emoji': '✨', 'duration': '90 min', 'rating': 4.7, 'price': 799},
+      ],
+      "Cleaning": [
+        {'name': 'Home Deep Clean (1BHK)', 'emoji': '🧹', 'duration': '3-4 hrs', 'rating': 4.9, 'price': 999},
+        {'name': 'Home Deep Clean (2BHK)', 'emoji': '🧹', 'duration': '4-5 hrs', 'rating': 4.9, 'price': 1499},
+      ],
+      "Painting": [
+        {'name': 'Wall Painting (Per sq.ft)', 'emoji': '🎨', 'rating': 4.6, 'price': 35},
+        {'name': 'Full Home Painting (1BHK)', 'emoji': '🏠', 'duration': '2-3 days', 'rating': 4.8, 'price': 8999},
+      ],
+      "AC & Appliance": [
+        {'name': 'AC Service & Deep Clean', 'emoji': '❄️', 'duration': '1.5-2 hrs', 'rating': 4.8, 'price': 499},
+        {'name': 'AC Gas Refill (R32 / R410)', 'emoji': '❄️', 'duration': '1-1.5 hrs', 'rating': 4.7, 'price': 1299},
+      ],
+      "Electric / Plumb": [
+        {'name': 'Electrician (General Visit)', 'emoji': '⚡', 'duration': '45 min', 'rating': 4.8, 'price': 199},
+        {'name': 'Fan Installation / Repair', 'emoji': '💨', 'duration': '30-45 min', 'rating': 4.8, 'price': 249},
+      ],
+      "Vehicle Care": [
+        {'name': 'Car Wash (Basic Exterior)', 'emoji': '🚗', 'duration': '45 min', 'rating': 4.7, 'price': 299},
+        {'name': 'Car Interior Deep Clean', 'emoji': '🚗', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 799},
+      ],
+      "Food & Catering": [
+        {'name': 'Home Cook (Per Visit)', 'emoji': '👨‍🍳', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 499},
+        {'name': 'Tiffin Service (Monthly)', 'emoji': '📦', 'duration': 'Monthly', 'rating': 4.7, 'price': 3499},
+      ],
+      "Health & Care": [
+        {'name': 'Nurse / Attendant (Day Shift)', 'emoji': '👩‍⚕️', 'duration': '8 hrs', 'rating': 4.9, 'price': 1499},
+        {'name': 'Nurse / Attendant (Night Shift)', 'emoji': '👩‍⚕️', 'duration': '10 hrs', 'rating': 4.9, 'price': 1799},
+      ],
+      "Pooja Services": [
+        {'name': 'Ganesh Pooja Setup & Pandit', 'emoji': '🐘', 'duration': '2-3 hrs', 'rating': 4.9, 'price': 2499},
+        {'name': 'Griha Pravesh Pooja', 'emoji': '🏠', 'duration': '3-4 hrs', 'rating': 4.9, 'price': 3499},
+      ],
+      "Festival Services": [
+        {'name': 'Ganpati Decoration & Setup', 'emoji': '🪔', 'rating': 4.9, 'price': 3999},
+        {'name': 'Ganpati Visarjan Arrangements', 'emoji': '🐘', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 1999},
+      ],
+      "Pest Control": [
+        {'name': 'General Pest Control (1BHK)', 'emoji': '🐜', 'duration': '1-2 hrs', 'rating': 4.7, 'price': 799},
+        {'name': 'General Pest Control (2BHK)', 'emoji': '🐜', 'duration': '1.5-2 hrs', 'rating': 4.7, 'price': 999},
+      ],
+      "Smart Society": [
+        {'name': 'Society Gate Motor Repair', 'emoji': '🚪', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 1299},
+        {'name': 'Lift Maintenance / Repair', 'emoji': '🛗', 'rating': 4.9, 'price': 2499},
+      ],
+      "Real Estate": [
+        {'name': 'Property Site Visit & Inspection', 'emoji': '🏠', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 499},
+        {'name': 'Flat / Home for Rent (Listing)', 'emoji': '🔑', 'duration': '7-14 days', 'rating': 4.7, 'price': 999},
+      ],
+      "Hologram": [
+        {'name': '3D Hologram Fan Display (Rental)', 'emoji': '🔮', 'rating': 4.9, 'price': 2999},
+        {'name': 'Hologram Fan Purchase & Setup', 'emoji': '✨', 'duration': '1-2 days', 'rating': 4.9, 'price': 14999},
+      ],
+      "Tours & Travels": [
+        {'name': 'Hire Driver (Local - 4 hrs)', 'emoji': '👨‍✈️', 'duration': '4 hrs', 'rating': 4.8, 'price': 499},
+        {'name': 'Hire Driver (Local - 8 hrs)', 'emoji': '👨‍✈️', 'duration': '8 hrs', 'rating': 4.9, 'price': 899},
+      ],
+    };
+    return servicesMap[categoryName] ?? [];
   }
 
   @override
