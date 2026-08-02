@@ -599,7 +599,11 @@ class _SearchScreenState extends State<SearchScreen> {
     required String hindi,
     required String time,
     required Color bgColor,
+    Color? textColorOverride,
+    Color? secondaryColorOverride,
   }) {
+    final displayTextColor = textColorOverride ?? (isDarkMode ? Colors.white : Colors.black87);
+    final displaySecondaryColor = secondaryColorOverride ?? textSecondaryColor;
     return GestureDetector(
       onTap: () {
         final categoryServices = _getServicesForCategory(name, emoji);
@@ -673,7 +677,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: isDarkMode ? Colors.white : Colors.black87,
+                  color: displayTextColor,
                   height: 1.2,
                   letterSpacing: 0.2,
                 ),
@@ -810,10 +814,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: Text(
                     name,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                      color: isDarkMode ? Colors.white : Colors.black87,
                       letterSpacing: 0.2,
                       height: 1.2,
                     ),
