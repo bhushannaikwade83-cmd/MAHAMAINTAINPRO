@@ -544,7 +544,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   String _getCategoryDescription(String categoryName) {
     final descriptions = {
+      "Insta Help": "Instant help for common problems",
       "Women's Salon": "At-home beauty & wellness services",
+      "Men's Salon": "Haircut, massage & grooming services",
       "Cleaning": "Deep clean, kitchen, bathroom & more",
       "Painting": "Interior, exterior, waterproofing & texture",
       "AC & Appliance": "AC, fridge, washing machine, TV & more",
@@ -555,7 +557,7 @@ class _SearchScreenState extends State<SearchScreen> {
       "Pooja Services": "Pandit, pooja samagri & full setup",
       "Festival Services": "Ganpati, Diwali, Navratri & all festivals",
       "Pest Control": "Safe, effective & certified treatments",
-      "Smart Society": "Gate, lift, CCTV, AMC & management",
+      "Society Hub": "Gate, lift, CCTV, AMC & management",
       "Real Estate": "Buy, sell, rent & property services",
       "Hologram": "3D hologram display, events & branding",
       "Tours & Travels": "Car rentals, tour packages & professional drivers",
@@ -565,10 +567,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
   List<Map<String, dynamic>> _getServicesForCategory(String categoryName, String emoji) {
     final servicesMap = {
+      "Insta Help": [
+        {'name': 'Electrical Fault', 'emoji': '⚡', 'duration': '30-45 min', 'rating': 4.8, 'price': 149},
+        {'name': 'Leaking Tap / Pipe', 'emoji': '💧', 'duration': '30-45 min', 'rating': 4.7, 'price': 179},
+        {'name': 'Door Lock Issue', 'emoji': '🔑', 'duration': '30-45 min', 'rating': 4.8, 'price': 199},
+      ],
       "Women's Salon": [
         {'name': 'Hair Cut & Styling (Women)', 'emoji': '✂️', 'duration': '45-60 min', 'rating': 4.9, 'price': 399},
         {'name': 'Facial (Basic / D-Tan)', 'emoji': '🧴', 'duration': '60 min', 'rating': 4.8, 'price': 499},
         {'name': 'Full Body Waxing', 'emoji': '✨', 'duration': '90 min', 'rating': 4.7, 'price': 799},
+      ],
+      "Men's Salon": [
+        {'name': 'Hair Cut & Styling (Men)', 'emoji': '✂️', 'duration': '30-45 min', 'rating': 4.9, 'price': 249},
+        {'name': 'Head Massage', 'emoji': '💆‍♂️', 'duration': '30 min', 'rating': 4.9, 'price': 299},
+        {'name': 'Beard Grooming', 'emoji': '🧔', 'duration': '30 min', 'rating': 4.8, 'price': 199},
       ],
       "Cleaning": [
         {'name': 'Home Deep Clean (1BHK)', 'emoji': '🧹', 'duration': '3-4 hrs', 'rating': 4.9, 'price': 999},
@@ -610,7 +622,7 @@ class _SearchScreenState extends State<SearchScreen> {
         {'name': 'General Pest Control (1BHK)', 'emoji': '🐜', 'duration': '1-2 hrs', 'rating': 4.7, 'price': 799},
         {'name': 'General Pest Control (2BHK)', 'emoji': '🐜', 'duration': '1.5-2 hrs', 'rating': 4.7, 'price': 999},
       ],
-      "Smart Society": [
+      "Society Hub": [
         {'name': 'Society Gate Motor Repair', 'emoji': '🚪', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 1299},
         {'name': 'Lift Maintenance / Repair', 'emoji': '🛗', 'rating': 4.9, 'price': 2499},
       ],
