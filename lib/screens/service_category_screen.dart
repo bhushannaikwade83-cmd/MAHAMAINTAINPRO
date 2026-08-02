@@ -104,7 +104,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           // Services List
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: Column(
                 children: List.generate(
                   _services.length,
@@ -197,7 +197,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     return GestureDetector(
       onTap: () => setState(() => service['quantity']++),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.saffron.withOpacity(0.05) : Colors.white,
