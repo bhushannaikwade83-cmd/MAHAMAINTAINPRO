@@ -160,6 +160,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                   height: isSmall ? 140 : 180,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
+                                    print('🔴 ROLE SELECTION: Logo load error: $error');
+                                    print('Stack trace: $stackTrace');
                                     return Container(
                                       width: isSmall ? 140 : 180,
                                       height: isSmall ? 140 : 180,

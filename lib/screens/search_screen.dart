@@ -113,6 +113,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                 height: 36,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
+                                  print('🔴 HOME: Logo load error: $error');
+                                  print('Stack trace: $stackTrace');
                                   return Container(
                                     width: 36,
                                     height: 36,
