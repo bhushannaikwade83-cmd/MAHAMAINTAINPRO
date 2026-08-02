@@ -152,6 +152,38 @@ class _SocietyScreenState extends State<SocietyScreen> {
                       ),
                       const SizedBox(height: 16),
 
+                      // Complaint Button (Always Available)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            final message = Uri.encodeComponent('Hi, I have a complaint regarding our society.');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Opening WhatsApp...'),
+                                backgroundColor: Colors.green,
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.green.shade600, width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            '💬 File Complaint via WhatsApp',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       // SOS Button
                       SizedBox(
                         width: double.infinity,
