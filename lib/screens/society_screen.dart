@@ -265,7 +265,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.asset(
-                                'images/logo.png',
+                                'assets/images/logo.png',
                                 width: 32,
                                 height: 32,
                                 fit: BoxFit.cover,

@@ -108,7 +108,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.asset(
-                                'images/logo.png',
+                                'assets/images/logo.png',
                                 width: 36,
                                 height: 36,
                                 fit: BoxFit.cover,
