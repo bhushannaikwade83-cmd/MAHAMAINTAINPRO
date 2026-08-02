@@ -354,15 +354,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               width: isSmall ? 64 : 72,
               height: isSmall ? 64 : 72,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    isSelected ? neonColor.withOpacity(0.22) : AppTheme.bgLight,
-                    isSelected ? neonColor.withOpacity(0.1) : AppTheme.bgLight,
-                  ],
-                ),
+                color: isSelected ? neonColor.withOpacity(0.15) : AppTheme.bgLight,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected ? neonColor.withOpacity(0.5) : AppTheme.borderColor,
+                  color: isSelected ? neonColor.withOpacity(0.4) : AppTheme.borderColor,
                   width: 1.5,
                 ),
               ),
@@ -386,7 +381,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     style: TextStyle(
                       fontSize: isSmall ? 17 : 19,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: isSelected ? Colors.black : AppTheme.textPrimary,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -395,7 +390,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     subtitle,
                     style: TextStyle(
                       fontSize: isSmall ? 12 : 13,
-                      color: Colors.white70,
+                      color: isSelected ? Colors.black54 : AppTheme.textSecondary,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -410,28 +405,16 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                 width: isSmall ? 48 : 52,
                 height: isSmall ? 48 : 52,
                 decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          colors: [
-                            neonColor.withOpacity(0.4),
-                            neonColor.withOpacity(0.2),
-                          ],
-                        )
-                      : LinearGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.1),
-                            Colors.white.withOpacity(0.05),
-                          ],
-                        ),
+                  color: isSelected ? neonColor.withOpacity(0.15) : AppTheme.bgLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isSelected ? neonColor.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+                    color: isSelected ? neonColor.withOpacity(0.4) : AppTheme.borderColor,
                   ),
                 ),
                 child: Center(
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.arrow_forward,
-                    color: isSelected ? neonColor : Colors.white.withOpacity(0.5),
+                    color: isSelected ? neonColor : AppTheme.textTertiary,
                     size: isSmall ? 22 : 24,
                   ),
                 ),
