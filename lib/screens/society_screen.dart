@@ -9,80 +9,144 @@ class SocietyScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppTheme.saffron,
-        title: const Text('🏢 Society Hub'),
+        title: const Text('🏢 Society'),
+        elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Shri Ramdev Park CHS',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    'Mira Road, Mumbai',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Quick Links',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildQuickLink('📄 View Bill', Colors.orange),
+                  const SizedBox(height: 10),
+                  _buildQuickLink('✏️ File Complaint', Colors.red),
+                  const SizedBox(height: 10),
+                  _buildQuickLink('🛵 Visitor Gate', Colors.blue),
+                  const SizedBox(height: 10),
+                  _buildQuickLink('🔑 Tenant Info', Colors.green),
+                  const SizedBox(height: 10),
+                  _buildQuickLink('🚗 Parking Status', Colors.purple),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Announcements',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildAnnouncement(
+                    'Maintenance Due',
+                    'July maintenance charges are due by 25th July',
+                    '3 days ago',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildAnnouncement(
+                    'Society Meeting',
+                    'Annual society meeting scheduled for 30th July at 6 PM',
+                    '1 week ago',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildQuickLink(String title, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildFeatureCard(
-            icon: '🚪',
-            title: 'Visitor Gate',
-            subtitle: 'Manage visitor entries',
-            onTap: () => _showModal(context, 'Visitor Gate Management'),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
           ),
-          _buildFeatureCard(
-            icon: '🚗',
-            title: 'Parking Management',
-            subtitle: 'Request guest parking',
-            onTap: () => _showModal(context, 'Parking Management'),
-          ),
-          _buildFeatureCard(
-            icon: '👥',
-            title: 'Tenant Management',
-            subtitle: 'Register tenants',
-            onTap: () => _showModal(context, 'Tenant Management'),
-          ),
-          _buildFeatureCard(
-            icon: '🧾',
-            title: 'Bills & Maintenance',
-            subtitle: 'View bills and pay online',
-            onTap: () => _showModal(context, 'Bills'),
-          ),
-          _buildFeatureCard(
-            icon: '📋',
-            title: 'Complaints',
-            subtitle: 'Lodge and track complaints',
-            onTap: () => _showModal(context, 'Complaints'),
-          ),
-          _buildFeatureCard(
-            icon: '📢',
-            title: 'Society Announcements',
-            subtitle: 'Latest updates from society',
-            onTap: () => _showModal(context, 'Announcements'),
-          ),
+          Icon(Icons.arrow_forward, color: color, size: 20),
         ],
       ),
     );
   }
 
-  Widget _buildFeatureCard({
-    required String icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Text(icon, style: const TextStyle(fontSize: 28)),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward),
-        onTap: onTap,
+  static Widget _buildAnnouncement(
+    String title,
+    String description,
+    String timeAgo,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
       ),
-    );
-  }
-
-  void _showModal(BuildContext context, String title) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text('$title feature details and options'),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            timeAgo,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+            ),
           ),
         ],
       ),

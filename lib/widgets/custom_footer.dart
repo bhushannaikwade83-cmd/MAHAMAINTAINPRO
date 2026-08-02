@@ -52,11 +52,13 @@ class CustomFooter extends StatelessWidget {
                 _buildNavItem(context, '👤', 'Profile', 3),
               ]
             : [
-                // User tabs: Home, SOS, AI Chat, Profile
+                // User tabs: Home, Search, AI Chat, Society, Bookings, Profile
                 _buildNavItem(context, '🏠', 'Home', 0),
-                _buildNavItem(context, '🆘', 'SOS', 1),
+                _buildNavItem(context, '🔍', 'Search', 1),
                 _buildNavItem(context, '🤖', 'AI Chat', 2),
-                _buildNavItem(context, '👤', 'Profile', 3),
+                _buildNavItem(context, '🏢', 'Society', 3),
+                _buildNavItem(context, '📋', 'Bookings', 4),
+                _buildNavItem(context, '👤', 'Profile', 5),
         ],
       ),
     );
