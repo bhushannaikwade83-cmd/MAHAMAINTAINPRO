@@ -39,6 +39,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         children: [
           // Header
           Container(
+            width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,

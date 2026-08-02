@@ -43,6 +43,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         children: [
           // Header
           Container(
+            width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
