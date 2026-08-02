@@ -155,7 +155,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(28),
                                 child: Image.asset(
-                                  'images/logo.jpeg',
+                                  'images/logo.png',
                                   width: isSmall ? 140 : 180,
                                   height: isSmall ? 140 : 180,
                                   fit: BoxFit.cover,

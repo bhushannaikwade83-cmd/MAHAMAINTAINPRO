@@ -65,7 +65,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
-                        'images/logo.jpeg',
+                        'images/logo.png',
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
