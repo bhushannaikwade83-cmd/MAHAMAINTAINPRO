@@ -197,8 +197,8 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     return GestureDetector(
       onTap: () => setState(() => service['quantity']++),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.saffron.withOpacity(0.05) : Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -220,7 +220,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 child: Text(service['emoji'] ?? '🔧', style: const TextStyle(fontSize: 28)),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
