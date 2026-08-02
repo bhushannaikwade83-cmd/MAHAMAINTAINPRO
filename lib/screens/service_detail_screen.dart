@@ -43,11 +43,18 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         children: [
           // Header
           Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppTheme.saffron, AppTheme.saffronDark],
+              ),
+            ),
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 12,
-              left: 8,
+              left: 16,
               right: 16,
-              bottom: 24,
+              bottom: 20,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,39 +64,33 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    child: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
+                    child: const Icon(Icons.arrow_back, size: 24, color: Colors.white),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 // Title with emoji
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: widget.serviceName,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: widget.serviceName,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        TextSpan(
-                          text: ' ${widget.serviceEmoji}',
-                          style: const TextStyle(fontSize: 28),
-                        ),
-                      ],
-                    ),
+                      ),
+                      TextSpan(
+                        text: ' ${widget.serviceEmoji}',
+                        style: const TextStyle(fontSize: 28),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Text(
-                    widget.description,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
+                Text(
+                  widget.description,
+                  style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.9)),
                 ),
               ],
             ),
