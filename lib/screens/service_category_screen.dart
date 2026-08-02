@@ -104,7 +104,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           // Services List
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: Column(
                 children: List.generate(
                   _services.length,
@@ -201,10 +200,11 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.saffron.withOpacity(0.05) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppTheme.saffron : Colors.grey.shade200,
-            width: isSelected ? 2 : 1,
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? AppTheme.saffron : Colors.grey.shade200,
+              width: isSelected ? 2 : 1,
+            ),
           ),
         ),
         child: Row(
