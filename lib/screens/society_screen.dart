@@ -26,6 +26,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
           children: [
             // Header
             Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -35,32 +36,35 @@ class _SocietyScreenState extends State<SocietyScreen> {
               ),
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 12,
-                left: 16,
-                right: 16,
+                left: 0,
+                right: 0,
                 bottom: 20,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Society Hub 🏢',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Society Hub 🏢',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Register to access community features',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Register to access community features',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -194,6 +198,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
           children: [
             // Orange Header
             Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -203,17 +208,19 @@ class _SocietyScreenState extends State<SocietyScreen> {
               ),
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 12,
-                left: 16,
-                right: 16,
+                left: 0,
+                right: 0,
                 bottom: 20,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top bar
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top bar
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
@@ -325,6 +332,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
 
