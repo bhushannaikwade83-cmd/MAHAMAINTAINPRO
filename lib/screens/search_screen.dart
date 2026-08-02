@@ -343,20 +343,39 @@ class _SearchScreenState extends State<SearchScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'What do you need to...',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'What do you need to...',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 40,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: AppTheme.saffron,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'See all →',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.saffron,
-                          fontWeight: FontWeight.bold,
+                      GestureDetector(
+                        onTap: () {},
+                        child: Text(
+                          'See all →',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.saffron,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
+                          ),
                         ),
                       ),
                     ],
@@ -458,66 +477,87 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              emoji,
-              style: const TextStyle(fontSize: 36),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                emoji,
+                style: const TextStyle(fontSize: 44),
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               name,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
+                height: 1.2,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             if (hindi.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   hindi,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 10,
                     color: AppTheme.saffron,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                 ),
               ),
-            if (time.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
+            if (time.isNotEmpty) ...[
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.saffron.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Text(
+                      '⚡',
+                      style: const TextStyle(fontSize: 9),
+                    ),
+                    const SizedBox(width: 3),
                     Text(
                       time,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 9,
                         color: AppTheme.saffron,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 2),
-                    Text(
-                      '⚡',
-                      style: const TextStyle(fontSize: 10),
-                    ),
                   ],
                 ),
               ),
+            ],
           ],
         ),
       ),
