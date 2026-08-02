@@ -59,14 +59,14 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     final isSmall = screenWidth < 380;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1E),
+      backgroundColor: Colors.white,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
           child: Stack(
             children: [
-              // Animated gradient background
+              // Soft light gradient background
               Container(
                 width: double.infinity,
                 height: screenHeight,
@@ -75,9 +75,9 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      const Color(0xFF0F0F1E),
-                      const Color(0xFF1A1A2E),
-                      AppTheme.saffron.withOpacity(0.1),
+                      Colors.white,
+                      Colors.white,
+                      Colors.white,
                     ],
                   ),
                 ),
@@ -92,7 +92,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                   height: 300,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.neonGreen.withOpacity(0.05),
+                    color: AppTheme.saffron.withOpacity(0.06),
                   ),
                 ),
               ),
@@ -104,7 +104,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                   height: 300,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.neonCyan.withOpacity(0.05),
+                    color: AppTheme.teal.withOpacity(0.05),
                   ),
                 ),
               ),
@@ -238,7 +238,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                             style: TextStyle(
                               fontSize: isSmall ? 26 : 32,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppTheme.textPrimary,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -247,7 +247,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                             'Choose your role to get started',
                             style: TextStyle(
                               fontSize: isSmall ? 13 : 14,
-                              color: Colors.white70,
+                              color: AppTheme.textSecondary,
                             ),
                           ),
                           SizedBox(height: isSmall ? 40 : 56),
@@ -280,7 +280,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: isSmall ? 11 : 12,
-                              color: Colors.white60,
+                              color: AppTheme.textTertiary,
                             ),
                           ),
                         ],
@@ -316,31 +316,28 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    neonColor.withOpacity(0.2),
-                    neonColor.withOpacity(0.1),
+                    neonColor.withOpacity(0.14),
+                    neonColor.withOpacity(0.06),
                   ],
                 )
               : LinearGradient(
-                  colors: [
-                    Colors.white.withOpacity(0.08),
-                    Colors.white.withOpacity(0.04),
-                  ],
+                  colors: [Colors.white, Colors.white],
                 ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? neonColor : Colors.white.withOpacity(0.2),
+            color: isSelected ? neonColor : AppTheme.borderColor,
             width: isSelected ? 2.5 : 1.5,
           ),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: neonColor.withOpacity(0.4),
+                color: neonColor.withOpacity(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               )
             else
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withOpacity(0.06),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -359,13 +356,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    isSelected ? neonColor.withOpacity(0.3) : Colors.white.withOpacity(0.1),
-                    isSelected ? neonColor.withOpacity(0.15) : Colors.white.withOpacity(0.05),
+                    isSelected ? neonColor.withOpacity(0.22) : AppTheme.bgLight,
+                    isSelected ? neonColor.withOpacity(0.1) : AppTheme.bgLight,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected ? neonColor.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+                  color: isSelected ? neonColor.withOpacity(0.5) : AppTheme.borderColor,
                   width: 1.5,
                 ),
               ),
