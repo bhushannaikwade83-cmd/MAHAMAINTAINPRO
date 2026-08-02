@@ -59,152 +59,237 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     final isSmall = screenWidth < 380;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0F0F1E),
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Header with gradient
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [AppTheme.saffron, AppTheme.saffronDark],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.saffron.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
+          child: Stack(
+            children: [
+              // Animated gradient background
+              Container(
+                width: double.infinity,
+                height: screenHeight,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFF0F0F1E),
+                      const Color(0xFF1A1A2E),
+                      AppTheme.saffron.withOpacity(0.1),
                     ],
                   ),
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + (isSmall ? 24 : 40),
-                    bottom: isSmall ? 48 : 64,
-                    left: 24,
-                    right: 24,
+                ),
+              ),
+
+              // Decorative blobs
+              Positioned(
+                top: -100,
+                right: -50,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.neonGreen.withOpacity(0.05),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      AnimatedScale(
-                        scale: 1,
-                        duration: const Duration(milliseconds: 600),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(28),
-                          child: Image.asset(
-                            'images/logo.jpeg',
-                            width: isSmall ? 160 : 200,
-                            height: isSmall ? 160 : 200,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: isSmall ? 160 : 200,
-                                height: isSmall ? 160 : 200,
-                                color: Colors.white,
-                                child: Center(
-                                  child: Text(
-                                    '🏢',
-                                    style: TextStyle(
-                                      fontSize: isSmall ? 60 : 80,
-                                    ),
+                ),
+              ),
+              Positioned(
+                bottom: -100,
+                left: -50,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.neonCyan.withOpacity(0.05),
+                  ),
+                ),
+              ),
+
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Header with gradient
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [AppTheme.saffron, AppTheme.saffronDark],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.saffron.withOpacity(0.4),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + (isSmall ? 24 : 40),
+                        bottom: isSmall ? 48 : 64,
+                        left: 24,
+                        right: 24,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          AnimatedScale(
+                            scale: 1,
+                            duration: const Duration(milliseconds: 600),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.2),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(28),
+                                child: Image.asset(
+                                  'images/logo.jpeg',
+                                  width: isSmall ? 140 : 180,
+                                  height: isSmall ? 140 : 180,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: isSmall ? 140 : 180,
+                                      height: isSmall ? 140 : 180,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white.withOpacity(0.1),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.3),
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '🏢',
+                                          style: TextStyle(
+                                            fontSize: isSmall ? 60 : 80,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: isSmall ? 20 : 28),
+                          RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'MahaMaintain\n',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isSmall ? 26 : 32,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
-                              );
-                            },
+                                TextSpan(
+                                  text: 'Pro',
+                                  style: TextStyle(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: isSmall ? 26 : 32,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                          SizedBox(height: isSmall ? 8 : 12),
+                          Text(
+                            'महाराष्ट्र का विश्वास',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: isSmall ? 13 : 15,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: isSmall ? 20 : 28),
-                      Text(
-                        'MahaMaintain Pro',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isSmall ? 26 : 32,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -0.5,
-                        ),
+                    ),
+                    // Role Selection Content
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmall ? 16 : 24,
+                        vertical: isSmall ? 32 : 48,
                       ),
-                      SizedBox(height: isSmall ? 8 : 12),
-                      Text(
-                        'महाराष्ट्र का विश्वास',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: isSmall ? 13 : 15,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Who are you?',
+                            style: TextStyle(
+                              fontSize: isSmall ? 26 : 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          SizedBox(height: isSmall ? 8 : 12),
+                          Text(
+                            'Choose your role to get started',
+                            style: TextStyle(
+                              fontSize: isSmall ? 13 : 14,
+                              color: Colors.white70,
+                            ),
+                          ),
+                          SizedBox(height: isSmall ? 40 : 56),
+                          // Individual Customer Card
+                          _buildRoleCard(
+                            title: 'I\'m an Individual',
+                            subtitle: 'Book services for your home',
+                            emoji: '👤',
+                            role: 'individual',
+                            neonColor: AppTheme.neonCyan,
+                            isSelected: _selectedRole == 'individual',
+                            isSmall: isSmall,
+                            onTap: () => _selectRole('individual'),
+                          ),
+                          SizedBox(height: isSmall ? 16 : 20),
+                          // Society Card
+                          _buildRoleCard(
+                            title: 'I\'m from Society',
+                            subtitle: 'Manage society services',
+                            emoji: '🏘️',
+                            role: 'society',
+                            neonColor: AppTheme.neonGreen,
+                            isSelected: _selectedRole == 'society',
+                            isSmall: isSmall,
+                            onTap: () => _selectRole('society'),
+                          ),
+                          SizedBox(height: isSmall ? 32 : 48),
+                          Text(
+                            'By continuing, you agree to our Terms & Privacy Policy',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isSmall ? 11 : 12,
+                              color: Colors.white60,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                // Role Selection Content
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isSmall ? 20 : 24,
-                    vertical: isSmall ? 32 : 48,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Who are you?',
-                        style: TextStyle(
-                          fontSize: isSmall ? 24 : 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      SizedBox(height: isSmall ? 8 : 12),
-                      Text(
-                        'Choose your role to get started',
-                        style: TextStyle(
-                          fontSize: isSmall ? 13 : 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      SizedBox(height: isSmall ? 40 : 56),
-                      // Individual Customer Card
-                      _buildRoleCard(
-                        title: 'I\'m an Individual',
-                        subtitle: 'Book services for your home',
-                        emoji: '👤',
-                        role: 'individual',
-                        isSelected: _selectedRole == 'individual',
-                        isSmall: isSmall,
-                        onTap: () => _selectRole('individual'),
-                      ),
-                      SizedBox(height: isSmall ? 16 : 20),
-                      // Society Card
-                      _buildRoleCard(
-                        title: 'I\'m from Society',
-                        subtitle: 'Manage society services',
-                        emoji: '🏘️',
-                        role: 'society',
-                        isSelected: _selectedRole == 'society',
-                        isSmall: isSmall,
-                        onTap: () => _selectRole('society'),
-                      ),
-                      SizedBox(height: isSmall ? 32 : 48),
-                      Text(
-                        'By continuing, you agree to our Terms & Privacy Policy',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: isSmall ? 11 : 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -216,6 +301,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     required String subtitle,
     required String emoji,
     required String role,
+    required Color neonColor,
     required bool isSelected,
     required bool isSmall,
     required VoidCallback onTap,
@@ -229,52 +315,65 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppTheme.saffron, AppTheme.saffronDark],
+                  colors: [
+                    neonColor.withOpacity(0.2),
+                    neonColor.withOpacity(0.1),
+                  ],
                 )
               : LinearGradient(
-                  colors: [Colors.white, Colors.grey.shade50],
+                  colors: [
+                    Colors.white.withOpacity(0.08),
+                    Colors.white.withOpacity(0.04),
+                  ],
                 ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.saffron : Colors.grey.shade200,
+            color: isSelected ? neonColor : Colors.white.withOpacity(0.2),
             width: isSelected ? 2.5 : 1.5,
           ),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: AppTheme.saffron.withOpacity(0.35),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: neonColor.withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               )
             else
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
           ],
         ),
         padding: EdgeInsets.symmetric(
-          vertical: isSmall ? 20 : 24,
-          horizontal: isSmall ? 16 : 20,
+          vertical: isSmall ? 22 : 26,
+          horizontal: isSmall ? 18 : 24,
         ),
         child: Row(
           children: [
-            // Emoji Container
+            // Emoji Container with glow effect
             Container(
-              width: isSmall ? 56 : 64,
-              height: isSmall ? 56 : 64,
+              width: isSmall ? 64 : 72,
+              height: isSmall ? 64 : 72,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withOpacity(0.25)
-                    : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    isSelected ? neonColor.withOpacity(0.3) : Colors.white.withOpacity(0.1),
+                    isSelected ? neonColor.withOpacity(0.15) : Colors.white.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? neonColor.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+                  width: 1.5,
+                ),
               ),
               child: Center(
                 child: Text(
                   emoji,
                   style: TextStyle(
-                    fontSize: isSmall ? 28 : 32,
+                    fontSize: isSmall ? 32 : 36,
                   ),
                 ),
               ),
@@ -288,42 +387,55 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: isSmall ? 16 : 18,
+                      fontSize: isSmall ? 17 : 19,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : Colors.black,
+                      color: Colors.white,
                       letterSpacing: -0.3,
                     ),
                   ),
-                  SizedBox(height: isSmall ? 4 : 6),
+                  SizedBox(height: isSmall ? 6 : 8),
                   Text(
                     subtitle,
                     style: TextStyle(
                       fontSize: isSmall ? 12 : 13,
-                      color: isSelected ? Colors.white70 : Colors.grey.shade600,
+                      color: Colors.white70,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
               ),
             ),
-            // Arrow Icon
+            // Arrow Icon with animation
             AnimatedScale(
-              scale: isSelected ? 1.2 : 1.0,
+              scale: isSelected ? 1.3 : 1.0,
               duration: const Duration(milliseconds: 300),
               child: Container(
-                width: isSmall ? 40 : 44,
-                height: isSmall ? 40 : 44,
+                width: isSmall ? 48 : 52,
+                height: isSmall ? 48 : 52,
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withOpacity(0.25)
-                      : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: isSelected
+                      ? LinearGradient(
+                          colors: [
+                            neonColor.withOpacity(0.4),
+                            neonColor.withOpacity(0.2),
+                          ],
+                        )
+                      : LinearGradient(
+                          colors: [
+                            Colors.white.withOpacity(0.1),
+                            Colors.white.withOpacity(0.05),
+                          ],
+                        ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? neonColor.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+                  ),
                 ),
                 child: Center(
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.arrow_forward,
-                    color: isSelected ? Colors.white : Colors.grey.shade400,
-                    size: isSmall ? 20 : 22,
+                    color: isSelected ? neonColor : Colors.white.withOpacity(0.5),
+                    size: isSmall ? 22 : 24,
                   ),
                 ),
               ),
