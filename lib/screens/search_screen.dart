@@ -54,6 +54,7 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             // Orange Header
             Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -62,10 +63,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 12,
+                top: MediaQuery.of(context).padding.top + 16,
                 left: 16,
                 right: 16,
-                bottom: 20,
+                bottom: 24,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,31 +76,32 @@ class _SearchScreenState extends State<SearchScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withOpacity(0.25),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                          backdropFilter: null,
                         ),
                         child: Row(
                           children: [
                             Text('👤', style: TextStyle(fontSize: 18)),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'YOUR SERVICES',
+                                  'WELCOME',
                                   style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 9,
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                                 Text(
-                                  'Personal Services',
+                                  'Home Services',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -112,67 +114,100 @@ class _SearchScreenState extends State<SearchScreen> {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(11),
                             ),
-                            child: Text('🔔', style: TextStyle(fontSize: 20)),
+                            child: Text('🔔', style: TextStyle(fontSize: 18)),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(11),
                             ),
-                            child: Text('🌙', style: TextStyle(fontSize: 20)),
+                            child: Text('🌙', style: TextStyle(fontSize: 18)),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  // Society Name
-                  Text(
-                    'Shri Ramdev Park',
-                    style: TextStyle(
-                      fontSize: isSmall ? 22 : 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
+                  const SizedBox(height: 20),
+                  // Society Name & Greeting
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'CHS, Mira Road',
+                        'Shri Ramdev Park 🏠',
                         style: TextStyle(
-                          fontSize: isSmall ? 13 : 15,
+                          fontSize: isSmall ? 24 : 32,
+                          fontWeight: FontWeight.w900,
                           color: Colors.white,
-                          fontWeight: FontWeight.w500,
+                          letterSpacing: -0.8,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.expand_more, size: 18, color: Colors.white),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, size: 16, color: Colors.white.withOpacity(0.9)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'CHS, Mira Road',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () {},
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Change',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Icon(Icons.expand_more, size: 14, color: Colors.white.withOpacity(0.9)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   // Search Bar
                   TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search services, society',
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                      hintText: '🔍 Search services...',
+                      hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Icon(Icons.mic, color: AppTheme.saffron, size: 20),
+                      ),
                     ),
                   ),
                 ],
