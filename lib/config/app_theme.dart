@@ -12,6 +12,12 @@ class AppTheme {
   static const Color teal = Color(0xFF00A693);
   static const Color tealDark = Color(0xFF00695D);
 
+  // Neon Colors
+  static const Color neonGreen = Color(0xFF39FF14);
+  static const Color neonPink = Color(0xFFFF10F0);
+  static const Color neonCyan = Color(0xFF00FFFF);
+  static const Color neonYellow = Color(0xFFFFFF00);
+
   static const Color bgLight = Color(0xFFF4F5F9);
   static const Color cardLight = Color(0xFFFFFFFF);
   static const Color textPrimary = Color(0xFF1A1A2E);

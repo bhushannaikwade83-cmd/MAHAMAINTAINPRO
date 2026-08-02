@@ -80,7 +80,6 @@ class _SearchScreenState extends State<SearchScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.25),
                           borderRadius: BorderRadius.circular(12),
-                          backdropFilter: null,
                         ),
                         child: Row(
                           children: [
@@ -257,11 +256,18 @@ class _SearchScreenState extends State<SearchScreen> {
                               Row(
                                 children: [
                                   Container(
-                                    width: 8,
-                                    height: 8,
+                                    width: 10,
+                                    height: 10,
                                     decoration: BoxDecoration(
-                                      color: Colors.green,
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: AppTheme.neonGreen,
+                                      borderRadius: BorderRadius.circular(5),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppTheme.neonGreen.withOpacity(0.7),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -269,7 +275,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     'Active Booking',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.green,
+                                      color: AppTheme.neonGreen,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.5,
                                     ),
@@ -289,15 +295,19 @@ class _SearchScreenState extends State<SearchScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.1),
+                              color: AppTheme.neonGreen.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppTheme.neonGreen.withOpacity(0.3),
+                                width: 1,
+                              ),
                             ),
                             child: Text(
                               '14 min',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                                color: AppTheme.neonGreen,
                               ),
                             ),
                           ),
