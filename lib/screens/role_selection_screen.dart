@@ -203,32 +203,34 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                       ),
                     ),
                     // Role Selection Content
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isSmall ? 16 : 24,
-                        vertical: isSmall ? 32 : 48,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Who are you?',
-                            style: TextStyle(
-                              fontSize: isSmall ? 26 : 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
-                              letterSpacing: -0.5,
-                            ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isSmall ? 16 : 24,
+                            vertical: isSmall ? 16 : 24,
                           ),
-                          SizedBox(height: isSmall ? 8 : 12),
-                          Text(
-                            'Choose your role to get started',
-                            style: TextStyle(
-                              fontSize: isSmall ? 13 : 14,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
-                          SizedBox(height: isSmall ? 40 : 56),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Who are you?',
+                                style: TextStyle(
+                                  fontSize: isSmall ? 24 : 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimary,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              SizedBox(height: isSmall ? 6 : 10),
+                              Text(
+                                'Choose your role to get started',
+                                style: TextStyle(
+                                  fontSize: isSmall ? 12 : 13,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                              SizedBox(height: isSmall ? 20 : 32),
                           // Individual Customer Card
                           _buildRoleCard(
                             title: 'I\'m an Individual',
@@ -262,6 +264,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                             ),
                           ),
                         ],
+                      ),
+                    ),
                       ),
                     ),
                   ],
