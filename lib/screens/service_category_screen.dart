@@ -48,10 +48,12 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             ),
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 12,
-              left: 16,
-              right: 16,
+              left: 0,
+              right: 0,
               bottom: 20,
             ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -98,6 +100,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.9)),
                 ),
               ],
+              ),
             ),
           ),
 
