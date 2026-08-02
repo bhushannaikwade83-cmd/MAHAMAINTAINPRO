@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
-import '../widgets/custom_footer.dart';
-import 'profile_screen.dart';
-import 'emergency_sos_screen.dart';
 
 class Message {
   final String text;
@@ -23,7 +20,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<Message> _messages = [];
   bool _isMarathi = false;
-  int _footerSelectedIndex = 2;
   late ScrollController _scrollController;
 
   final Map<String, Map<String, String>> _responses = {
@@ -312,45 +308,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: CustomFooter(
-        selectedIndex: _footerSelectedIndex,
-        onNavItemTap: (index) {
-          setState(() {
-            _footerSelectedIndex = index;
-          });
-
-          switch (index) {
-            case 0:
-              // Home - navigate back to search/home screen
-              Navigator.pop(context);
-              break;
-            case 1:
-              // SOS
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EmergencySosScreen(),
-                ),
-              );
-              break;
-            case 2:
-              // Already on AI Chat
-              break;
-            case 3:
-              // Profile
-              print('📱 Navigating to Profile Screen...');
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
-                ),
-              ).then((_) {
-                print('✅ Returned from Profile Screen');
-              });
-              break;
-          }
-        },
       ),
     );
   }
