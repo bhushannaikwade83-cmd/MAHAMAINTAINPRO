@@ -11,7 +11,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> services = [
+  final List<Map<String, dynamic>> personalServices = [
     {'emoji': '⚡', 'name': 'Insta Help', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFE5E5)},
     {'emoji': '💇‍♀️', 'name': 'Women\'s Salon', 'hindi': 'सौंदर्य', 'time': '', 'color': Color(0xFFFFF0E5)},
     {'emoji': '💆‍♂️', 'name': 'Men\'s Salon', 'hindi': 'Massage', 'time': '', 'color': Color(0xFFF0F5FF)},
@@ -21,8 +21,23 @@ class _SearchScreenState extends State<SearchScreen> {
     {'emoji': '🔧', 'name': 'Electric / Plumb', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFF5E5)},
     {'emoji': '🚗', 'name': 'Vehicle Care', 'hindi': 'Car & Bike', 'time': '', 'color': Color(0xFFFFE5F5)},
     {'emoji': '🍳', 'name': 'Food & Catering', 'hindi': 'Home Cook', 'time': '', 'color': Color(0xFFF5E5FF)},
-    {'emoji': '🏥', 'name': 'Hospital', 'hindi': '', 'time': '', 'color': Color(0xFFE5FFE5)},
-    {'emoji': '🙏', 'name': 'Prayer/Pooja', 'hindi': '', 'time': '', 'color': Color(0xFFFFFFE5)},
+    {'emoji': '🏥', 'name': 'Health & Care', 'hindi': 'Nurse / Physio', 'time': '', 'color': Color(0xFFE5FFE5)},
+    {'emoji': '🙏', 'name': 'Pooja Services', 'hindi': 'पूजा सेवा', 'time': '', 'color': Color(0xFFFFFFE5)},
+    {'emoji': '🎉', 'name': 'Festival Services', 'hindi': 'New', 'time': '', 'color': Color(0xFFFFE5E5)},
+    {'emoji': '🐜', 'name': 'Pest Control', 'hindi': 'कीट नियंत्रण', 'time': '', 'color': Color(0xFFFFF5E5)},
+    {'emoji': '🏢', 'name': 'Society Hub', 'hindi': 'समाज', 'time': '', 'color': Color(0xFFE5F5FF)},
+    {'emoji': '🏠', 'name': 'Real Estate', 'hindi': 'New', 'time': '', 'color': Color(0xFFFFE5F5)},
+    {'emoji': '🔮', 'name': 'Hologram', 'hindi': 'New', 'time': '', 'color': Color(0xFFF5E5FF)},
+    {'emoji': '✈️', 'name': 'Tours & Travels', 'hindi': 'Hire Driver', 'time': '', 'color': Color(0xFFE5FFE5)},
+  ];
+
+  final List<Map<String, dynamic>> societyServices = [
+    {'emoji': '📄', 'name': 'View Bill', 'color': Color(0xFFFFE5E5)},
+    {'emoji': '✏️', 'name': 'Complaint', 'color': Color(0xFFFFF0E5)},
+    {'emoji': '🛵', 'name': 'Visitor Gate', 'color': Color(0xFFF0F5FF), 'badge': '1'},
+    {'emoji': '🔑', 'name': 'Tenant Info', 'color': Color(0xFFE5F5E5)},
+    {'emoji': '🚗', 'name': 'Parking', 'color': Color(0xFFFFF5E5)},
+    {'emoji': '📊', 'name': 'Full Dashboard', 'color': Color(0xFFE5F5FF)},
   ];
 
   @override
@@ -35,65 +50,81 @@ class _SearchScreenState extends State<SearchScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header with Society Info
+            // Orange Header
             Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppTheme.saffron, AppTheme.saffronDark],
+                ),
+              ),
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 12,
                 left: 16,
                 right: 16,
-                bottom: 16,
+                bottom: 20,
               ),
-              color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top bar with location and notification
+                  // Top bar
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, color: AppTheme.saffron, size: 20),
-                          const SizedBox(width: 4),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'YOUR SOCIETY',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: AppTheme.saffron,
-                                  fontWeight: FontWeight.bold,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Text('👤', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'YOUR SERVICES',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'तुमची सोसायटी',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: AppTheme.saffron,
+                                Text(
+                                  'Personal Services',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       Row(
                         children: [
-                          Icon(Icons.notifications_none, color: Colors.grey, size: 20),
-                          const SizedBox(width: 12),
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundImage: AssetImage('images/logo.jpeg'),
-                            onBackgroundImageError: (exception, stackTrace) {},
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppTheme.saffron.withOpacity(0.2),
-                              ),
-                              child: Center(
-                                child: Text('👤', style: TextStyle(fontSize: 16)),
-                              ),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
                             ),
+                            child: Text('🔔', style: TextStyle(fontSize: 20)),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text('🌙', style: TextStyle(fontSize: 20)),
                           ),
                         ],
                       ),
@@ -104,9 +135,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   Text(
                     'Shri Ramdev Park',
                     style: TextStyle(
-                      fontSize: isSmall ? 22 : 26,
+                      fontSize: isSmall ? 22 : 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -115,12 +147,13 @@ class _SearchScreenState extends State<SearchScreen> {
                       Text(
                         'CHS, Mira Road',
                         style: TextStyle(
-                          fontSize: isSmall ? 13 : 14,
-                          color: Colors.grey.shade600,
+                          fontSize: isSmall ? 13 : 15,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.expand_more, size: 18, color: Colors.grey.shade600),
+                      Icon(Icons.expand_more, size: 18, color: Colors.white),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -128,33 +161,22 @@ class _SearchScreenState extends State<SearchScreen> {
                   TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search for services, society, help...',
+                      hintText: 'Search services, society',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
                       prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                      suffixIcon: Container(
-                        margin: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.saffron,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.search, color: Colors.white, size: 20),
-                      ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: Colors.white,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Active Booking Card
             Padding(
@@ -162,7 +184,7 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppTheme.saffron, width: 2),
+                  border: Border.all(color: AppTheme.saffron, width: 2.5),
                   borderRadius: BorderRadius.circular(16),
                   color: Color(0xFFFFF8F5),
                 ),
@@ -172,16 +194,31 @@ class _SearchScreenState extends State<SearchScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Active Booking • Today',
+                          'Active Booking',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             color: AppTheme.saffron,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
                         Text(
-                          'Bathroom Deep Clean',
+                          '• Today',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.saffron,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Bathroom',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          'Deep Clean',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -190,7 +227,14 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Suresh arriving in 14 min',
+                          'Suresh arriving',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        Text(
+                          'in 14 min',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -199,12 +243,23 @@ class _SearchScreenState extends State<SearchScreen> {
                       ],
                     ),
                     const Spacer(),
-                    Column(
-                      children: [
-                        Text('🧹', style: TextStyle(fontSize: 40)),
-                        const SizedBox(height: 8),
-                        Icon(Icons.arrow_forward, color: AppTheme.saffron, size: 24),
-                      ],
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFE5E5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text('🧹', style: TextStyle(fontSize: 32)),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppTheme.saffron,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.arrow_forward, color: Colors.white, size: 20),
                     ),
                   ],
                 ),
@@ -212,7 +267,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Services Grid
+            // Personal Services
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -222,7 +277,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'What do you need today?',
+                        'What do you need to...',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -249,9 +304,9 @@ class _SearchScreenState extends State<SearchScreen> {
                       mainAxisSpacing: 16,
                       childAspectRatio: 0.85,
                     ),
-                    itemCount: services.length,
+                    itemCount: personalServices.length,
                     itemBuilder: (context, index) {
-                      final service = services[index];
+                      final service = personalServices[index];
                       return _buildServiceCard(
                         emoji: service['emoji'],
                         name: service['name'],
@@ -261,34 +316,45 @@ class _SearchScreenState extends State<SearchScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
 
-                  // Chat Support Button
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade400,
-                      borderRadius: BorderRadius.circular(12),
+            // For Your Society
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'For Your Society',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '💬',
-                          style: TextStyle(fontSize: 24),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Chat with Support',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+                  ),
+                  const SizedBox(height: 16),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1,
                     ),
+                    itemCount: societyServices.length,
+                    itemBuilder: (context, index) {
+                      final service = societyServices[index];
+                      return _buildSocietyCard(
+                        emoji: service['emoji'],
+                        name: service['name'],
+                        bgColor: service['color'],
+                        badge: service['badge'],
+                      );
+                    },
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -326,14 +392,14 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             Text(
               emoji,
-              style: const TextStyle(fontSize: 40),
+              style: const TextStyle(fontSize: 36),
             ),
             const SizedBox(height: 8),
             Text(
               name,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
@@ -347,7 +413,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   hindi,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10,
                     color: AppTheme.saffron,
                     fontWeight: FontWeight.w500,
                   ),
@@ -378,6 +444,73 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSocietyCard({
+    required String emoji,
+    required String name,
+    required Color bgColor,
+    String? badge,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Opening $name...')),
+        );
+      },
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  emoji,
+                  style: const TextStyle(fontSize: 40),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (badge != null)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  badge,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
