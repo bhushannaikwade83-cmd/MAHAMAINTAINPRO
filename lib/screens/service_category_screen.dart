@@ -25,9 +25,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   @override
   void initState() {
     super.initState();
-    _services = List.from(widget.services)
-        .map((s) => {...s, 'quantity': 0})
-        .toList();
+    _services = widget.services.map((s) => <String, dynamic>{...s, 'quantity': 0}).toList();
   }
 
   int get totalPrice => _services.fold(0, (sum, item) => sum + ((item['price'] as int) * (item['quantity'] as int)));
