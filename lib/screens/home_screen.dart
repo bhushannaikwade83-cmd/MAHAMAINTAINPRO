@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../widgets/custom_footer.dart';
 import 'search_screen.dart';
+import 'search_list_screen.dart';
 import 'ai_chat_screen.dart';
 import 'society_screen.dart';
 import 'bookings_screen.dart';
@@ -24,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const SearchScreen(),           // Tab 0: Home
-    const SearchScreen(),           // Tab 1: Search
+    const SearchListScreen(),       // Tab 1: Search
     const AiChatScreen(),           // Tab 2: AI Chat
     const SocietyScreen(),          // Tab 3: Society
     const BookingsScreen(),         // Tab 4: Bookings

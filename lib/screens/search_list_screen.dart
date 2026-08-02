@@ -1,8 +1,26 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 
-class SocietyScreen extends StatelessWidget {
-  const SocietyScreen({Key? key}) : super(key: key);
+class SearchListScreen extends StatefulWidget {
+  const SearchListScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SearchListScreen> createState() => _SearchListScreenState();
+}
+
+class _SearchListScreenState extends State<SearchListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
+  final List<Map<String, dynamic>> services = [
+    {'emoji': '⚡', 'name': 'Insta Help', 'time': '46 min available'},
+    {'emoji': '🧹', 'name': 'Cleaning Service', 'time': '52 min available'},
+    {'emoji': '🔧', 'name': 'Electrical Repair', 'time': '1 hour available'},
+    {'emoji': '💆', 'name': 'Salon Services', 'time': '2 hours available'},
+    {'emoji': '🚗', 'name': 'Vehicle Care', 'time': '3 hours available'},
+    {'emoji': '🏥', 'name': 'Health & Care', 'time': '45 min available'},
+    {'emoji': '🍳', 'name': 'Food & Catering', 'time': '1 hour available'},
+    {'emoji': '🎨', 'name': 'Painting', 'time': '1.5 hours available'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +141,7 @@ class SocietyScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Search Bar
                   TextField(
+                    controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Search services, society',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -140,65 +159,58 @@ class SocietyScreen extends StatelessWidget {
               ),
             ),
 
-            // Society Hub Header
+            // Search Services Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppTheme.saffron,
               ),
-              child: Row(
-                children: [
-                  Text(
-                    '🏢',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Society Hub',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Search Services',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
 
-            // Society Features
+            // Services List
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildFeatureCard(
-                    emoji: '🚪',
-                    title: 'Visitor Gate',
-                    subtitle: 'Manage visitor entries',
+                  // Search Input in List
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search services, soc...',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '🚗',
-                    title: 'Parking Management',
-                    subtitle: 'Request guest parking',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '👥',
-                    title: 'Tenant Management',
-                    subtitle: 'Register tenants',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '📄',
-                    title: 'Bills & Maintenance',
-                    subtitle: 'View maintenance bills',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '📢',
-                    title: 'Announcements',
-                    subtitle: 'View society notices',
+                  const SizedBox(height: 16),
+                  // Services List
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: services.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final service = services[index];
+                      return _buildServiceListItem(
+                        emoji: service['emoji'],
+                        name: service['name'],
+                        time: service['time'],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -209,10 +221,10 @@ class SocietyScreen extends StatelessWidget {
     );
   }
 
-  static Widget _buildFeatureCard({
+  static Widget _buildServiceListItem({
     required String emoji,
-    required String title,
-    required String subtitle,
+    required String name,
+    required String time,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -232,15 +244,15 @@ class SocietyScreen extends StatelessWidget {
         children: [
           Text(
             emoji,
-            style: const TextStyle(fontSize: 32),
+            style: const TextStyle(fontSize: 28),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  name,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -248,12 +260,19 @@ class SocietyScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                  ),
+                Row(
+                  children: [
+                    Icon(Icons.search, size: 14, color: AppTheme.saffron),
+                    const SizedBox(width: 6),
+                    Text(
+                      time,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -262,5 +281,11 @@ class SocietyScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }
