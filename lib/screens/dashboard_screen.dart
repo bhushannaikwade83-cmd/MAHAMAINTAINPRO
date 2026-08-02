@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'vendor_dashboard_screen.dart';
 import 'society_dashboard_screen.dart';
 import 'home_screen.dart';
 
@@ -21,9 +20,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     // Route to appropriate dashboard based on user role
-    if (widget.userRole == 'vendor') {
-      return const VendorDashboardScreen();
-    } else if (widget.userRole == 'society') {
+    if (widget.userRole == 'society') {
       return const SocietyDashboardScreen();
     } else {
       // Default to individual/user dashboard

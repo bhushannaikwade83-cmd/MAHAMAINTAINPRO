@@ -170,17 +170,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         ),
                       ),
                       SizedBox(height: isSmall ? 40 : 56),
-                      // Vendor Card
-                      _buildRoleCard(
-                        title: 'I\'m a Vendor',
-                        subtitle: 'Offer your services',
-                        emoji: '🏢',
-                        role: 'vendor',
-                        isSelected: _selectedRole == 'vendor',
-                        isSmall: isSmall,
-                        onTap: () => _selectRole('vendor'),
-                      ),
-                      SizedBox(height: isSmall ? 16 : 20),
                       // Individual Customer Card
                       _buildRoleCard(
                         title: 'I\'m an Individual',
