@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
+import 'live_tracking_screen.dart';
+import 'service_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -181,14 +183,23 @@ class _SearchScreenState extends State<SearchScreen> {
             // Active Booking Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppTheme.saffron, width: 2.5),
-                  borderRadius: BorderRadius.circular(16),
-                  color: Color(0xFFFFF8F5),
-                ),
-                child: Row(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LiveTrackingScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppTheme.saffron, width: 2.5),
+                    borderRadius: BorderRadius.circular(16),
+                    color: Color(0xFFFFF8F5),
+                  ),
+                  child: Row(
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,6 +273,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: Icon(Icons.arrow_forward, color: Colors.white, size: 20),
                     ),
                   ],
+                ),
                 ),
               ),
             ),
@@ -375,8 +387,15 @@ class _SearchScreenState extends State<SearchScreen> {
   }) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Booking $name...')),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ServiceDetailScreen(
+              serviceName: name,
+              serviceEmoji: emoji,
+              description: 'At-home beauty & wellness services',
+            ),
+          ),
         );
       },
       child: Container(
