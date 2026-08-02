@@ -57,7 +57,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    margin: const EdgeInsets.only(left: -8),
                     child: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
                   ),
                 ),
