@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 
 class SocietyRegistrationScreen extends StatefulWidget {
-  final VoidCallback onRegistrationComplete;
+  final VoidCallback? onRegistrationComplete;
 
   const SocietyRegistrationScreen({
+    this.onRegistrationComplete,
     Key? key,
-    required this.onRegistrationComplete,
   }) : super(key: key);
 
   @override
@@ -15,220 +15,310 @@ class SocietyRegistrationScreen extends StatefulWidget {
 }
 
 class _SocietyRegistrationScreenState extends State<SocietyRegistrationScreen> {
-  final _societyNameController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _unitsController = TextEditingController();
   final _secretaryNameController = TextEditingController();
   final _secretaryPhoneController = TextEditingController();
-
-  int _currentStep = 0;
+  final _societyNameController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _societyNameController.dispose();
-    _addressController.dispose();
-    _cityController.dispose();
-    _unitsController.dispose();
     _secretaryNameController.dispose();
     _secretaryPhoneController.dispose();
+    _societyNameController.dispose();
     super.dispose();
   }
 
-  void _handleRegistration() async {
-    if (_currentStep == 0 && _societyNameController.text.isEmpty) {
+  void _registerSociety() {
+    if (_secretaryNameController.text.isEmpty ||
+        _secretaryPhoneController.text.isEmpty ||
+        _societyNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter society name')),
+        const SnackBar(
+          content: Text('Please fill all fields'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
-    if (_currentStep == 1 && _addressController.text.isEmpty) {
+    if (_secretaryPhoneController.text.length != 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter address')),
+        const SnackBar(
+          content: Text('Please enter a valid 10-digit phone number'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
-    if (_currentStep == 2 && _secretaryNameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter secretary name')),
-      );
-      return;
-    }
+    setState(() => _isLoading = true);
 
-    if (_currentStep == 2 && _secretaryPhoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter secretary phone number')),
-      );
-      return;
-    }
-
-    if (_currentStep < 2) {
-      setState(() => _currentStep++);
-    } else {
-      setState(() => _isLoading = true);
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
+    // Simulate API call
+    Future.delayed(const Duration(seconds: 2), () {
       setState(() => _isLoading = false);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Society registered successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Society registered successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-        Future.delayed(const Duration(milliseconds: 500), () {
-          widget.onRegistrationComplete();
-          
-        });
-      }
-    }
+      widget.onRegistrationComplete?.call();
+      Navigator.pop(context, true);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => !_isLoading,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppTheme.saffron,
-          title: const Text('Register Society'),
-          automaticallyImplyLeading: !_isLoading,
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Progress Indicator
-                Row(
-                  children: [
-                    _buildStepIndicator(0, 'Society'),
-                    const Expanded(
-                      child: Divider(indent: 8, endIndent: 8),
-                    ),
-                    _buildStepIndicator(1, 'Address'),
-                    const Expanded(
-                      child: Divider(indent: 8, endIndent: 8),
-                    ),
-                    _buildStepIndicator(2, 'Secretary'),
-                  ],
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppTheme.saffron, AppTheme.saffronDark],
                 ),
-                const SizedBox(height: 32),
+              ),
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 16,
+                left: 16,
+                right: 16,
+                bottom: 24,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            size: 24,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Register Your Society 🏢',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Unlock all society features',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-                // Step Content
-                if (_currentStep == 0) ...[
-                  const Text(
-                    'Society Information',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Enter your society name and basic details',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildTextField(
-                    controller: _societyNameController,
-                    label: 'Society Name',
-                    hint: 'e.g., Shri Ramdev Park CHS',
-                    icon: Icons.home,
-                  ),
-                ] else if (_currentStep == 1) ...[
-                  const Text(
-                    'Location Details',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Where is your society located?',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildTextField(
-                    controller: _addressController,
-                    label: 'Street Address',
-                    hint: 'Enter full address',
-                    icon: Icons.location_on,
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _cityController,
-                    label: 'City',
-                    hint: 'e.g., Mira Road',
-                    icon: Icons.location_city,
-                  ),
-                ] else if (_currentStep == 2) ...[
-                  const Text(
-                    'Secretary Details',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Verify your society with secretary contact',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildTextField(
-                    controller: _secretaryNameController,
-                    label: 'Secretary Name',
-                    hint: 'e.g., Rajesh Kumar',
-                    icon: Icons.person,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _secretaryPhoneController,
-                    label: 'Secretary Phone Number',
-                    hint: 'e.g., +91 9876543210',
-                    icon: Icons.phone,
-                    keyboardType: TextInputType.phone,
+            // Registration Form
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Society Name Field
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Society Name',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _societyNameController,
+                        decoration: InputDecoration(
+                          hintText: 'Enter your society name',
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
+                          prefixIcon: Icon(Icons.apartment, color: AppTheme.saffron),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.saffron, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
+
+                  // Secretary Name Field
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Secretary\'s Name',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _secretaryNameController,
+                        decoration: InputDecoration(
+                          hintText: 'Full name of society secretary',
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
+                          prefixIcon: Icon(Icons.person, color: AppTheme.saffron),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.saffron, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Secretary Phone Field
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Secretary\'s Phone Number',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _secretaryPhoneController,
+                        keyboardType: TextInputType.phone,
+                        maxLength: 10,
+                        decoration: InputDecoration(
+                          hintText: 'Enter 10-digit phone number',
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
+                          prefixIcon: Icon(Icons.phone, color: AppTheme.saffron),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.saffron, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          counterText: '',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Register Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _registerSociety,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.saffron,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: _isLoading
+                        ? SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Register Society',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Info Box
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: AppTheme.saffron.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: AppTheme.saffron.withOpacity(0.3),
                       ),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.info, color: Colors.blue),
+                        Text(
+                          'ℹ️',
+                          style: TextStyle(fontSize: 20),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'We will verify with the secretary. Society features will be unlocked after verification.',
+                            'Society registration helps unlock all community features. We\'ll verify this information with your secretary.',
                             style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.blue.shade700,
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                              height: 1.5,
                             ),
                           ),
                         ),
@@ -236,170 +326,11 @@ class _SocietyRegistrationScreenState extends State<SocietyRegistrationScreen> {
                     ),
                   ),
                 ],
-
-                const SizedBox(height: 40),
-
-                // Buttons
-                Row(
-                  children: [
-                    if (_currentStep > 0)
-                      Expanded(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Color(0xFFF25C05),
-                              width: 1.5,
-                            ),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: _isLoading
-                              ? null
-                              : () =>
-                                  setState(() => _currentStep--),
-                          child: const Text(
-                            'Back',
-                            style: TextStyle(
-                              color: Color(0xFFF25C05),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (_currentStep > 0) const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.saffron,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: _isLoading ? null : _handleRegistration,
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : Text(
-                                _currentStep == 2
-                                    ? 'Complete Registration'
-                                    : 'Continue',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildStepIndicator(int step, String label) {
-    final isActive = _currentStep >= step;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isActive ? AppTheme.saffron : Colors.grey.shade300,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              '${step + 1}',
-              style: TextStyle(
-                color: isActive ? Colors.white : Colors.grey.shade600,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: isActive ? Colors.black : Colors.grey.shade400,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey.shade400),
-            prefixIcon: Icon(icon, color: AppTheme.saffron, size: 20),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFFF25C05),
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 12,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
