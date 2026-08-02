@@ -197,7 +197,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     return GestureDetector(
       onTap: () => setState(() => service['quantity']++),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.saffron.withOpacity(0.05) : Colors.white,
