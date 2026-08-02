@@ -41,7 +41,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           Container(
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 12,
-              left: 16,
+              left: 8,
               right: 16,
               bottom: 20,
             ),
@@ -53,39 +53,49 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     padding: const EdgeInsets.all(8),
+                    margin: const EdgeInsets.only(left: -8),
                     child: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 // Title with emoji and badge if new
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: widget.categoryName,
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      TextSpan(text: ' ${widget.categoryEmoji}'),
-                      if (widget.categoryName.contains('New') || widget.description.contains('New'))
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
                         TextSpan(
-                          text: '\n◆New',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.saffron,
+                          text: widget.categoryName,
+                          style: const TextStyle(
+                            fontSize: 28,
                             fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
-                    ],
+                        TextSpan(
+                          text: ' ${widget.categoryEmoji}',
+                          style: const TextStyle(fontSize: 28),
+                        ),
+                        if (widget.categoryName.contains('New') || widget.description.contains('New'))
+                          TextSpan(
+                            text: '\n◆ New',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.saffron,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  widget.description,
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text(
+                    widget.description,
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
                 ),
               ],
             ),
