@@ -133,20 +133,6 @@ class _SplashScreenState extends State<SplashScreen>
                         width: 180,
                         height: 180,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 180,
-                            height: 180,
-                            color: Colors.white,
-                            child: const Center(
-                              child: Text(
-                                '🏢',
-                                style: TextStyle(fontSize: 80),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          );
-                        },
                       ),
                     ),
 

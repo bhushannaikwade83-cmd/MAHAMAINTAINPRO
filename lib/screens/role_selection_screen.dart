@@ -159,30 +159,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                   width: isSmall ? 140 : 180,
                                   height: isSmall ? 140 : 180,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    print('🔴 ROLE SELECTION: Logo load error: $error');
-                                    print('Stack trace: $stackTrace');
-                                    return Container(
-                                      width: isSmall ? 140 : 180,
-                                      height: isSmall ? 140 : 180,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.white.withOpacity(0.1),
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.3),
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '🏢',
-                                          style: TextStyle(
-                                            fontSize: isSmall ? 60 : 80,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
                             ),

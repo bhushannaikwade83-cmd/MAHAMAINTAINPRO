@@ -269,19 +269,6 @@ class _SocietyScreenState extends State<SocietyScreen> {
                                 width: 32,
                                 height: 32,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Center(
-                                      child: Text('🏢', style: TextStyle(fontSize: 18)),
-                                    ),
-                                  );
-                                },
                               ),
                             ),
                             const SizedBox(width: 8),

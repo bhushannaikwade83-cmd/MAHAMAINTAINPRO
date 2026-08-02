@@ -168,21 +168,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   width: isSmall ? 120 : 150,
                                   height: isSmall ? 120 : 150,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: isSmall ? 120 : 150,
-                                      height: isSmall ? 120 : 150,
-                                      color: Colors.white,
-                                      child: Center(
-                                        child: Text(
-                                          '🏢',
-                                          style: TextStyle(
-                                            fontSize: isSmall ? 50 : 70,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
                             ),

@@ -69,19 +69,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Text('🏢', style: TextStyle(fontSize: 22)),
-                            ),
-                          );
-                        },
                       ),
                     ),
                     GestureDetector(
