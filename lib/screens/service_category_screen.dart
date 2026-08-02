@@ -240,21 +240,24 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (service['duration'] != null)
-                        Text(
-                          '⏱️ ${service['duration']}',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                        ),
-                      if (service['rating'] != null) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          '⭐ ${service['rating']}',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                        ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (service['duration'] != null)
+                          Text(
+                            '⏱️ ${service['duration']}',
+                            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                          ),
+                        if (service['rating'] != null) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '⭐ ${service['rating']}',
+                            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -268,14 +271,15 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
                     onTap: () {
@@ -286,24 +290,24 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     child: Text(
                       '−',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: AppTheme.saffron,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
                     '${service['quantity']}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   GestureDetector(
                     onTap: () => setState(() => service['quantity']++),
                     child: Text(
                       '+',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: AppTheme.saffron,
                         fontWeight: FontWeight.bold,
                       ),

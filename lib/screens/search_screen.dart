@@ -141,51 +141,57 @@ class _SearchScreenState extends State<SearchScreen> {
                       Text(
                         'Shri Ramdev Park 🏠',
                         style: TextStyle(
-                          fontSize: isSmall ? 24 : 32,
+                          fontSize: isSmall ? 22 : 30,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
-                          letterSpacing: -0.8,
+                          letterSpacing: -0.6,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, size: 16, color: Colors.white.withOpacity(0.9)),
-                          const SizedBox(width: 4),
-                          Text(
-                            'CHS, Mira Road',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withOpacity(0.9),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () {},
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(6),
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            Icon(Icons.location_on, size: 16, color: Colors.white.withOpacity(0.9)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'CHS, Mira Road',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.9),
+                                fontWeight: FontWeight.w500,
                               ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Change',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontWeight: FontWeight.w600,
+                            ),
+                            const SizedBox(width: 10),
+                            GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Change',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.white.withOpacity(0.9),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Icon(Icons.expand_more, size: 14, color: Colors.white.withOpacity(0.9)),
-                                ],
+                                    const SizedBox(width: 2),
+                                    Icon(Icons.expand_more, size: 12, color: Colors.white.withOpacity(0.9)),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -323,25 +329,26 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       const SizedBox(height: 16),
                       // Service Info
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Color(0xFFFFE5E5),
-                              borderRadius: BorderRadius.circular(14),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFFE5E5),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text('🧹', style: const TextStyle(fontSize: 24)),
                             ),
-                            child: Text('🧹', style: const TextStyle(fontSize: 28)),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
+                            const SizedBox(width: 12),
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Bathroom Deep Clean',
                                   style: const TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w800,
                                     color: Colors.black87,
                                     letterSpacing: -0.3,
@@ -349,11 +356,11 @@ class _SearchScreenState extends State<SearchScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 4),
                                 Text(
                                   'Suresh arriving in 14 min',
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 12,
                                     color: Colors.grey.shade700,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -362,25 +369,25 @@ class _SearchScreenState extends State<SearchScreen> {
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: AppTheme.saffron,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.saffron.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppTheme.saffron,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.saffron.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(Icons.arrow_forward, color: Colors.white, size: 20),
                             ),
-                            child: Icon(Icons.arrow_forward, color: Colors.white, size: 22),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -593,18 +600,20 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Text(
-              name,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-                height: 1.3,
-                letterSpacing: 0.2,
+            Flexible(
+              child: Text(
+                name,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                  height: 1.2,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
             if (hindi.isNotEmpty)
               Padding(
@@ -731,15 +740,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   child: Text(
                     name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
-                      letterSpacing: 0.3,
+                      letterSpacing: 0.2,
+                      height: 1.2,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
