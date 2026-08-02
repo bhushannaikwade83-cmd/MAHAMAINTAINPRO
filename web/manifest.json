@@ -1,11 +1,11 @@
 {
-    "name": "flutter_app",
-    "short_name": "flutter_app",
+    "name": "MahaMaintain Pro",
+    "short_name": "MahaMaintain",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F25C05",
+    "theme_color": "#F25C05",
+    "description": "Society & Service Management App",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
