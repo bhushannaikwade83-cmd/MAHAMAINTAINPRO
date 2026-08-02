@@ -12,6 +12,8 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  bool isDarkMode = false;
+  int notificationCount = 3;
 
   final List<Map<String, dynamic>> personalServices = [
     {'emoji': '⚡', 'name': 'Insta Help', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFE5E5)},
@@ -112,22 +114,78 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(11),
+                          // Notification Button
+                          GestureDetector(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('You have $notificationCount new notifications'),
+                                  backgroundColor: AppTheme.saffron,
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: Stack(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.25),
+                                    borderRadius: BorderRadius.circular(11),
+                                  ),
+                                  child: Text('🔔', style: TextStyle(fontSize: 18)),
+                                ),
+                                if (notificationCount > 0)
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '$notificationCount',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                            child: Text('🔔', style: TextStyle(fontSize: 18)),
                           ),
                           const SizedBox(width: 10),
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(11),
+                          // Theme Toggle Button
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                isDarkMode = !isDarkMode;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(isDarkMode ? 'Dark Mode Enabled' : 'Light Mode Enabled'),
+                                  backgroundColor: AppTheme.saffron,
+                                  duration: const Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isDarkMode
+                                  ? Colors.white.withOpacity(0.3)
+                                  : Colors.white.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(11),
+                              ),
+                              child: Text(
+                                isDarkMode ? '☀️' : '🌙',
+                                style: TextStyle(fontSize: 18),
+                              ),
                             ),
-                            child: Text('🌙', style: TextStyle(fontSize: 18)),
                           ),
                         ],
                       ),
