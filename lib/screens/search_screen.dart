@@ -49,8 +49,14 @@ class _SearchScreenState extends State<SearchScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
 
+    // Dark mode colors
+    final bgColor = isDarkMode ? const Color(0xFF1A1A1A) : Colors.white;
+    final cardColor = isDarkMode ? const Color(0xFF2A2A2A) : Colors.white;
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final textSecondaryColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: bgColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -614,21 +620,23 @@ class _SearchScreenState extends State<SearchScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [bgColor, bgColor.withOpacity(0.6)],
+            colors: isDarkMode
+              ? [cardColor, cardColor.withOpacity(0.8)]
+              : [bgColor, bgColor.withOpacity(0.6)],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.3),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.08),
               blurRadius: 12,
               offset: const Offset(0, 3),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withOpacity(isDarkMode ? 0.15 : 0.03),
               blurRadius: 24,
               offset: const Offset(0, 6),
             ),
@@ -642,7 +650,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.75),
+                color: isDarkMode ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.75),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
@@ -662,10 +670,10 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Text(
                 name,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: isDarkMode ? Colors.white : Colors.black87,
                   height: 1.2,
                   letterSpacing: 0.2,
                 ),
@@ -679,7 +687,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.saffron.withOpacity(0.2),
+                    color: AppTheme.saffron.withOpacity(isDarkMode ? 0.3 : 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -702,13 +710,13 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppTheme.neonGreen.withOpacity(0.15),
-                      AppTheme.neonGreen.withOpacity(0.08),
+                      AppTheme.neonGreen.withOpacity(0.2),
+                      AppTheme.neonGreen.withOpacity(0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppTheme.neonGreen.withOpacity(0.3),
+                    color: AppTheme.neonGreen.withOpacity(isDarkMode ? 0.5 : 0.3),
                     width: 1,
                   ),
                 ),
