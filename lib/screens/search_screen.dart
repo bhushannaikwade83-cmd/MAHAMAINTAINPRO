@@ -231,19 +231,27 @@ class _SearchScreenState extends State<SearchScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFFFF8F5), Color(0xFFFFEAE0)],
+                      colors: [Color(0xFFFFF9F6), Color(0xFFFFE8DC)],
                     ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.saffron, width: 2),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: AppTheme.saffron.withOpacity(0.4),
+                      width: 1.5,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.saffron.withOpacity(0.1),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        color: AppTheme.saffron.withOpacity(0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                      BoxShadow(
+                        color: AppTheme.saffron.withOpacity(0.08),
+                        blurRadius: 32,
+                        offset: const Offset(0, 12),
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(22),
                   child: Column(
                     children: [
                       // Header Row
@@ -334,8 +342,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                   'Bathroom Deep Clean',
                                   style: const TextStyle(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black87,
+                                    letterSpacing: -0.3,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -345,7 +354,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                   'Suresh arriving in 14 min',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.grey.shade600,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -521,66 +531,104 @@ class _SearchScreenState extends State<SearchScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(14),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [bgColor, bgColor.withOpacity(0.6)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 24,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withOpacity(0.75),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Text(
                 emoji,
                 style: const TextStyle(fontSize: 44),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Text(
               name,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                height: 1.2,
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
+                height: 1.3,
+                letterSpacing: 0.2,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             if (hindi.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  hindi,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppTheme.saffron,
-                    fontWeight: FontWeight.w600,
+                padding: const EdgeInsets.only(top: 6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.saffron.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  maxLines: 1,
+                  child: Text(
+                    hindi,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: AppTheme.saffron,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                    maxLines: 1,
+                  ),
                 ),
               ),
             if (time.isNotEmpty) ...[
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppTheme.saffron.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.neonGreen.withOpacity(0.15),
+                      AppTheme.neonGreen.withOpacity(0.08),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppTheme.neonGreen.withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -588,15 +636,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     Text(
                       '⚡',
-                      style: const TextStyle(fontSize: 9),
+                      style: const TextStyle(fontSize: 10),
                     ),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 4),
                     Text(
                       time,
                       style: TextStyle(
-                        fontSize: 9,
-                        color: AppTheme.saffron,
+                        fontSize: 10,
+                        color: AppTheme.neonGreen,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ],
@@ -625,18 +674,44 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [bgColor, bgColor.withOpacity(0.7)],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.4),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: bgColor.withOpacity(0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: bgColor.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
                   child: Center(
-                    child: Text(
-                      emoji,
-                      style: const TextStyle(fontSize: 52),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        emoji,
+                        style: const TextStyle(fontSize: 56),
+                      ),
                     ),
                   ),
                 ),
@@ -647,8 +722,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                      letterSpacing: 0.3,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -659,19 +735,28 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           if (badge != null)
             Positioned(
-              top: 8,
-              right: 8,
+              top: 10,
+              right: 10,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [AppTheme.neonGreen, Color(0xFF00FF00)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.neonGreen.withOpacity(0.6),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: Text(
                   badge,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
+                    color: Colors.black,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
