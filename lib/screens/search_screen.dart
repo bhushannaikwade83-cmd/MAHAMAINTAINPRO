@@ -11,15 +11,18 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, String>> services = [
-    {'icon': '⚡', 'name': 'Insta Help', 'time': '46 min available', 'category': 'Urgent'},
-    {'icon': '🧹', 'name': 'Cleaning', 'time': '52 min available', 'category': 'Home'},
-    {'icon': '🔧', 'name': 'Electrical', 'time': '1 hour available', 'category': 'Repair'},
-    {'icon': '💆', 'name': 'Salon', 'time': '2 hours available', 'category': 'Beauty'},
-    {'icon': '🚗', 'name': 'Vehicle Care', 'time': '3 hours available', 'category': 'Auto'},
-    {'icon': '🍳', 'name': 'Catering', 'time': '1 hour available', 'category': 'Food'},
-    {'icon': '🏡', 'name': 'Plumbing', 'time': '45 min available', 'category': 'Home'},
-    {'icon': '📦', 'name': 'Delivery', 'time': '30 min available', 'category': 'Logistics'},
+  final List<Map<String, dynamic>> services = [
+    {'emoji': '⚡', 'name': 'Insta Help', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFE5E5)},
+    {'emoji': '💇‍♀️', 'name': 'Women\'s Salon', 'hindi': 'सौंदर्य', 'time': '', 'color': Color(0xFFFFF0E5)},
+    {'emoji': '💆‍♂️', 'name': 'Men\'s Salon', 'hindi': 'Massage', 'time': '', 'color': Color(0xFFF0F5FF)},
+    {'emoji': '🧹', 'name': 'Cleaning', 'hindi': 'स्वच्छता', 'time': '', 'color': Color(0xFFE5F5E5)},
+    {'emoji': '🎨', 'name': 'Painting', 'hindi': 'New', 'time': '', 'color': Color(0xFFFFF5E5)},
+    {'emoji': '❄️', 'name': 'AC & Appliance', 'hindi': '', 'time': '46 min', 'color': Color(0xFFE5F5FF)},
+    {'emoji': '🔧', 'name': 'Electric / Plumb', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFF5E5)},
+    {'emoji': '🚗', 'name': 'Vehicle Care', 'hindi': 'Car & Bike', 'time': '', 'color': Color(0xFFFFE5F5)},
+    {'emoji': '🍳', 'name': 'Food & Catering', 'hindi': 'Home Cook', 'time': '', 'color': Color(0xFFF5E5FF)},
+    {'emoji': '🏥', 'name': 'Hospital', 'hindi': '', 'time': '', 'color': Color(0xFFE5FFE5)},
+    {'emoji': '🙏', 'name': 'Prayer/Pooja', 'hindi': '', 'time': '', 'color': Color(0xFFFFFFE5)},
   ];
 
   @override
@@ -32,57 +35,179 @@ class _SearchScreenState extends State<SearchScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
+            // Header with Society Info
             Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [AppTheme.saffron, AppTheme.saffronDark],
-                ),
-              ),
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 16,
+                top: MediaQuery.of(context).padding.top + 12,
                 left: 16,
                 right: 16,
-                bottom: 24,
+                bottom: 16,
               ),
+              color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Top bar with location and notification
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, color: AppTheme.saffron, size: 20),
+                          const SizedBox(width: 4),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'YOUR SOCIETY',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.saffron,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'तुमची सोसायटी',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: AppTheme.saffron,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.notifications_none, color: Colors.grey, size: 20),
+                          const SizedBox(width: 12),
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundImage: AssetImage('images/logo.jpeg'),
+                            onBackgroundImageError: (exception, stackTrace) {},
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppTheme.saffron.withOpacity(0.2),
+                              ),
+                              child: Center(
+                                child: Text('👤', style: TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Society Name
                   Text(
-                    'Hello, Bhushan',
+                    'Shri Ramdev Park',
                     style: TextStyle(
-                      fontSize: isSmall ? 14 : 15,
-                      color: Colors.white70,
+                      fontSize: isSmall ? 22 : 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'What can we help you with?',
-                    style: TextStyle(
-                      fontSize: isSmall ? 24 : 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'CHS, Mira Road',
+                        style: TextStyle(
+                          fontSize: isSmall ? 13 : 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.expand_more, size: 18, color: Colors.grey.shade600),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   // Search Bar
                   TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search services...',
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      hintText: 'Search for services, society, help...',
+                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                      suffixIcon: Container(
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.saffron,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.search, color: Colors.white, size: 20),
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.grey.shade50,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Active Booking Card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppTheme.saffron, width: 2),
+                  borderRadius: BorderRadius.circular(16),
+                  color: Color(0xFFFFF8F5),
+                ),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Active Booking • Today',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.saffron,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Bathroom Deep Clean',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Suresh arriving in 14 min',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Column(
+                      children: [
+                        Text('🧹', style: TextStyle(fontSize: 40)),
+                        const SizedBox(height: 8),
+                        Icon(Icons.arrow_forward, color: AppTheme.saffron, size: 24),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -93,46 +218,78 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Popular Services',
-                    style: TextStyle(
-                      fontSize: isSmall ? 18 : 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'What do you need today?',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'See all →',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.saffron,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 0.8,
+                      childAspectRatio: 0.85,
                     ),
                     itemCount: services.length,
                     itemBuilder: (context, index) {
                       final service = services[index];
-                      return _buildServiceIcon(
-                        service['icon']!,
-                        service['name']!,
+                      return _buildServiceCard(
+                        emoji: service['emoji'],
+                        name: service['name'],
+                        hindi: service['hindi'],
+                        time: service['time'],
+                        bgColor: service['color'],
                       );
                     },
                   ),
                   const SizedBox(height: 24),
-                  Text(
-                    'Featured Services',
-                    style: TextStyle(
-                      fontSize: isSmall ? 18 : 20,
-                      fontWeight: FontWeight.bold,
+
+                  // Chat Support Button
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade400,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '💬',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Chat with Support',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _buildFeaturedService('⚡ Insta Help', '46 min available', Colors.red),
-                  const SizedBox(height: 12),
-                  _buildFeaturedService('🧹 Cleaning Service', '52 min available', Colors.blue),
-                  const SizedBox(height: 12),
-                  _buildFeaturedService('🔧 Electrical Repair', '1 hour available', Colors.orange),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -143,102 +300,84 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildServiceIcon(String icon, String name) {
+  Widget _buildServiceCard({
+    required String emoji,
+    required String name,
+    required String hindi,
+    required String time,
+    required Color bgColor,
+  }) {
     return GestureDetector(
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Opening $name...')),
+          SnackBar(content: Text('Booking $name...')),
         );
       },
-      child: Column(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppTheme.saffron.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.saffron.withOpacity(0.2)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              emoji,
+              style: const TextStyle(fontSize: 40),
             ),
-            child: Center(
-              child: Text(
-                icon,
-                style: const TextStyle(fontSize: 28),
+            const SizedBox(height: 8),
+            Text(
+              name,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeaturedService(String title, String subtitle, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Text(
-                title.split(' ')[0],
-                style: const TextStyle(fontSize: 20),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
+            if (hindi.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  hindi,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
+                    fontSize: 11,
+                    color: AppTheme.saffron,
+                    fontWeight: FontWeight.w500,
                   ),
+                  maxLines: 1,
                 ),
-              ],
-            ),
-          ),
-          const Icon(Icons.arrow_forward, color: AppTheme.saffron),
-        ],
+              ),
+            if (time.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      time,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppTheme.saffron,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      '⚡',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
