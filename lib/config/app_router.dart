@@ -6,8 +6,16 @@ import '../screens/dashboard_screen.dart';
 
 class AppRouter {
   static String? _currentPhoneForOtp;
+  static String? _currentEmailForOtp;
   // Role is now assigned by admin panel, not selected by user
   static String _userRole = 'individual'; // Default role from admin panel
+
+  // Demo emails for society users
+  static const List<String> _societyDemoEmails = [
+    'society@maha.com',
+    'admin@society.com',
+    'societyadmin@demo.com',
+  ];
 
   static GoRouter createRouter(SupabaseAuthRepository authRepository) {
     return GoRouter(
@@ -42,8 +50,9 @@ class AppRouter {
             onOtpSent: () {
               context.go('/otp');
             },
-            onOtpPhoneChange: (phone) {
-              _currentPhoneForOtp = phone;
+            onOtpPhoneChange: (email) {
+              _currentPhoneForOtp = email;
+              _currentEmailForOtp = email; // Store email for role detection
             },
             onBackPress: null, // No back button - admin assigns role
           ),
@@ -53,7 +62,14 @@ class AppRouter {
           name: 'otp',
           builder: (context, state) => OtpScreen(
             phoneNumber: _currentPhoneForOtp ?? '+91',
-            onVerificationSuccess: () {
+            email: _currentEmailForOtp,
+            onVerificationSuccess: (email) {
+              // Detect if user is from society based on demo email
+              if (_societyDemoEmails.contains(email?.toLowerCase())) {
+                setUserRole('society');
+              } else {
+                setUserRole('individual');
+              }
               context.go('/dashboard');
             },
             onBackPress: () {

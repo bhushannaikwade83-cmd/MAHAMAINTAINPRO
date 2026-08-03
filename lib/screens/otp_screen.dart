@@ -6,11 +6,13 @@ import '../main.dart' show authRepositoryProvider;
 
 class OtpScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
-  final VoidCallback onVerificationSuccess;
+  final String? email;
+  final Function(String?) onVerificationSuccess;
   final VoidCallback onBackPress;
 
   const OtpScreen({
     required this.phoneNumber,
+    this.email,
     required this.onVerificationSuccess,
     required this.onBackPress,
     Key? key,
@@ -80,7 +82,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     try {
       final authRepository = ref.read(authRepositoryProvider);
       await authRepository.verifyOtp(phoneNumber, _otpController.text);
-      onVerificationSuccess();
+      onVerificationSuccess(widget.email);
     } finally {
       setState(() => _isVerifying = false);
     }
