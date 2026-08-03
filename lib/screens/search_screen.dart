@@ -358,13 +358,13 @@ class _SearchScreenState extends State<SearchScreen> {
                                   width: 10,
                                   height: 10,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.neonGreen,
+                                    color: const Color(0xFF4A7C7E),
                                     borderRadius: BorderRadius.circular(5),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppTheme.neonGreen.withOpacity(0.7),
-                                        blurRadius: 8,
-                                        spreadRadius: 2,
+                                        color: const Color(0xFF4A7C7E).withOpacity(0.5),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
                                       ),
                                     ],
                                   ),
@@ -372,9 +372,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Active Booking',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 13,
-                                    color: AppTheme.neonGreen,
+                                    color: Color(0xFF4A7C7E),
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.5,
                                   ),
@@ -461,19 +461,19 @@ class _SearchScreenState extends State<SearchScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppTheme.neonGreen.withOpacity(0.15),
+                              color: const Color(0xFF4A7C7E).withOpacity(0.12),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: AppTheme.neonGreen.withOpacity(0.3),
+                                color: const Color(0xFF4A7C7E).withOpacity(0.25),
                                 width: 1,
                               ),
                             ),
-                            child: Text(
+                            child: const Text(
                               '14 min',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.neonGreen,
+                                color: Color(0xFF4A7C7E),
                               ),
                             ),
                           ),
