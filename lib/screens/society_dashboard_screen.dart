@@ -127,6 +127,25 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
 
             // Content based on selected tab (footer handles navigation)
             if (_selectedTab == 0) ...[
+              // Menu Items
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  children: [
+                    _buildMenuCard('🚪', 'Visitor Gate', 'Manage visitor entries'),
+                    const SizedBox(height: 12),
+                    _buildMenuCard('🚗', 'Parking Management', 'Request guest parking'),
+                    const SizedBox(height: 12),
+                    _buildMenuCard('👥', 'Tenant Management', 'Register tenants'),
+                    const SizedBox(height: 12),
+                    _buildMenuCard('📋', 'Bills & Maintenance', 'View maintenance bills'),
+                    const SizedBox(height: 12),
+                    _buildMenuCard('📢', 'Announcements', 'View society notices'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Add Complaint Action
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -565,6 +584,53 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuCard(String emoji, String title, String subtitle) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 32)),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 24),
         ],
       ),
     );
