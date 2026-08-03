@@ -15,125 +15,71 @@ class CustomFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSmall = MediaQuery.of(context).size.width < 360;
-    final footerHeight = isSmall ? 78.0 : 86.0;
-
     return Container(
-      margin: EdgeInsets.only(
-        bottom: MediaQuery.of(context).padding.bottom,
-      ),
-      height: footerHeight,
+      padding: const EdgeInsets.fromLTRB(6, 10, 6, 22),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: AppTheme.borderColor, width: 0.8),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 24,
-            offset: const Offset(0, -6),
-          ),
-          BoxShadow(
-            color: AppTheme.saffron.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppTheme.borderColor, width: 0.8)),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: userRole == 'vendor'
             ? [
                 // Vendor tabs: Home, Societies, Earnings, Profile
-                _buildNavItem(context, '🏠', 'Home', 0),
-                _buildNavItem(context, '🏢', 'Societies', 1),
-                _buildNavItem(context, '💰', 'Earnings', 2),
-                _buildNavItem(context, '👤', 'Profile', 3),
+                _buildNavItem(context, Icons.home_rounded, 'Home', 0),
+                _buildNavItem(context, Icons.apartment_rounded, 'Societies', 1),
+                _buildNavItem(context, Icons.monetization_on_rounded, 'Earnings', 2),
+                _buildNavItem(context, Icons.person_rounded, 'Profile', 3),
               ]
             : [
                 // User tabs: Home, Search, AI Chat, Society, Bookings, Profile
-                _buildNavItem(context, '🏠', 'Home', 0),
-                _buildNavItem(context, '🔍', 'Search', 1),
-                _buildNavItem(context, '🤖', 'AI Chat', 2),
-                _buildNavItem(context, '🏢', 'Society', 3),
-                _buildNavItem(context, '📋', 'Bookings', 4),
-                _buildNavItem(context, '👤', 'Profile', 5),
+                _buildNavItem(context, Icons.home_rounded, 'Home', 0),
+                _buildNavItem(context, Icons.search_rounded, 'Search', 1),
+                _buildNavItem(context, Icons.smart_toy_rounded, 'AI Chat', 2),
+                _buildNavItem(context, Icons.apartment_rounded, 'Society', 3),
+                _buildNavItem(context, Icons.assignment_rounded, 'Bookings', 4),
+                _buildNavItem(context, Icons.person_rounded, 'Profile', 5),
         ],
       ),
     );
   }
 
   Widget _buildNavItem(
-      BuildContext context, String icon, String label, int index) {
+      BuildContext context, IconData icon, String label, int index) {
     final isActive = selectedIndex == index;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => onNavItemTap(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOut,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeInOut,
-                padding: EdgeInsets.all(isActive ? 5 : 3),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? AppTheme.saffron.withOpacity(0.12)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  border: isActive
-                      ? Border.all(
-                          color: AppTheme.saffron.withOpacity(0.2),
-                          width: 1,
-                        )
-                      : null,
-                ),
-                child: AnimatedScale(
-                  scale: isActive ? 1.1 : 1.0,
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeInOut,
-                  child: Text(
-                    icon,
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 1),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeInOut,
-                height: isActive ? 2.5 : 0,
-                width: isActive ? 20 : 0,
-                decoration: BoxDecoration(
-                  color: AppTheme.saffron,
-                  borderRadius: BorderRadius.circular(1.25),
-                ),
-              ),
-              const SizedBox(height: 1),
-              SizedBox(
-                height: 8.5,
-                child: AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 350),
-                  style: TextStyle(
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.bold,
-                    color: isActive
-                        ? AppTheme.saffron
-                        : Colors.grey.shade400,
-                    height: 1,
-                  ),
-                  child: Text(label),
-                ),
-              ),
-            ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: isActive ? 36 : 24,
+            height: isActive ? 26 : 24,
+            alignment: Alignment.center,
+            decoration: isActive
+                ? BoxDecoration(
+                    color: AppTheme.saffron.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  )
+                : null,
+            child: Icon(
+              icon,
+              size: 19,
+              color: isActive ? AppTheme.saffron : Colors.grey.shade400,
+            ),
           ),
-        ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+              color: isActive ? AppTheme.saffron : Colors.grey.shade400,
+            ),
+          ),
+        ],
       ),
     );
   }

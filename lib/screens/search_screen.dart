@@ -589,9 +589,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     crossAxisCount: 2,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: isSmall ? 10 : 12,
-                    mainAxisSpacing: isSmall ? 12 : 14,
-                    childAspectRatio: 0.75,
+                    crossAxisSpacing: isSmall ? 12 : 14,
+                    mainAxisSpacing: isSmall ? 14 : 16,
+                    childAspectRatio: 0.85,
                     children: [
                       _buildActionCard(
                         emoji: '🧾',
@@ -1027,65 +1027,66 @@ class _SearchScreenState extends State<SearchScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: bgColor,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                  child: Text(emoji, style: const TextStyle(fontSize: 22)),
                 ),
                 if (badge != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                     decoration: BoxDecoration(
-                      color: bgColor,
-                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Text(
                       badge,
-                      style: const TextStyle(
-                        fontSize: 11,
+                      style: TextStyle(
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: bgColor,
                       ),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: Colors.black,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               subtitle,
               style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                height: 1.4,
+                fontSize: 11,
+                color: Colors.white70,
+                height: 1.3,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
