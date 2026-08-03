@@ -630,6 +630,8 @@ class _SearchScreenState extends State<SearchScreen> {
     Color? textColorOverride,
     Color? secondaryColorOverride,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 380;
     final displayTextColor = textColorOverride ?? (isDarkMode ? Colors.white : Colors.black87);
     final displaySecondaryColor = secondaryColorOverride ?? textSecondaryColor;
     return GestureDetector(
@@ -674,13 +676,13 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(isSmall ? 10 : 12),
               decoration: BoxDecoration(
                 color: isDarkMode ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.75),
                 borderRadius: BorderRadius.circular(14),
@@ -694,16 +696,16 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               child: Text(
                 emoji,
-                style: const TextStyle(fontSize: 44),
+                style: TextStyle(fontSize: isSmall ? 36 : 44),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: isSmall ? 8 : 12),
             Flexible(
               child: Text(
                 name,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: isSmall ? 11 : 13,
                   fontWeight: FontWeight.w700,
                   color: displayTextColor,
                   height: 1.2,
@@ -715,7 +717,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             if (hindi.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 6),
+                padding: EdgeInsets.only(top: isSmall ? 4 : 6),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
@@ -726,7 +728,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     hindi,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: isSmall ? 9 : 10,
                       color: AppTheme.saffron,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.3,
@@ -738,7 +740,7 @@ class _SearchScreenState extends State<SearchScreen> {
             if (time.isNotEmpty) ...[
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 10, vertical: 4),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -758,13 +760,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     Text(
                       '⚡',
-                      style: const TextStyle(fontSize: 10),
+                      style: TextStyle(fontSize: isSmall ? 8 : 10),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: isSmall ? 2 : 4),
                     Text(
                       time,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: isSmall ? 8 : 10,
                         color: AppTheme.neonGreen,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.3,
@@ -801,6 +803,8 @@ class _SearchScreenState extends State<SearchScreen> {
     required Color bgColor,
     String? badge,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 380;
     return GestureDetector(
       onTap: () {
         if (name == 'Complaint') {
@@ -844,25 +848,25 @@ class _SearchScreenState extends State<SearchScreen> {
                 Expanded(
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(isSmall ? 10 : 12),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
                         emoji,
-                        style: const TextStyle(fontSize: 56),
+                        style: TextStyle(fontSize: isSmall ? 42 : 56),
                       ),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 10 : 12),
                   child: Text(
                     name,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: isSmall ? 11 : 13,
                       fontWeight: FontWeight.w700,
                       color: isDarkMode ? Colors.white : Colors.black87,
                       letterSpacing: 0.2,

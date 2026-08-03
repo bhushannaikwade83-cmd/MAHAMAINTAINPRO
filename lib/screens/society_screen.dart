@@ -22,203 +22,202 @@ class _SocietyScreenState extends State<SocietyScreen> {
     if (!_isSocietyRegistered) {
       return Scaffold(
         backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            // Header
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [AppTheme.saffron, AppTheme.saffronDark],
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [AppTheme.saffron, AppTheme.saffronDark],
+                  ),
                 ),
-              ),
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 12,
-                left: 0,
-                right: 0,
-                bottom: 20,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Society Hub 🏢',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Register to access community features',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + (isSmall ? 8 : 10),
+                  left: 0,
+                  right: 0,
+                  bottom: isSmall ? 12 : 14,
                 ),
-              ),
-            ),
-
-            // Unregistered State
-            Expanded(
-              child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Lock Icon
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: AppTheme.saffron.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          Icons.lock,
-                          size: 50,
-                          color: AppTheme.saffron,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
                       Text(
-                        'Society Not Registered',
+                        'Society Hub 🏢',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: isSmall ? 24 : 26,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Colors.white,
+                          letterSpacing: -0.4,
                         ),
                       ),
-                      const SizedBox(height: 12),
-
+                      SizedBox(height: isSmall ? 2 : 4),
                       Text(
-                        'Register your society to unlock all community features like visitor gate management, parking, announcements, and more.',
-                        textAlign: TextAlign.center,
+                        'Register to access community features',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                          height: 1.6,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Register Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final result = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SocietyRegistrationScreen(
-                                  onRegistrationComplete: () {
-                                    setState(() => _isSocietyRegistered = true);
-                                  },
-                                ),
-                              ),
-                            );
-                            if (result == true) {
-                              setState(() => _isSocietyRegistered = true);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.saffron,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 4,
-                          ),
-                          child: Text(
-                            'Register Society Now',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Complaint Button (Always Available)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            final message = Uri.encodeComponent('Hi, I have a complaint regarding our society.');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Opening WhatsApp...'),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.green.shade600, width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: Text(
-                            '💬 File Complaint via WhatsApp',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // SOS Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const EmergencySosScreen(),
-                              ),
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.red.shade600, width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: Text(
-                            '🚨 Emergency SOS (Always Available)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red.shade600,
-                            ),
-                          ),
+                          fontSize: isSmall ? 12 : 13,
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
+
+              // Unregistered State
+              Padding(
+                padding: EdgeInsets.all(isSmall ? 16 : 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: isSmall ? 12 : 16),
+                    // Lock Icon
+                    Container(
+                      width: isSmall ? 80 : 100,
+                      height: isSmall ? 80 : 100,
+                      decoration: BoxDecoration(
+                        color: AppTheme.saffron.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Icon(
+                        Icons.lock,
+                        size: isSmall ? 40 : 50,
+                        color: AppTheme.saffron,
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 16 : 20),
+
+                    Text(
+                      'Society Not Registered',
+                      style: TextStyle(
+                        fontSize: isSmall ? 19 : 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 8 : 10),
+
+                    Text(
+                      'Register your society to unlock all community features like visitor gate management, parking, announcements, and more.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: isSmall ? 13 : 14,
+                        color: Colors.grey.shade600,
+                        height: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 20 : 24),
+
+                    // Register Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: isSmall ? 48 : 52,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final result = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SocietyRegistrationScreen(
+                                onRegistrationComplete: () {
+                                  setState(() => _isSocietyRegistered = true);
+                                },
+                              ),
+                            ),
+                          );
+                          if (result == true) {
+                            setState(() => _isSocietyRegistered = true);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.saffron,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                        ),
+                        child: Text(
+                          'Register Society Now',
+                          style: TextStyle(
+                            fontSize: isSmall ? 14 : 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 10 : 12),
+
+                    // Complaint Button (Always Available)
+                    SizedBox(
+                      width: double.infinity,
+                      height: isSmall ? 48 : 50,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          final message = Uri.encodeComponent('Hi, I have a complaint regarding our society.');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Opening WhatsApp...'),
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.green.shade600, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          '💬 File Complaint via WhatsApp',
+                          style: TextStyle(
+                            fontSize: isSmall ? 13 : 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green.shade600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 10 : 12),
+                    // SOS Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: isSmall ? 48 : 50,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EmergencySosScreen(),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.red.shade600, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          '🚨 Emergency SOS (Always Available)',
+                          style: TextStyle(
+                            fontSize: isSmall ? 13 : 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red.shade600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
