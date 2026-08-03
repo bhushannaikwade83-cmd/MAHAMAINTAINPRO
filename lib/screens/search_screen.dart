@@ -672,28 +672,13 @@ class _SearchScreenState extends State<SearchScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDarkMode
-              ? [cardColor, cardColor.withOpacity(0.8)]
-              : [bgColor, bgColor.withOpacity(0.6)],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
+          color: isDarkMode ? cardColor : Colors.white,
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.08),
               blurRadius: 12,
               offset: const Offset(0, 3),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(isDarkMode ? 0.15 : 0.03),
-              blurRadius: 24,
-              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -703,21 +688,14 @@ class _SearchScreenState extends State<SearchScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(isSmall ? 10 : 12),
+              padding: EdgeInsets.all(isSmall ? 12 : 14),
               decoration: BoxDecoration(
-                color: isDarkMode ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.75),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                color: bgColor,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
                 emoji,
-                style: TextStyle(fontSize: isSmall ? 36 : 44),
+                style: TextStyle(fontSize: isSmall ? 38 : 48),
               ),
             ),
             SizedBox(height: isSmall ? 8 : 12),
