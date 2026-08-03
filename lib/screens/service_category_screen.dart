@@ -61,10 +61,17 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo and Back Button Row
+                  // Back Button and Logo Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(Icons.arrow_back, size: isSmall ? 20 : 24, color: Colors.white),
+                        ),
+                      ),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: Image.asset(
@@ -72,13 +79,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                           width: isSmall ? 34 : 40,
                           height: isSmall ? 34 : 40,
                           fit: BoxFit.cover,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(Icons.arrow_back, size: isSmall ? 20 : 24, color: Colors.white),
                         ),
                       ),
                     ],
