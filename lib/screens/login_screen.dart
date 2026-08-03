@@ -304,32 +304,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               duration: const Duration(milliseconds: 300),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: _emailFocused
-                                      ? [
-                                          AppTheme.saffron.withOpacity(0.08),
-                                          AppTheme.saffron.withOpacity(0.04),
-                                        ]
-                                      : [
-                                          Colors.grey.shade50,
-                                          Colors.grey.shade50,
-                                        ],
-                                ),
-                                border: Border.all(
-                                  color: _emailFocused
-                                      ? AppTheme.saffron.withOpacity(0.5)
-                                      : Colors.grey.shade300,
-                                  width: _emailFocused ? 2 : 1.5,
+                                  colors: [
+                                    Colors.grey.shade50,
+                                    Colors.grey.shade50,
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(14),
-                                boxShadow: _emailFocused
-                                    ? [
-                                        BoxShadow(
-                                          color: AppTheme.saffron.withOpacity(0.2),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ]
-                                    : [],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
