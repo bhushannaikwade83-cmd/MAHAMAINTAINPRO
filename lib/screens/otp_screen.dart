@@ -82,7 +82,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     try {
       final authRepository = ref.read(authRepositoryProvider);
       await authRepository.verifyOtp(phoneNumber, _otpController.text);
-      onVerificationSuccess(widget.email);
+      widget.onVerificationSuccess(widget.email);
     } finally {
       setState(() => _isVerifying = false);
     }
