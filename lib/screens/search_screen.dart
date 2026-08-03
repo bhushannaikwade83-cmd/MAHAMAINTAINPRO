@@ -69,7 +69,7 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         },
         backgroundColor: Colors.green.shade600,
-        child: const Icon(Icons.chat_bubble, color: Colors.white, size: 28),
+        child: Icon(Icons.chat_bubble, color: Colors.white, size: isSmall ? 24 : 28),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -85,10 +85,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 16,
-                left: 16,
-                right: 16,
-                bottom: 24,
+                top: MediaQuery.of(context).padding.top + (isSmall ? 10 : 12),
+                left: isSmall ? 12 : 16,
+                right: isSmall ? 12 : 16,
+                bottom: isSmall ? 12 : 16,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,39 +98,40 @@ class _SearchScreenState extends State<SearchScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 12, vertical: isSmall ? 6 : 8),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(6),
                               child: Image.asset(
                                 'assets/images/logo.png',
-                                width: 36,
-                                height: 36,
+                                width: isSmall ? 30 : 36,
+                                height: isSmall ? 30 : 36,
                                 fit: BoxFit.cover,
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: isSmall ? 6 : 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'WELCOME',
                                   style: TextStyle(
-                                    fontSize: 9,
+                                    fontSize: isSmall ? 7 : 8,
                                     color: Colors.white.withOpacity(0.9),
                                     fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
                                 Text(
                                   'Home Services',
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: isSmall ? 11 : 12,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -156,28 +157,28 @@ class _SearchScreenState extends State<SearchScreen> {
                             child: Stack(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(10),
+                                  padding: EdgeInsets.all(isSmall ? 8 : 10),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.25),
-                                    borderRadius: BorderRadius.circular(11),
+                                    borderRadius: BorderRadius.circular(9),
                                   ),
-                                  child: Text('🔔', style: TextStyle(fontSize: 18)),
+                                  child: Text('🔔', style: TextStyle(fontSize: isSmall ? 16 : 18)),
                                 ),
                                 if (notificationCount > 0)
                                   Positioned(
                                     top: 0,
                                     right: 0,
                                     child: Container(
-                                      padding: const EdgeInsets.all(4),
+                                      padding: const EdgeInsets.all(3),
                                       decoration: BoxDecoration(
                                         color: Colors.red,
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
                                         '$notificationCount',
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 10,
+                                          fontSize: 9,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -186,7 +187,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: isSmall ? 6 : 10),
                           // Theme Toggle Button
                           GestureDetector(
                             onTap: () {
@@ -202,16 +203,16 @@ class _SearchScreenState extends State<SearchScreen> {
                               );
                             },
                             child: Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: EdgeInsets.all(isSmall ? 8 : 10),
                               decoration: BoxDecoration(
                                 color: isDarkMode
                                   ? Colors.white.withOpacity(0.3)
                                   : Colors.white.withOpacity(0.25),
-                                borderRadius: BorderRadius.circular(11),
+                                borderRadius: BorderRadius.circular(9),
                               ),
                               child: Text(
                                 isDarkMode ? '☀️' : '🌙',
-                                style: TextStyle(fontSize: 18),
+                                style: TextStyle(fontSize: isSmall ? 16 : 18),
                               ),
                             ),
                           ),
@@ -487,59 +488,61 @@ class _SearchScreenState extends State<SearchScreen> {
 
             // Personal Services
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'What do you need to...',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.black,
-                              letterSpacing: -0.5,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'What do you need to...',
+                              style: TextStyle(
+                                fontSize: isSmall ? 17 : 20,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black,
+                                letterSpacing: -0.4,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            width: 40,
-                            height: 3,
-                            decoration: BoxDecoration(
-                              color: AppTheme.saffron,
-                              borderRadius: BorderRadius.circular(2),
+                            SizedBox(height: isSmall ? 3 : 4),
+                            Container(
+                              width: isSmall ? 30 : 40,
+                              height: 2,
+                              decoration: BoxDecoration(
+                                color: AppTheme.saffron,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       GestureDetector(
                         onTap: () {},
                         child: Text(
                           'See all →',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: isSmall ? 11 : 12,
                             color: AppTheme.saffron,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: isSmall ? 12 : 14),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.85,
+                      crossAxisSpacing: isSmall ? 8 : 12,
+                      mainAxisSpacing: isSmall ? 12 : 14,
+                      childAspectRatio: 0.80,
                     ),
                     itemCount: personalServices.length,
                     itemBuilder: (context, index) {
@@ -553,14 +556,14 @@ class _SearchScreenState extends State<SearchScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: isSmall ? 18 : 24),
                 ],
               ),
             ),
 
             // For Your Society
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16, vertical: isSmall ? 10 : 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -570,16 +573,16 @@ class _SearchScreenState extends State<SearchScreen> {
                       Text(
                         'For Your Society',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: isSmall ? 17 : 20,
                           fontWeight: FontWeight.w800,
                           color: Colors.black,
-                          letterSpacing: -0.5,
+                          letterSpacing: -0.4,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: isSmall ? 6 : 8),
                       Container(
-                        width: 50,
-                        height: 3,
+                        width: isSmall ? 40 : 50,
+                        height: 2,
                         decoration: BoxDecoration(
                           color: AppTheme.saffron,
                           borderRadius: BorderRadius.circular(2),
@@ -587,14 +590,14 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: isSmall ? 12 : 14),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 20,
+                      crossAxisSpacing: isSmall ? 12 : 14,
+                      mainAxisSpacing: isSmall ? 14 : 16,
                       childAspectRatio: 0.65,
                     ),
                     itemCount: societyServices.length,
@@ -608,7 +611,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: isSmall ? 18 : 24),
                 ],
               ),
             ),
