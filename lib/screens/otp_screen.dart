@@ -102,55 +102,53 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     final isSmall = screenWidth < 380;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppTheme.saffron,
-                    AppTheme.saffron.withOpacity(0.85),
-                    const Color(0xFFF25C05),
-                  ],
+      backgroundColor: AppTheme.saffron,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppTheme.saffron,
+              AppTheme.saffron.withOpacity(0.85),
+              const Color(0xFFF25C05),
+            ],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Decorative blobs
+            Positioned(
+              top: -80,
+              right: -60,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.08),
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Decorative blobs
-                  Positioned(
-                    top: -80,
-                    right: -60,
-                    child: Container(
-                      width: 280,
-                      height: 280,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.08),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -60,
-                    left: -80,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppTheme.saffron.withOpacity(0.15),
-                      ),
-                    ),
-                  ),
-                  // Content
-                  Padding(
+            ),
+            Positioned(
+              bottom: -60,
+              left: -80,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.saffron.withOpacity(0.15),
+                ),
+              ),
+            ),
+            // Content with scrolling
+            SingleChildScrollView(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Padding(
                     padding: EdgeInsets.only(
                       top: MediaQuery.of(context).padding.top + (isSmall ? 20 : 28),
                       left: isSmall ? 12 : 16,
@@ -492,10 +490,10 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
