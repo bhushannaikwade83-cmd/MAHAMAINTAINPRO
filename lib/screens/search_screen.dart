@@ -591,7 +591,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: isSmall ? 12 : 14,
                     mainAxisSpacing: isSmall ? 14 : 16,
-                    childAspectRatio: 0.65,
+                    childAspectRatio: 0.80,
                     children: [
                       _buildActionCard(
                         emoji: '🧾',
@@ -1037,7 +1037,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1046,24 +1046,24 @@ class _SearchScreenState extends State<SearchScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(emoji, style: const TextStyle(fontSize: 18)),
+                  child: Text(emoji, style: const TextStyle(fontSize: 20)),
                 ),
                 if (badge != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(11),
                     ),
                     child: Text(
                       badge,
                       style: TextStyle(
-                        fontSize: 8,
+                        fontSize: 9,
                         fontWeight: FontWeight.bold,
                         color: bgColor,
                       ),
@@ -1071,22 +1071,22 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 1),
+            const SizedBox(height: 2),
             Text(
               subtitle,
               style: TextStyle(
-                fontSize: 9,
+                fontSize: 10,
                 color: Colors.white70,
-                height: 1.1,
+                height: 1.2,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
