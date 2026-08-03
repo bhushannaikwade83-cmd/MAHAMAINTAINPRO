@@ -16,7 +16,7 @@ class _SearchScreenState extends State<SearchScreen> {
   int notificationCount = 3;
 
   // Dark mode color getters
-  Color get bgColor => isDarkMode ? const Color(0xFF1A1A1A) : Colors.white;
+  Color get bgColor => isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFFAF3ED);
   Color get cardColor => isDarkMode ? const Color(0xFF2A2A2A) : Colors.white;
   Color get textColor => isDarkMode ? Colors.white : Colors.black;
   Color get textSecondaryColor => isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
@@ -59,17 +59,17 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: bgColor,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          final message = Uri.encodeComponent('Hi, I have a complaint regarding our society.');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Opening WhatsApp...'),
-              backgroundColor: Colors.green,
+              content: Text('Opening chat...'),
+              backgroundColor: const Color(0xFF4A7C7E),
               duration: Duration(seconds: 1),
             ),
           );
         },
-        backgroundColor: Colors.green.shade600,
-        child: Icon(Icons.chat_bubble, color: Colors.white, size: isSmall ? 24 : 28),
+        backgroundColor: const Color(0xFF4A7C7E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Icon(Icons.chat_bubble_outline, color: Colors.white, size: isSmall ? 24 : 28),
       ),
       body: SingleChildScrollView(
         child: Column(
