@@ -299,61 +299,51 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             SizedBox(height: isSmall ? 16 : 20),
 
-                            // Email Input Field - Modern Glassmorphic
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.grey.shade50,
-                                    Colors.grey.shade50,
-                                  ],
+                            // Email Input Field - Simple & Clean
+                            TextField(
+                              controller: _emailController,
+                              focusNode: _emailFocus,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: InputDecoration(
+                                hintText: 'your.email@example.com',
+                                hintStyle: TextStyle(
+                                  fontSize: isSmall ? 12 : 13,
+                                  color: Colors.grey.shade500,
+                                  fontWeight: FontWeight.w400,
                                 ),
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: isSmall ? 12 : 14,
+                                  horizontal: 16,
+                                ),
+                                prefixIcon: Padding(
+                                  padding: const EdgeInsets.only(left: 12, right: 8),
+                                  child: Icon(
+                                    Icons.email_outlined,
+                                    color: Colors.grey.shade600,
+                                    size: isSmall ? 18 : 20,
                                   ),
-                                ],
+                                ),
+                                prefixIconConstraints: const BoxConstraints(),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 2,
-                                ),
-                                child: TextField(
-                                  controller: _emailController,
-                                  focusNode: _emailFocus,
-                                  keyboardType: TextInputType.emailAddress,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: 'your.email@example.com',
-                                    hintStyle: TextStyle(
-                                      fontSize: isSmall ? 12 : 13,
-                                      color: Colors.grey.shade500,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    contentPadding:
-                                        EdgeInsets.symmetric(vertical: isSmall ? 12 : 14),
-                                    prefixIcon: Padding(
-                                      padding: const EdgeInsets.only(right: 8),
-                                      child: Icon(
-                                        Icons.email_outlined,
-                                        color: Colors.grey.shade600,
-                                        size: isSmall ? 18 : 20,
-                                      ),
-                                    ),
-                                    prefixIconConstraints: const BoxConstraints(),
-                                  ),
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 14 : 15,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  onChanged: (value) => setState(() {}),
-                                ),
+                              style: TextStyle(
+                                fontSize: isSmall ? 14 : 15,
+                                fontWeight: FontWeight.w500,
                               ),
+                              onChanged: (value) => setState(() {}),
                             ),
                             SizedBox(height: isSmall ? 14 : 16),
                             Text(
