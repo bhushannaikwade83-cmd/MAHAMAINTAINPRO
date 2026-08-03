@@ -614,9 +614,9 @@ class _SocietyScreenState extends State<SocietyScreen> {
                     const SizedBox(height: 12),
                     // Sample notices
                     ...[
-                      ('URGENT NOTICE', '🔧 Maintenance', Colors.orange, Colors.orange.shade100, 'Today'),
-                      ('EVENT', '🎉 Events', Colors.teal, Colors.teal.shade100, '2 days ago'),
-                      ('AMENITY UPDATE', '🏊 Amenities', Colors.yellow.shade700, Colors.yellow.shade100, '5 days ago'),
+                      {'title': 'URGENT NOTICE', 'category': '🔧 Maintenance', 'color': Colors.orange, 'time': 'Today'},
+                      {'title': 'EVENT', 'category': '🎉 Events', 'color': Colors.teal, 'time': '2 days ago'},
+                      {'title': 'AMENITY UPDATE', 'category': '🏊 Amenities', 'color': Colors.yellow.shade700, 'time': '5 days ago'},
                     ].map((notice) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -626,7 +626,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border(
-                              left: BorderSide(color: notice.$2 as Color, width: 4),
+                              left: BorderSide(color: notice['color'] as Color, width: 4),
                             ),
                           ),
                           child: Column(
@@ -636,7 +636,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    notice.$0 as String,
+                                    notice['title'] as String,
                                     style: TextStyle(
                                       fontSize: isSmall ? 13 : 14,
                                       fontWeight: FontWeight.bold,
@@ -644,7 +644,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
                                     ),
                                   ),
                                   Text(
-                                    notice.$4 as String,
+                                    notice['time'] as String,
                                     style: TextStyle(
                                       fontSize: isSmall ? 11 : 12,
                                       color: Colors.grey.shade600,
@@ -654,7 +654,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                notice.$1 as String,
+                                notice['category'] as String,
                                 style: TextStyle(
                                   fontSize: isSmall ? 12 : 13,
                                   color: Colors.grey.shade700,
