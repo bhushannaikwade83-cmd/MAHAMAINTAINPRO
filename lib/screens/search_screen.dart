@@ -486,109 +486,6 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Quick Actions Grid (6 tiles)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quick Actions',
-                    style: TextStyle(
-                      fontSize: isSmall ? 16 : 18,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black,
-                      letterSpacing: -0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.0,
-                    children: [
-                      _buildQuickActionTile(
-                        emoji: '🧾',
-                        title: 'View Bill',
-                        subtitle: '₹2,450 due',
-                        color: const Color(0xFFFFFAF0),
-                        accentColor: Colors.orange,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening bill details...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '✍️',
-                        title: 'Complaint',
-                        subtitle: '2 open tickets',
-                        color: const Color(0xFFFFE5E5),
-                        accentColor: Colors.red,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening complaints...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '🛵',
-                        title: 'Visitor Gate',
-                        subtitle: '1 pending',
-                        color: const Color(0xFFF0F5FF),
-                        accentColor: Colors.teal,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening visitor gate...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '🔑',
-                        title: 'Tenant Info',
-                        subtitle: 'Lease details',
-                        color: const Color(0xFFE5F5FF),
-                        accentColor: Colors.blue,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening tenant info...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '🚗',
-                        title: 'Vehicle Pass',
-                        subtitle: '2 registered',
-                        color: const Color(0xFFFFE5F5),
-                        accentColor: Colors.purple,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening vehicle pass...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '📊',
-                        title: 'Insights',
-                        subtitle: 'Usage trends',
-                        color: const Color(0xFFE5F5E5),
-                        accentColor: Colors.green,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening insights...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
             // Personal Services
             Padding(
               padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
@@ -664,7 +561,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            // For Your Society - Quick Actions
+            // For Your Society
             Padding(
               padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16, vertical: isSmall ? 10 : 12),
               child: Column(
@@ -694,87 +591,25 @@ class _SearchScreenState extends State<SearchScreen> {
                     ],
                   ),
                   SizedBox(height: isSmall ? 12 : 14),
-                  GridView.count(
-                    crossAxisCount: 2,
+                  GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.0,
-                    children: [
-                      _buildQuickActionTile(
-                        emoji: '🧾',
-                        title: 'View Bill',
-                        subtitle: '₹2,450 due',
-                        color: const Color(0xFFFFFAF0),
-                        accentColor: Colors.orange,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening bill details...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '✍️',
-                        title: 'Complaint',
-                        subtitle: '2 open tickets',
-                        color: const Color(0xFFFFE5E5),
-                        accentColor: Colors.red,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening complaints...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '🛵',
-                        title: 'Visitor Gate',
-                        subtitle: '1 pending',
-                        color: const Color(0xFFF0F5FF),
-                        accentColor: Colors.teal,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening visitor gate...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '🔑',
-                        title: 'Tenant Info',
-                        subtitle: 'Lease details',
-                        color: const Color(0xFFE5F5FF),
-                        accentColor: Colors.blue,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening tenant info...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '🚗',
-                        title: 'Vehicle Pass',
-                        subtitle: '2 registered',
-                        color: const Color(0xFFFFE5F5),
-                        accentColor: Colors.purple,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening vehicle pass...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                      _buildQuickActionTile(
-                        emoji: '📊',
-                        title: 'Insights',
-                        subtitle: 'Usage trends',
-                        color: const Color(0xFFE5F5E5),
-                        accentColor: Colors.green,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening insights...'), duration: Duration(seconds: 1)),
-                          );
-                        },
-                      ),
-                    ],
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: isSmall ? 12 : 14,
+                      mainAxisSpacing: isSmall ? 14 : 16,
+                      childAspectRatio: 0.65,
+                    ),
+                    itemCount: societyServices.length,
+                    itemBuilder: (context, index) {
+                      final service = societyServices[index];
+                      return _buildSocietyCard(
+                        emoji: service['emoji'],
+                        name: service['name'],
+                        bgColor: service['color'],
+                        badge: service['badge'],
+                      );
+                    },
                   ),
                   SizedBox(height: isSmall ? 18 : 24),
                 ],
@@ -1176,78 +1011,6 @@ class _SearchScreenState extends State<SearchScreen> {
       ],
     };
     return servicesMap[categoryName] ?? [];
-  }
-
-  Widget _buildQuickActionTile({
-    required String emoji,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required Color accentColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: accentColor.withOpacity(0.2),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: accentColor.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                emoji,
-                style: const TextStyle(fontSize: 24),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
