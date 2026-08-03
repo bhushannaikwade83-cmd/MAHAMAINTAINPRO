@@ -83,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final isSmall = screenWidth < 380;
 
     return Scaffold(
-      backgroundColor: AppTheme.saffron,
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
         child: ConstrainedBox(
@@ -94,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               position: _slideAnimation,
               child: Stack(
                 children: [
-                  // Gradient background
+                  // Premium Gradient background
                   Container(
                     width: double.infinity,
                     height: screenHeight,
@@ -104,35 +104,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         end: Alignment.bottomCenter,
                         colors: [
                           AppTheme.saffron,
-                          AppTheme.saffron.withOpacity(0.9),
-                          const Color(0xFFE8860B),
+                          AppTheme.saffron.withOpacity(0.85),
+                          const Color(0xFFF25C05),
                         ],
                       ),
                     ),
                   ),
 
-                  // Decorative circles
+                  // Modern decorative blobs
                   Positioned(
-                    top: -60,
-                    left: -60,
+                    top: -80,
+                    right: -60,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 280,
+                      height: 280,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.07),
+                        color: Colors.white.withOpacity(0.08),
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: 100,
-                    right: -80,
+                    bottom: -60,
+                    left: -80,
                     child: Container(
-                      width: 250,
-                      height: 250,
+                      width: 300,
+                      height: 300,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
+                        color: AppTheme.saffron.withOpacity(0.15),
                       ),
                     ),
                   ),
@@ -140,11 +140,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   // Main content
                   Column(
                     children: [
-                      // Header with logo
+                      // Premium Header with logo
                       Container(
                         padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top + (isSmall ? 12 : 20),
-                          bottom: isSmall ? 16 : 24,
+                          top: MediaQuery.of(context).padding.top + (isSmall ? 16 : 24),
+                          bottom: isSmall ? 20 : 32,
                           left: isSmall ? 12 : 16,
                           right: isSmall ? 12 : 16,
                         ),
@@ -159,24 +159,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 24,
-                                      offset: const Offset(0, 8),
+                                      color: Colors.black.withOpacity(0.25),
+                                      blurRadius: 32,
+                                      offset: const Offset(0, 12),
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.15),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, -6),
                                     ),
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(28),
+                                  borderRadius: BorderRadius.circular(36),
                                   child: Image.asset(
                                     'assets/images/logo.png',
-                                    width: isSmall ? 100 : 120,
-                                    height: isSmall ? 100 : 120,
+                                    width: isSmall ? 110 : 140,
+                                    height: isSmall ? 110 : 140,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
                             ),
-                            SizedBox(height: isSmall ? 14 : 18),
+                            SizedBox(height: isSmall ? 18 : 24),
                             RichText(
                               textAlign: TextAlign.center,
                               text: TextSpan(
@@ -185,68 +190,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     text: 'MahaMaintain\n',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: isSmall ? 22 : 28,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.5,
-                                      height: 1.2,
+                                      fontSize: isSmall ? 26 : 32,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -0.8,
+                                      height: 1.1,
                                     ),
                                   ),
                                   TextSpan(
                                     text: 'Pro',
                                     style: TextStyle(
                                       color: const Color(0xFFFFD700),
-                                      fontSize: isSmall ? 22 : 28,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
+                                      fontSize: isSmall ? 26 : 32,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.8,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(height: isSmall ? 8 : 12),
+                            SizedBox(height: isSmall ? 10 : 14),
                             Text(
-                              'महाराष्ट्र का विश्वास',
+                              'महाराष्ट्र का विश्वास • Premium Services',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.95),
-                                fontSize: isSmall ? 11 : 13,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.3,
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: isSmall ? 12 : 13,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Form Card - Glassmorphic
+                      // Form Card - Premium Glassmorphic
                       Container(
                         margin: EdgeInsets.fromLTRB(
                           isSmall ? 12 : 16,
-                          isSmall ? 16 : 20,
+                          isSmall ? 20 : 28,
                           isSmall ? 12 : 16,
-                          isSmall ? 12 : 16,
+                          isSmall ? 16 : 24,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
-                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white.withOpacity(0.98),
+                          borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 30,
-                              offset: const Offset(0, 10),
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 40,
+                              offset: const Offset(0, 20),
                             ),
                             BoxShadow(
-                              color: AppTheme.saffron.withOpacity(0.1),
-                              blurRadius: 20,
-                              offset: const Offset(0, 5),
+                              color: AppTheme.saffron.withOpacity(0.12),
+                              blurRadius: 24,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withOpacity(0.6),
                             width: 1.5,
                           ),
                         ),
                         padding: EdgeInsets.symmetric(
-                          horizontal: isSmall ? 16 : 20,
-                          vertical: isSmall ? 16 : 20,
+                          horizontal: isSmall ? 18 : 24,
+                          vertical: isSmall ? 20 : 28,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,21 +285,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 ),
                               ),
                             Text(
-                              'Login to your account',
+                              'Welcome Back',
                               style: TextStyle(
-                                fontSize: isSmall ? 18 : 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                letterSpacing: -0.4,
+                                fontSize: isSmall ? 20 : 24,
+                                fontWeight: FontWeight.w900,
+                                color: AppTheme.saffron,
+                                letterSpacing: -0.6,
                               ),
                             ),
-                            SizedBox(height: isSmall ? 6 : 8),
+                            SizedBox(height: isSmall ? 8 : 10),
                             Text(
-                              "We'll send a secure OTP to your email",
+                              'Sign in to access your premium services',
                               style: TextStyle(
                                 fontSize: isSmall ? 12 : 13,
                                 color: Colors.grey.shade600,
-                                height: 1.4,
+                                height: 1.5,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             SizedBox(height: isSmall ? 16 : 20),
@@ -360,7 +366,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               duration: const Duration(milliseconds: 200),
                               child: SizedBox(
                                 width: double.infinity,
-                                height: isSmall ? 46 : 50,
+                                height: isSmall ? 50 : 56,
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
@@ -368,43 +374,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         _isValidEmail(_emailController.text) && !_isLoading
                                             ? _sendOtp
                                             : null,
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                     child: Container(
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
                                           colors: [
-                                            AppTheme.saffron.withOpacity(0.9),
-                                            AppTheme.saffron.withOpacity(0.75),
+                                            AppTheme.saffron,
+                                            AppTheme.saffron.withOpacity(0.85),
                                           ],
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.3),
-                                          width: 1.5,
-                                        ),
+                                        borderRadius: BorderRadius.circular(14),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppTheme.saffron.withOpacity(0.3),
-                                            blurRadius: 12,
-                                            offset: const Offset(0, 4),
+                                            color: AppTheme.saffron.withOpacity(0.35),
+                                            blurRadius: 20,
+                                            offset: const Offset(0, 8),
                                           ),
                                           BoxShadow(
-                                            color: Colors.white.withOpacity(0.2),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, -2),
+                                            color: AppTheme.saffron.withOpacity(0.15),
+                                            blurRadius: 30,
+                                            offset: const Offset(0, 12),
                                           ),
                                         ],
                                       ),
                                       child: Center(
                                         child: _isLoading
                                             ? SizedBox(
-                                                height: 20,
-                                                width: 20,
+                                                height: 22,
+                                                width: 22,
                                                 child: CircularProgressIndicator(
                                                   valueColor: AlwaysStoppedAnimation(
-                                                    Colors.white.withOpacity(0.8),
+                                                    Colors.white,
                                                   ),
-                                                  strokeWidth: 2,
+                                                  strokeWidth: 2.5,
                                                 ),
                                               )
                                             : Row(
@@ -414,16 +418,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                                   Text(
                                                     'Send OTP',
                                                     style: TextStyle(
-                                                      fontSize: isSmall ? 13 : 14,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: isSmall ? 15 : 16,
+                                                      fontWeight: FontWeight.w800,
                                                       color: Colors.white,
+                                                      letterSpacing: 0.3,
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 6),
-                                                  const Icon(
+                                                  const SizedBox(width: 8),
+                                                  Icon(
                                                     Icons.arrow_forward,
                                                     color: Colors.white,
-                                                    size: 16,
+                                                    size: isSmall ? 18 : 20,
                                                   ),
                                                 ],
                                               ),
@@ -435,36 +440,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             SizedBox(height: isSmall ? 16 : 20),
 
-                            // Demo Credentials Section
+                            // Premium Demo Section
                             Container(
                               padding: EdgeInsets.symmetric(
-                                horizontal: isSmall ? 12 : 14,
-                                vertical: isSmall ? 12 : 14,
+                                horizontal: isSmall ? 14 : 16,
+                                vertical: isSmall ? 14 : 16,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(12),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.blue.shade50,
+                                    Colors.blue.shade50.withOpacity(0.7),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: Colors.blue.shade200,
-                                  width: 1,
+                                  width: 1.5,
                                 ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '🎯 Demo Credentials',
+                                    '🎯 Quick Demo Access',
                                     style: TextStyle(
-                                      fontSize: isSmall ? 12 : 13,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: isSmall ? 13 : 14,
+                                      fontWeight: FontWeight.w800,
                                       color: Colors.blue.shade700,
+                                      letterSpacing: 0.3,
                                     ),
                                   ),
-                                  SizedBox(height: isSmall ? 8 : 10),
+                                  SizedBox(height: isSmall ? 10 : 12),
                                   // Individual Demo Button
                                   SizedBox(
                                     width: double.infinity,
-                                    height: isSmall ? 38 : 42,
+                                    height: isSmall ? 42 : 46,
                                     child: ElevatedButton(
                                       onPressed: () {
                                         _emailController.text = 'member@gmail.com';
@@ -475,23 +486,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(10),
                                         ),
-                                        elevation: 0,
+                                        elevation: 2,
                                       ),
                                       child: Text(
-                                        '👤 Individual: member@gmail.com',
+                                        '👤 Individual Demo',
                                         style: TextStyle(
-                                          fontSize: isSmall ? 11 : 12,
-                                          fontWeight: FontWeight.bold,
+                                          fontSize: isSmall ? 12 : 13,
+                                          fontWeight: FontWeight.w700,
                                           color: Colors.white,
+                                          letterSpacing: 0.2,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: isSmall ? 8 : 10),
+                                  SizedBox(height: isSmall ? 10 : 12),
                                   // Society Demo Button
                                   SizedBox(
                                     width: double.infinity,
-                                    height: isSmall ? 38 : 42,
+                                    height: isSmall ? 42 : 46,
                                     child: ElevatedButton(
                                       onPressed: () {
                                         _emailController.text = 'society@gmail.com';
@@ -502,14 +514,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(10),
                                         ),
-                                        elevation: 0,
+                                        elevation: 2,
                                       ),
                                       child: Text(
-                                        '🏢 Society: society@gmail.com',
+                                        '🏢 Society Demo',
                                         style: TextStyle(
-                                          fontSize: isSmall ? 11 : 12,
-                                          fontWeight: FontWeight.bold,
+                                          fontSize: isSmall ? 12 : 13,
+                                          fontWeight: FontWeight.w700,
                                           color: Colors.white,
+                                          letterSpacing: 0.2,
                                         ),
                                       ),
                                     ),
