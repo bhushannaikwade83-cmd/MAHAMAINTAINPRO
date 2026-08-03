@@ -33,6 +33,9 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 380;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -48,73 +51,73 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
               ),
             ),
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 12,
+              top: MediaQuery.of(context).padding.top + (isSmall ? 8 : 10),
               left: 0,
               right: 0,
-              bottom: 20,
+              bottom: isSmall ? 12 : 16,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Logo and Back Button Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: const Icon(Icons.arrow_back, size: 24, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Title with emoji and badge if new
-                RichText(
-                  text: TextSpan(
+              padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Logo and Back Button Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextSpan(
-                        text: widget.categoryName,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          width: isSmall ? 34 : 40,
+                          height: isSmall ? 34 : 40,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      TextSpan(
-                        text: ' ${widget.categoryEmoji}',
-                        style: const TextStyle(fontSize: 28),
-                      ),
-                      if (widget.categoryName.contains('New') || widget.description.contains('New'))
-                        TextSpan(
-                          text: '\n◆ New',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(Icons.arrow_back, size: isSmall ? 20 : 24, color: Colors.white),
                         ),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.description,
-                  style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.9)),
-                ),
-              ],
+                  SizedBox(height: isSmall ? 10 : 12),
+                  // Title with emoji and badge if new
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: widget.categoryName,
+                          style: TextStyle(
+                            fontSize: isSmall ? 22 : 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' ${widget.categoryEmoji}',
+                          style: TextStyle(fontSize: isSmall ? 22 : 26),
+                        ),
+                        if (widget.categoryName.contains('New') || widget.description.contains('New'))
+                          TextSpan(
+                            text: '\n◆ New',
+                            style: TextStyle(
+                              fontSize: isSmall ? 10 : 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: isSmall ? 6 : 8),
+                  Text(
+                    widget.description,
+                    style: TextStyle(fontSize: isSmall ? 12 : 13, color: Colors.white.withOpacity(0.9)),
+                  ),
+                ],
               ),
             ),
           ),
@@ -135,15 +138,15 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           if (totalServices > 0)
             Container(
               padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                bottom: MediaQuery.of(context).padding.bottom + 16,
-                top: 16,
+                left: isSmall ? 12 : 16,
+                right: isSmall ? 12 : 16,
+                bottom: MediaQuery.of(context).padding.bottom + (isSmall ? 10 : 16),
+                top: isSmall ? 10 : 16,
               ),
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(isSmall ? 10 : 12),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(12),
@@ -156,13 +159,13 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                           children: [
                             Text(
                               '$totalServices ${totalServices == 1 ? 'Service' : 'Services'} Selected',
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                              style: TextStyle(fontSize: isSmall ? 11 : 12, color: Colors.grey.shade600),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: isSmall ? 3 : 4),
                             Text(
                               '₹$totalPrice',
-                              style: const TextStyle(
-                                fontSize: 18,
+                              style: TextStyle(
+                                fontSize: isSmall ? 16 : 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
@@ -172,7 +175,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: isSmall ? 10 : 12),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -186,12 +189,12 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.saffron,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: isSmall ? 12 : 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Book Now',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(fontSize: isSmall ? 14 : 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                   ),
@@ -208,14 +211,16 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   }
 
   Widget _buildServiceCard(int index) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 380;
     final service = _services[index];
     final isSelected = service['quantity'] > 0;
 
     return GestureDetector(
       onTap: () => setState(() => service['quantity']++),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        margin: EdgeInsets.only(bottom: isSmall ? 8 : 12),
+        padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16, vertical: isSmall ? 12 : 14),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.saffron.withOpacity(0.05) : Colors.white,
           border: Border(
