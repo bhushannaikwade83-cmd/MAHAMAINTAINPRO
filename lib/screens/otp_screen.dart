@@ -96,7 +96,6 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   }
 
   String get phoneNumber => widget.phoneNumber;
-  VoidCallback get onVerificationSuccess => widget.onVerificationSuccess;
 
   @override
   Widget build(BuildContext context) {
