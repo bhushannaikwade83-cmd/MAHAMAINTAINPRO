@@ -11,7 +11,7 @@ class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({
     required this.onOtpSent,
     required this.onOtpPhoneChange,
-    this.onBackPress,
+    this.onBackPress = null,
     Key? key,
   }) : super(key: key);
 
