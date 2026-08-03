@@ -561,55 +561,76 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            // For Your Society
+            // For Your Society - All Quick Actions
             Padding(
               padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16, vertical: isSmall ? 10 : 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'For Your Society',
-                        style: TextStyle(
-                          fontSize: isSmall ? 17 : 20,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black,
-                          letterSpacing: -0.4,
-                        ),
-                      ),
-                      SizedBox(height: isSmall ? 6 : 8),
-                      Container(
-                        width: isSmall ? 40 : 50,
-                        height: 2,
-                        decoration: BoxDecoration(
-                          color: AppTheme.saffron,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'All quick actions',
+                    style: TextStyle(
+                      fontSize: isSmall ? 18 : 24,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                  SizedBox(height: isSmall ? 12 : 14),
-                  GridView.builder(
+                  SizedBox(height: isSmall ? 6 : 8),
+                  Text(
+                    'Shri Ramdev Park · CHS, Mira Road',
+                    style: TextStyle(
+                      fontSize: isSmall ? 12 : 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  SizedBox(height: isSmall ? 16 : 20),
+                  GridView.count(
+                    crossAxisCount: 2,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: isSmall ? 12 : 14,
-                      mainAxisSpacing: isSmall ? 14 : 16,
-                      childAspectRatio: 0.65,
-                    ),
-                    itemCount: societyServices.length,
-                    itemBuilder: (context, index) {
-                      final service = societyServices[index];
-                      return _buildSocietyCard(
-                        emoji: service['emoji'],
-                        name: service['name'],
-                        bgColor: service['color'],
-                        badge: service['badge'],
-                      );
-                    },
+                    crossAxisSpacing: isSmall ? 10 : 12,
+                    mainAxisSpacing: isSmall ? 12 : 14,
+                    childAspectRatio: 0.75,
+                    children: [
+                      _buildActionCard(
+                        emoji: '🧾',
+                        title: 'View Bill',
+                        subtitle: '₹2,450 due · Jul 2026',
+                        bgColor: const Color(0xFFD4A574),
+                      ),
+                      _buildActionCard(
+                        emoji: '✍️',
+                        title: 'Complaint',
+                        subtitle: '2 open tickets',
+                        bgColor: const Color(0xFFD96B7A),
+                      ),
+                      _buildActionCard(
+                        emoji: '🛵',
+                        title: 'Visitor Gate',
+                        subtitle: '1 visitor awaiting approval',
+                        bgColor: const Color(0xFF4A7C7E),
+                        badge: '1 pending',
+                      ),
+                      _buildActionCard(
+                        emoji: '🔑',
+                        title: 'Tenant Info',
+                        subtitle: 'Lease & owner details on file',
+                        bgColor: const Color(0xFFA78FCC),
+                      ),
+                      _buildActionCard(
+                        emoji: '🚗',
+                        title: 'Vehicle Pass',
+                        subtitle: '2 vehicles registered',
+                        bgColor: const Color(0xFFD9744A),
+                      ),
+                      _buildActionCard(
+                        emoji: '📊',
+                        title: 'Society Insights',
+                        subtitle: 'Spending & usage trends',
+                        bgColor: const Color(0xFF5B8FC4),
+                      ),
+                    ],
                   ),
                   SizedBox(height: isSmall ? 18 : 24),
                 ],
@@ -1011,6 +1032,90 @@ class _SearchScreenState extends State<SearchScreen> {
       ],
     };
     return servicesMap[categoryName] ?? [];
+  }
+
+  Widget _buildActionCard({
+    required String emoji,
+    required String title,
+    required String subtitle,
+    required Color bgColor,
+    String? badge,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Opening $title...'), duration: const Duration(seconds: 1)),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                ),
+                if (badge != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      badge,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
