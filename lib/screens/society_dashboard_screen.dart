@@ -127,71 +127,82 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
 
             // Content based on selected tab (footer handles navigation)
             if (_selectedTab == 0) ...[
-              // Complaints & Tickets Section
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.only(top: 16),
+                child: Column(
                   children: [
-                    const Text(
-                      'Complaints & Tickets',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    // Complaints & Tickets Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Complaints & Tickets',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: Colors.orange,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: const Text(
+                              '+ New',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        '+ New',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildTicketCard('Water leakage — B Wing Corridor', 'Ticket #MRP-2847-3812 • 15 Jun', 'In Progress', Colors.amber),
-              _buildTicketCard('Lift not working — Tower A', 'Ticket #MRP-2847-3791 • 10 Jun', 'Resolved ✓', Colors.green),
-              _buildTicketCard('Gate motor making noise', 'Ticket #MRP-2847-3788 • 8 Jun', 'Resolved ✓', Colors.green),
-              const SizedBox(height: 20),
+                    const SizedBox(height: 12),
+                    _buildTicketCard('Water leakage — B Wing Corridor', 'Ticket #MRP-2847-3812 • 15 Jun', 'In Progress', Colors.amber),
+                    _buildTicketCard('Lift not working — Tower A', 'Ticket #MRP-2847-3791 • 10 Jun', 'Resolved ✓', Colors.green),
+                    _buildTicketCard('Gate motor making noise', 'Ticket #MRP-2847-3788 • 8 Jun', 'Resolved ✓', Colors.green),
+                    const SizedBox(height: 24),
 
-              // Society Notices Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '📣 Society Notices',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    // Society Notices Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '📣 Society Notices',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          Text(
+                            'See All →',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.teal,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      'See All →',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.teal,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    const SizedBox(height: 12),
+                    _buildNoticeCard('Water Supply Shutdown — 18 Jun', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', 'Posted by Committee • Today', Colors.orange),
+                    _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', Colors.teal),
+                    const SizedBox(height: 30),
                   ],
                 ),
               ),
-              _buildNoticeCard('Water Supply Shutdown — 18 Jun', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', 'Posted by Committee • Today', Colors.orange),
-              _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', Colors.teal),
-              const SizedBox(height: 30),
             ] else if (_selectedTab == 1) ...[
               // Share Photo Action
               Padding(
