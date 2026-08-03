@@ -113,10 +113,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
             opacity: _fadeAnimation,
             child: SlideTransition(
               position: _slideAnimation,
-              child: Column(
+              child: Stack(
                 children: [
+                  // Premium gradient background
                   Container(
                     width: double.infinity,
+                    height: MediaQuery.of(context).size.height,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -124,126 +126,180 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                         colors: [
                           AppTheme.saffron,
                           AppTheme.saffron.withOpacity(0.85),
+                          const Color(0xFFF25C05),
                         ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.saffron.withOpacity(0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + (isSmall ? 16 : 24),
-                      bottom: isSmall ? 32 : 40,
-                      left: 24,
-                      right: 24,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        AnimatedScale(
-                          scale: 1,
-                          duration: const Duration(milliseconds: 600),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              '🏙️',
-                              style: TextStyle(
-                                fontSize: isSmall ? 40 : 48,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: isSmall ? 16 : 20),
-                        Text(
-                          'MahaMaintain',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isSmall ? 24 : 28,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        Text(
-                          'Pro',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isSmall ? 24 : 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: isSmall ? 8 : 12),
-                        Text(
-                          'महाराष्ट्र का विश्वास',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: isSmall ? 12 : 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(isSmall ? 20 : 24),
+
+                  // Decorative blobs
+                  Positioned(
+                    top: -80,
+                    right: -60,
+                    child: Container(
+                      width: 280,
+                      height: 280,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -60,
+                    left: -80,
+                    child: Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppTheme.saffron.withOpacity(0.15),
+                      ),
+                    ),
+                  ),
+
+                  // Content
+                  Column(
+                    children: [
+                      // Premium Header
+                      Container(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top + (isSmall ? 20 : 28),
+                          bottom: isSmall ? 24 : 32,
+                          left: isSmall ? 12 : 16,
+                          right: isSmall ? 12 : 16,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            AnimatedScale(
+                              scale: 1,
+                              duration: const Duration(milliseconds: 600),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.25),
+                                      blurRadius: 32,
+                                      offset: const Offset(0, 12),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(36),
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    width: isSmall ? 100 : 120,
+                                    height: isSmall ? 100 : 120,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: isSmall ? 18 : 24),
+                            RichText(
+                              textAlign: TextAlign.center,
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Verify\n',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isSmall ? 26 : 32,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -0.8,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: 'OTP',
+                                    style: TextStyle(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: isSmall ? 26 : 32,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  // Premium Form Card
+                  Container(
+                    margin: EdgeInsets.fromLTRB(
+                      isSmall ? 12 : 16,
+                      isSmall ? 20 : 28,
+                      isSmall ? 12 : 16,
+                      isSmall ? 16 : 24,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.98),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 40,
+                          offset: const Offset(0, 20),
+                        ),
+                        BoxShadow(
+                          color: AppTheme.saffron.withOpacity(0.12),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.6),
+                        width: 1.5,
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmall ? 18 : 24,
+                      vertical: isSmall ? 20 : 28,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          height: 3,
-                          width: _otpFocused ? 60 : 40,
-                          color: AppTheme.saffron,
-                          margin: const EdgeInsets.only(bottom: 20),
-                        ),
                         Text(
-                          'Verify Phone Number',
+                          'Enter OTP Code',
                           style: TextStyle(
-                            fontSize: isSmall ? 18 : 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            letterSpacing: -0.3,
+                            fontSize: isSmall ? 20 : 24,
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.saffron,
+                            letterSpacing: -0.6,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: isSmall ? 8 : 10),
                         Text(
-                          'OTP sent to $phoneNumber',
+                          'Check your email for the 6-digit OTP',
                           style: TextStyle(
-                            fontSize: isSmall ? 13 : 14,
+                            fontSize: isSmall ? 12 : 13,
                             color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                            height: 1.5,
                           ),
                         ),
                         SizedBox(height: isSmall ? 24 : 32),
+
+                        // Premium OTP Input
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Colors.grey.shade50,
                             border: Border.all(
                               color: _otpFocused
                                   ? AppTheme.saffron
                                   : Colors.grey.shade200,
-                              width: _otpFocused ? 2 : 1,
+                              width: _otpFocused ? 2 : 1.5,
                             ),
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: _otpFocused
                                 ? [
                                     BoxShadow(
-                                      color: AppTheme.saffron.withOpacity(0.15),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                      color: AppTheme.saffron.withOpacity(0.2),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ]
                                 : [],
@@ -255,34 +311,37 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                             maxLength: 6,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: isSmall ? 20 : 24,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 6,
+                              fontSize: isSmall ? 24 : 28,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 8,
+                              color: Colors.black,
                             ),
                             decoration: InputDecoration(
                               hintText: '000000',
                               hintStyle: TextStyle(
                                 color: Colors.grey.shade300,
-                                letterSpacing: 6,
+                                letterSpacing: 8,
+                                fontSize: isSmall ? 24 : 28,
                               ),
                               filled: false,
                               border: InputBorder.none,
                               counterText: '',
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 16),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: isSmall ? 14 : 16,
+                              ),
                             ),
                             onChanged: (value) => setState(() {}),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: isSmall ? 12 : 14),
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
                             '${_otpController.text.length}/6',
                             style: TextStyle(
-                              fontSize: isSmall ? 11 : 12,
+                              fontSize: isSmall ? 12 : 13,
                               color: Colors.grey.shade500,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -304,39 +363,37 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                                 child: Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                       colors: [
-                                        AppTheme.saffron.withOpacity(0.9),
-                                        AppTheme.saffron.withOpacity(0.75),
+                                        AppTheme.saffron,
+                                        AppTheme.saffron.withOpacity(0.85),
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
-                                      width: 1.5,
-                                    ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppTheme.saffron.withOpacity(0.3),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
+                                        color: AppTheme.saffron.withOpacity(0.35),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8),
                                       ),
                                       BoxShadow(
-                                        color: Colors.white.withOpacity(0.2),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, -2),
+                                        color: AppTheme.saffron.withOpacity(0.15),
+                                        blurRadius: 30,
+                                        offset: const Offset(0, 12),
                                       ),
                                     ],
                                   ),
                                   child: Center(
                                     child: _isVerifying
                                         ? SizedBox(
-                                            height: 24,
-                                            width: 24,
+                                            height: 22,
+                                            width: 22,
                                             child: CircularProgressIndicator(
                                               valueColor: AlwaysStoppedAnimation(
-                                                Colors.white.withOpacity(0.8),
+                                                Colors.white,
                                               ),
-                                              strokeWidth: 2,
+                                              strokeWidth: 2.5,
                                             ),
                                           )
                                         : Row(
@@ -346,16 +403,17 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                                               Text(
                                                 'Verify & Login',
                                                 style: TextStyle(
-                                                  fontSize: isSmall ? 14 : 16,
-                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: isSmall ? 15 : 16,
+                                                  fontWeight: FontWeight.w800,
                                                   color: Colors.white,
+                                                  letterSpacing: 0.3,
                                                 ),
                                               ),
                                               const SizedBox(width: 8),
-                                              const Icon(
+                                              Icon(
                                                 Icons.arrow_forward,
                                                 color: Colors.white,
-                                                size: 18,
+                                                size: isSmall ? 18 : 20,
                                               ),
                                             ],
                                           ),
