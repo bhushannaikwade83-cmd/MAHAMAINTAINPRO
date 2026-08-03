@@ -193,61 +193,130 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', Colors.teal),
               const SizedBox(height: 30),
             ] else if (_selectedTab == 1) ...[
+              // Share Photo Action
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text('📷', style: TextStyle(fontSize: 20)),
                       ),
-                      child: Center(
+                      const SizedBox(width: 12),
+                      const Expanded(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.image, size: 48, color: Colors.grey.shade400),
-                            const SizedBox(height: 12),
                             Text(
-                              'No Photos Yet',
-                              style: TextStyle(color: Colors.grey.shade600),
+                              'Share a Photo',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Upload from gallery or take new • Max 10 MB',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white70,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
+                      const Icon(Icons.arrow_forward, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Photo Grid
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.0,
+                  children: [
+                    _buildPhotoCard('Ganesh Festival', '🎉', Colors.green.shade100),
+                    _buildPhotoCard('Lift Repair Done', '🔧', Colors.blue.shade100),
+                    _buildPhotoCard('Pool Cleaning', '🏊', Colors.cyan.shade100),
+                    _buildPhotoCard('Society Day Celebr...', '🎊', Colors.purple.shade100),
+                    _buildPhotoCard('Gate Motor Replaced', '🚪', Colors.amber.shade100),
+                    _buildPhotoCard('Garden Beautification', '🌳', Colors.lime.shade100),
                   ],
                 ),
               ),
+              const SizedBox(height: 30),
             ] else if (_selectedTab == 2) ...[
+              // Post Notice Action
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4A4A7E),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text('📌', style: TextStyle(fontSize: 20)),
                       ),
-                      child: Center(
+                      const SizedBox(width: 12),
+                      const Expanded(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.notifications_none, size: 48, color: Colors.grey.shade400),
-                            const SizedBox(height: 12),
                             Text(
-                              'No Notices Yet',
-                              style: TextStyle(color: Colors.grey.shade600),
+                              'Post a Notice',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Committee only • Attach image or PDF',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white70,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      const Icon(Icons.arrow_forward, color: Colors.white),
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(height: 16),
+              // Notices List
+              _buildNoticeCard('Water Supply Shutdown — 18 Jun', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', 'Posted by Committee • Today', Colors.orange),
+              _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', Colors.teal),
+              const SizedBox(height: 30),
             ],
           ],
         ),
@@ -415,6 +484,40 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoCard(String title, String emoji, Color bgColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 36)),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
