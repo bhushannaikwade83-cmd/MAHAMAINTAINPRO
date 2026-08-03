@@ -12,6 +12,8 @@ class SocietyScreen extends StatefulWidget {
 
 class _SocietyScreenState extends State<SocietyScreen> {
   bool _isSocietyRegistered = false;
+  int _selectedTab = 0;
+  final List<String> _tabs = ['Dashboard', 'Photos', 'Notices'];
 
   @override
   Widget build(BuildContext context) {
@@ -376,69 +378,297 @@ class _SocietyScreenState extends State<SocietyScreen> {
               ),
             ),
 
-            // Society Hub Header
+            // Tabs
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppTheme.saffron,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16, vertical: 8),
               child: Row(
-                children: [
-                  Text(
-                    '🏢',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Society Hub',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                children: List.generate(
+                  _tabs.length,
+                  (index) => Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedTab = index),
+                      child: Column(
+                        children: [
+                          Text(
+                            _tabs[index],
+                            style: TextStyle(
+                              fontSize: isSmall ? 13 : 14,
+                              fontWeight: _selectedTab == index ? FontWeight.bold : FontWeight.w500,
+                              color: _selectedTab == index ? Colors.black : Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (_selectedTab == index)
+                            Container(
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: AppTheme.saffron,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            )
+                          else
+                            Container(
+                              height: 2,
+                              color: Colors.grey.shade300,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
 
-            // Society Features
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildFeatureCard(
-                    emoji: '🚪',
-                    title: 'Visitor Gate',
-                    subtitle: 'Manage visitor entries',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '🚗',
-                    title: 'Parking Management',
-                    subtitle: 'Request guest parking',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '👥',
-                    title: 'Tenant Management',
-                    subtitle: 'Register tenants',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '📄',
-                    title: 'Bills & Maintenance',
-                    subtitle: 'View maintenance bills',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeatureCard(
-                    emoji: '📢',
-                    title: 'Announcements',
-                    subtitle: 'View society notices',
-                  ),
-                ],
+            // Tab Content
+            if (_selectedTab == 0) ...[
+              // Dashboard Tab - Society Features
+              Padding(
+                padding: EdgeInsets.all(isSmall ? 12 : 16),
+                child: Column(
+                  children: [
+                    _buildFeatureCard(
+                      emoji: '🚪',
+                      title: 'Visitor Gate',
+                      subtitle: 'Manage visitor entries',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildFeatureCard(
+                      emoji: '🚗',
+                      title: 'Parking Management',
+                      subtitle: 'Request guest parking',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildFeatureCard(
+                      emoji: '👥',
+                      title: 'Tenant Management',
+                      subtitle: 'Register tenants',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildFeatureCard(
+                      emoji: '📄',
+                      title: 'Bills & Maintenance',
+                      subtitle: 'View maintenance bills',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildFeatureCard(
+                      emoji: '📢',
+                      title: 'Announcements',
+                      subtitle: 'View society notices',
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ] else if (_selectedTab == 1) ...[
+              // Photos Tab
+              Container(
+                padding: EdgeInsets.all(isSmall ? 12 : 16),
+                color: Colors.grey.shade50,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(isSmall ? 12 : 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.saffron,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(isSmall ? 10 : 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.camera_alt, color: Colors.white, size: isSmall ? 20 : 24),
+                          ),
+                          SizedBox(width: isSmall ? 10 : 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Share a Photo',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 14 : 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  'Upload from gallery or take new • Max 10 MB',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 11 : 12,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Recent Photos',
+                      style: TextStyle(
+                        fontSize: isSmall ? 13 : 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: isSmall ? 8 : 12,
+                        mainAxisSpacing: isSmall ? 8 : 12,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: 6,
+                      itemBuilder: (context, index) {
+                        final categories = ['🎉 Events', '🔧 Maintenance', '🏊 Amenities', '🎊 Events', '🌳 Amenities', '🔧 Maintenance'];
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                categories[index].split(' ')[0],
+                                style: TextStyle(fontSize: isSmall ? 28 : 32),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                categories[index].split(' ')[1],
+                                style: TextStyle(
+                                  fontSize: isSmall ? 11 : 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ] else if (_selectedTab == 2) ...[
+              // Notices Tab
+              Padding(
+                padding: EdgeInsets.all(isSmall ? 12 : 16),
+                child: Column(
+                  children: [
+                    // Post Notice
+                    Container(
+                      padding: EdgeInsets.all(isSmall ? 12 : 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D1B4E),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(isSmall ? 10 : 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.notifications, color: Colors.white, size: isSmall ? 20 : 24),
+                          ),
+                          SizedBox(width: isSmall ? 10 : 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Post a Notice',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 14 : 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  'Committee only • Attach image or PDF',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 11 : 12,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Sample notices
+                    ...[
+                      ('URGENT NOTICE', '🔧 Maintenance', Colors.orange, Colors.orange.shade100, 'Today'),
+                      ('EVENT', '🎉 Events', Colors.teal, Colors.teal.shade100, '2 days ago'),
+                      ('AMENITY UPDATE', '🏊 Amenities', Colors.yellow.shade700, Colors.yellow.shade100, '5 days ago'),
+                    ].map((notice) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Container(
+                          padding: EdgeInsets.all(isSmall ? 12 : 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border(
+                              left: BorderSide(color: notice.$2 as Color, width: 4),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    notice.$0 as String,
+                                    style: TextStyle(
+                                      fontSize: isSmall ? 13 : 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  Text(
+                                    notice.$4 as String,
+                                    style: TextStyle(
+                                      fontSize: isSmall ? 11 : 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                notice.$1 as String,
+                                style: TextStyle(
+                                  fontSize: isSmall ? 12 : 13,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
