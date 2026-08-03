@@ -238,13 +238,13 @@ class _SocietyScreenState extends State<SocietyScreen> {
                 ),
               ),
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 12,
+                top: MediaQuery.of(context).padding.top + (isSmall ? 8 : 10),
                 left: 0,
                 right: 0,
-                bottom: 20,
+                bottom: isSmall ? 12 : 16,
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -252,82 +252,83 @@ class _SocietyScreenState extends State<SocietyScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 6 : 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  width: isSmall ? 28 : 32,
+                                  height: isSmall ? 28 : 32,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              SizedBox(width: isSmall ? 6 : 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'YOUR SERVICES',
+                                    style: TextStyle(
+                                      fontSize: isSmall ? 8 : 9,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Personal Services',
+                                    style: TextStyle(
+                                      fontSize: isSmall ? 10 : 11,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Row(
+                        Row(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: 32,
-                                height: 32,
-                                fit: BoxFit.cover,
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const EmergencySosScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(isSmall ? 6 : 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text('🚨', style: TextStyle(fontSize: isSmall ? 18 : 20)),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'YOUR SERVICES',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'Personal Services',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            SizedBox(width: isSmall ? 6 : 8),
+                            Container(
+                              padding: EdgeInsets.all(isSmall ? 6 : 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text('🔔', style: TextStyle(fontSize: isSmall ? 18 : 20)),
                             ),
                           ],
                         ),
-                      ),
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const EmergencySosScreen(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text('🚨', style: TextStyle(fontSize: 20)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text('🔔', style: TextStyle(fontSize: 20)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   const SizedBox(height: 16),
                   // Society Name
                   Text(
