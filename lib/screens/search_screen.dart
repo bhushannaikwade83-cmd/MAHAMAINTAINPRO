@@ -591,7 +591,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: isSmall ? 12 : 14,
                     mainAxisSpacing: isSmall ? 14 : 16,
-                    childAspectRatio: 0.85,
+                    childAspectRatio: 0.68,
                     children: [
                       _buildActionCard(
                         emoji: '🧾',
