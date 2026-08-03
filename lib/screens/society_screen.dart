@@ -358,20 +358,58 @@ class _SocietyScreenState extends State<SocietyScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Search Bar
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search services, society',
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
+                  // Quick Actions Grid
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 0.9,
+                    children: [
+                      _buildQuickActionTile(
+                        emoji: '🧾',
+                        title: 'View Bill',
+                        subtitle: '₹4,850 due',
+                        color: const Color(0xFFFFFAF0),
+                        accentColor: Colors.orange,
                       ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
+                      _buildQuickActionTile(
+                        emoji: '✍️',
+                        title: 'Complaint',
+                        subtitle: '5 open',
+                        color: const Color(0xFFFFE5E5),
+                        accentColor: Colors.red,
+                      ),
+                      _buildQuickActionTile(
+                        emoji: '🛵',
+                        title: 'Visitor Gate',
+                        subtitle: '3 pending',
+                        color: const Color(0xFFF0F5FF),
+                        accentColor: Colors.teal,
+                      ),
+                      _buildQuickActionTile(
+                        emoji: '🔑',
+                        title: 'Tenant Info',
+                        subtitle: '124 units',
+                        color: const Color(0xFFE5F5FF),
+                        accentColor: Colors.blue,
+                      ),
+                      _buildQuickActionTile(
+                        emoji: '🚗',
+                        title: 'Parking',
+                        subtitle: '98 spaces',
+                        color: const Color(0xFFFFE5F5),
+                        accentColor: Colors.purple,
+                      ),
+                      _buildQuickActionTile(
+                        emoji: '📊',
+                        title: 'Insights',
+                        subtitle: 'Trends',
+                        color: const Color(0xFFE5F5E5),
+                        accentColor: Colors.green,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -726,6 +764,81 @@ class _SocietyScreenState extends State<SocietyScreen> {
           ),
           Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 20),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionTile({
+    required String emoji,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required Color accentColor,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Opening $title...'), duration: const Duration(seconds: 1)),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: accentColor.withOpacity(0.2),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: accentColor.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: accentColor.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                emoji,
+                style: const TextStyle(fontSize: 22),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
