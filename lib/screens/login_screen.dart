@@ -456,6 +456,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 ),
                               ),
                             ),
+                            SizedBox(height: isSmall ? 16 : 20),
+
+                            // Demo Credentials Section
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isSmall ? 12 : 14,
+                                vertical: isSmall ? 12 : 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.blue.shade200,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '🎯 Demo Credentials',
+                                    style: TextStyle(
+                                      fontSize: isSmall ? 12 : 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                  ),
+                                  SizedBox(height: isSmall ? 8 : 10),
+                                  // Individual Demo Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: isSmall ? 38 : 42,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        _emailController.text = 'member@gmail.com';
+                                        setState(() {});
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue.shade600,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: Text(
+                                        '👤 Individual: member@gmail.com',
+                                        style: TextStyle(
+                                          fontSize: isSmall ? 11 : 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: isSmall ? 8 : 10),
+                                  // Society Demo Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: isSmall ? 38 : 42,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        _emailController.text = 'society@gmail.com';
+                                        setState(() {});
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.saffron,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: Text(
+                                        '🏢 Society: society@gmail.com',
+                                        style: TextStyle(
+                                          fontSize: isSmall ? 11 : 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
