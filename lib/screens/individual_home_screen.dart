@@ -1058,16 +1058,16 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                 Expanded(
                   child: Center(
                     child: Container(
-                      width: isSmall ? 52 : 60,
-                      height: isSmall ? 52 : 60,
+                      width: isSmall ? 44 : 52,
+                      height: isSmall ? 44 : 52,
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFF0E6),
-                        borderRadius: BorderRadius.circular(isSmall ? 14 : 16),
+                        borderRadius: BorderRadius.circular(isSmall ? 12 : 14),
                       ),
                       child: Center(
                         child: Text(
                           emoji,
-                          style: TextStyle(fontSize: isSmall ? 30 : 36),
+                          style: TextStyle(fontSize: isSmall ? 26 : 30),
                         ),
                       ),
                     ),
