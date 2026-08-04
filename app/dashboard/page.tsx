@@ -1,203 +1,160 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { LogOut, TrendingUp, Trophy, Target, AlertCircle } from 'lucide-react';
+import { useLeads } from '@/hooks/useLeads';
+import { useAuth } from '@/hooks/useAuth';
+import { StatCard } from '@/components/StatCard';
+import { Card, CardBody, CardHeader } from '@/components/Card';
+import { Table } from '@/components/Table';
+import { Badge } from '@/components/Badge';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { TrendingUp, Users, CheckCircle, Calendar } from 'lucide-react';
+import Link from 'next/link';
+import { LeadStage } from '@/types/common';
 
-const mockLeads = [
-  { id: 1, society: 'Green Valley Society', contact: 'Rajesh Sharma', city: 'Pune', stage: 'Discovery', value: 50000 },
-  { id: 2, society: 'Sky High Towers', contact: 'Priya Patel', city: 'Mumbai', stage: 'Demo Booked', value: 75000 },
-  { id: 3, society: 'Eco Living', contact: 'Amit Kumar', city: 'Bangalore', stage: 'Proposal Sent', value: 100000 },
+const monthlyData = [
+  { name: 'Jan', revenue: 4000 },
+  { name: 'Feb', revenue: 3000 },
+  { name: 'Mar', revenue: 2000 },
+  { name: 'Apr', revenue: 2780 },
+  { name: 'May', revenue: 1890 },
+  { name: 'Jun', revenue: 2390 },
+  { name: 'Jul', revenue: 3490 },
 ];
 
-const chartData = [
-  { month: 'Jan', value: 25000 },
-  { month: 'Feb', value: 35000 },
-  { month: 'Mar', value: 45000 },
-  { month: 'Apr', value: 55000 },
-  { month: 'May', value: 65000 },
-  { month: 'Jun', value: 85000 },
-];
-
-const stageData = [
-  { name: 'Lead', value: 12, color: '#9CA3AF' },
-  { name: 'Discovery', value: 8, color: '#14B8A6' },
-  { name: 'Demo', value: 5, color: '#F97316' },
-  { name: 'Proposal', value: 4, color: '#6366F1' },
-  { name: 'Won', value: 3, color: '#10B981' },
+const stageDistribution = [
+  { name: 'New', value: 45, color: '#3b82f6' },
+  { name: 'Contacted', value: 30, color: '#fbbf24' },
+  { name: 'Qualified', value: 25, color: '#a78bfa' },
+  { name: 'Proposal Sent', value: 20, color: '#818cf8' },
+  { name: 'Won', value: 35, color: '#10b981' },
+  { name: 'Lost', value: 15, color: '#ef4444' },
 ];
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { leads } = useLeads();
 
-  useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    if (!auth) {
-      router.push('/login');
-    } else {
-      setIsAuthenticated(true);
-      setLoading(false);
-    }
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    router.push('/login');
-  };
-
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  if (!isAuthenticated) return null;
+  const openLeads = leads.filter((l) => ![LeadStage.Won, LeadStage.Lost].includes(l.stage)).length;
+  const wonLeads = leads.filter((l) => l.stage === LeadStage.Won).length;
+  const recentLeads = leads.slice(0, 10);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              MahaMaintain <span className="text-orange-500">CRM</span>
-            </h1>
-            <p className="text-sm text-gray-500">Admin Dashboard</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400">Welcome back, {user?.name}! Here's an overview of your business.</p>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex gap-8">
-            <a href="/dashboard" className="py-4 px-1 border-b-2 border-orange-500 text-orange-600 font-medium">
-              Dashboard
-            </a>
-            <a href="/pipeline" className="py-4 px-1 border-b-2 border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300">
-              Pipeline
-            </a>
-            <a href="/leads" className="py-4 px-1 border-b-2 border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300">
-              Leads
-            </a>
-          </nav>
-        </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Open Leads"
+          value={openLeads}
+          trend={{ direction: 'up', value: 12 }}
+          icon={<TrendingUp className="w-6 h-6 text-orange-600" />}
+        />
+        <StatCard
+          title="Active Customers"
+          value="24"
+          trend={{ direction: 'up', value: 8 }}
+          icon={<Users className="w-6 h-6 text-orange-600" />}
+        />
+        <StatCard
+          title="Won This Month"
+          value={wonLeads}
+          trend={{ direction: 'up', value: 23 }}
+          icon={<CheckCircle className="w-6 h-6 text-orange-600" />}
+        />
+        <StatCard
+          title="Pending Follow-ups"
+          value="7"
+          trend={{ direction: 'down', value: 4 }}
+          icon={<Calendar className="w-6 h-6 text-orange-600" />}
+        />
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Open Pipeline</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">₹45.2L</p>
-              </div>
-              <TrendingUp className="text-teal-500" size={32} />
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Won This Month</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">₹25L</p>
-              </div>
-              <Trophy className="text-green-500" size={32} />
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Win Rate</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">68%</p>
-              </div>
-              <Target className="text-orange-500" size={32} />
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Overdue Follow-ups</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">4</p>
-              </div>
-              <AlertCircle className="text-red-500" size={32} />
-            </div>
-          </div>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {/* Revenue Trend */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue</h2>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Revenue Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Monthly Revenue</h2>
+          </CardHeader>
+          <CardBody>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
+              <LineChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => `₹${value}`} />
-                <Line type="monotone" dataKey="value" stroke="#F97316" strokeWidth={2} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="#f97316" name="Revenue ($)" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </CardBody>
+        </Card>
 
-          {/* Pipeline Distribution */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pipeline Stages</h2>
+        {/* Stage Distribution */}
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pipeline Distribution</h2>
+          </CardHeader>
+          <CardBody>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={stageData} cx="50%" cy="50%" labelLine={false} label={({ name, value }) => `${name}: ${value}`} outerRadius={80} dataKey="value">
-                  {stageData.map((entry, index) => (
+                <Pie
+                  data={stageDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {stageDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Recent Leads */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Leads</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-gray-600 font-medium">Society</th>
-                  <th className="px-4 py-3 text-left text-gray-600 font-medium">Contact</th>
-                  <th className="px-4 py-3 text-left text-gray-600 font-medium">City</th>
-                  <th className="px-4 py-3 text-left text-gray-600 font-medium">Stage</th>
-                  <th className="px-4 py-3 text-left text-gray-600 font-medium">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockLeads.map((lead) => (
-                  <tr key={lead.id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-900 font-medium">{lead.society}</td>
-                    <td className="px-4 py-3 text-gray-700">{lead.contact}</td>
-                    <td className="px-4 py-3 text-gray-700">{lead.city}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-medium">
-                        {lead.stage}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-900 font-medium">₹{(lead.value / 100000).toFixed(1)}L</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       </div>
+
+      {/* Recent Leads Table */}
+      <Card>
+        <CardHeader className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Leads</h2>
+          <Link href="/leads" className="text-orange-600 hover:text-orange-700 text-sm font-medium">
+            View all
+          </Link>
+        </CardHeader>
+        <CardBody>
+          <Table
+            columns={[
+              { key: 'name', label: 'Name' },
+              { key: 'phone', label: 'Phone' },
+              { key: 'email', label: 'Email' },
+              {
+                key: 'stage',
+                label: 'Stage',
+                render: (value) => <Badge variant="stage" value={value} />,
+              },
+              {
+                key: 'createdAt',
+                label: 'Created',
+                render: (value: Date) => new Date(value).toLocaleDateString(),
+              },
+            ]}
+            data={recentLeads}
+            keyExtractor={(row) => row.id}
+            isEmpty={recentLeads.length === 0}
+            emptyMessage="No leads yet"
+          />
+        </CardBody>
+      </Card>
     </div>
   );
 }
