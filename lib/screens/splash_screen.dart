@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
             child: Opacity(
               opacity: 0.3,
               child: Image.asset(
-                'assets/images/india_map.png',
+                'assets/images/maharashtra.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(); // Fallback if image not found
