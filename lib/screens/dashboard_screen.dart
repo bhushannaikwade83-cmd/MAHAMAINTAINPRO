@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'individual_dashboard_screen.dart';
-import 'society_dashboard_screen.dart';
 
-/// Router screen that displays the appropriate dashboard based on user role.
-/// This screen is never displayed directly - it immediately shows the correct dashboard.
+/// Router screen that displays the Individual Dashboard for all users.
+/// User role is passed to child screens to customize content (e.g., Society tab).
 class DashboardScreen extends StatelessWidget {
   final String userRole;
   final VoidCallback onLogout;
@@ -16,16 +15,13 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Route to the appropriate independent dashboard based on user role
-    // Each dashboard is completely independent with its own state
     print('🎯 DashboardScreen - userRole: $userRole');
-    if (userRole == 'society') {
-      print('🏢 Loading SOCIETY Dashboard');
-      return SocietyDashboardScreen(onLogout: onLogout);
-    } else {
-      // Individual/user dashboard
-      print('👤 Loading INDIVIDUAL Dashboard');
-      return IndividualDashboardScreen(onLogout: onLogout);
-    }
+    // All users see the same dashboard structure
+    // User role is passed to customize content in tabs (e.g., Society tab)
+    print('📱 Loading INDIVIDUAL Dashboard structure for all users');
+    return IndividualDashboardScreen(
+      onLogout: onLogout,
+      userRole: userRole,
+    );
   }
 }
