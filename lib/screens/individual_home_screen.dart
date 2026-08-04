@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../config/app_theme.dart';
 import 'live_tracking_screen.dart';
 import 'service_category_screen.dart';
@@ -13,20 +14,38 @@ class IndividualHomeScreen extends StatefulWidget {
 class _SearchScreenState extends State<IndividualHomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   late PageController _pageController;
+  late Timer _bannerTimer;
   bool isDarkMode = false;
   int notificationCount = 3;
   int _currentBannerIndex = 0;
+  final int _totalBanners = 3;
+  final int _bannerSlideDelay = 4; // seconds
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _startAutoSlide();
+  }
+
+  void _startAutoSlide() {
+    _bannerTimer = Timer.periodic(Duration(seconds: _bannerSlideDelay), (timer) {
+      if (_pageController.hasClients) {
+        final nextPage = (_currentBannerIndex + 1) % _totalBanners;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _pageController.dispose();
+    _bannerTimer.cancel();
     super.dispose();
   }
 
