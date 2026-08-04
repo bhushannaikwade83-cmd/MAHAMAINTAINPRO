@@ -4,6 +4,7 @@ import '../config/app_theme.dart';
 import 'live_tracking_screen.dart';
 import 'service_category_screen.dart';
 import 'society_screen.dart';
+import 'sos_contacts_screen.dart';
 
 class IndividualHomeScreen extends StatefulWidget {
   const IndividualHomeScreen({Key? key}) : super(key: key);
@@ -558,7 +559,12 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            _showSecretaryContactDialog();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SOSContactsScreen(),
+                              ),
+                            );
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(vertical: isSmall ? 10 : 12, horizontal: 12),
