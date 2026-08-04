@@ -32,9 +32,11 @@ class _SplashScreenState extends State<SplashScreen> {
             width: double.infinity,
             height: double.infinity,
             decoration: const BoxDecoration(color: Color(0xFF0A1128)),
-            child: Image.asset(
-              'assets/images/maharashtra.png',
-              fit: BoxFit.cover,
+            child: Opacity(
+              opacity: 1.0,
+              child: Image.asset(
+                'assets/images/maharashtra.png',
+                fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 print('❌ IMAGE LOAD ERROR: $error');
                 print('📍 Stack trace: $stackTrace');
@@ -53,6 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 print('✅ Image loaded successfully! Frame: $frame');
                 return child;
               },
+              ),
             ),
           ),
           Positioned(
