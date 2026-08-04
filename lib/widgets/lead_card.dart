@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/lead.dart';
-import '../utils/constants.dart';
+import '../config/app_theme.dart';
 
 class LeadCard extends StatelessWidget {
   final Lead lead;
@@ -16,13 +16,13 @@ class LeadCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      color: AppColors.cardWhite,
+      color: AppTheme.cardLight,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
           color: lead.isOverdue
-              ? AppColors.danger.withOpacity(0.4)
+              ? Colors.red.withOpacity(0.4)
               : Colors.black.withOpacity(0.06),
         ),
       ),
@@ -39,7 +39,7 @@ class LeadCard extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13.5,
-                  color: AppColors.textDark,
+                  color: AppTheme.textPrimary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -48,7 +48,7 @@ class LeadCard extends StatelessWidget {
               Text(
                 '${lead.contactPersonName} · ${lead.city}',
                 style: const TextStyle(
-                    fontSize: 11.5, color: AppColors.textMuted),
+                    fontSize: 11.5, color: AppTheme.textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -60,16 +60,16 @@ class LeadCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.teal,
+                      color: AppTheme.teal,
                     ),
                   ),
                   const Spacer(),
                   if (lead.isOverdue)
                     const Icon(Icons.warning_amber_rounded,
-                        size: 15, color: AppColors.danger)
+                        size: 15, color: Colors.red)
                   else if (lead.nextFollowUpAt != null)
                     const Icon(Icons.event_available,
-                        size: 15, color: AppColors.textMuted),
+                        size: 15, color: AppTheme.textSecondary),
                 ],
               ),
             ],
