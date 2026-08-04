@@ -549,6 +549,85 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),
+                  SizedBox(height: isSmall ? 14 : 18),
+                  // Quick Action Buttons
+                  Row(
+                    children: [
+                      // SOS Button
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            _showSecretaryContactDialog();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: isSmall ? 10 : 12, horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE63946),
+                              borderRadius: BorderRadius.circular(isSmall ? 12 : 14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFE63946).withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '🆘 SOS',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 12 : 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: isSmall ? 10 : 12),
+                      // Access Society Features Button
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Opening Society Dashboard...')),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: isSmall ? 10 : 12, horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: AppTheme.saffron,
+                              borderRadius: BorderRadius.circular(isSmall ? 12 : 14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.saffron.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '🏢 Society',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 12 : 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   SizedBox(height: isSmall ? 16 : 20),
                   GridView.count(
                     crossAxisCount: 3,
@@ -1072,6 +1151,94 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
       ),
     );
     // In production: launchUrl(Uri.parse(whatsappUrl))
+  }
+
+  void _showSecretaryContactDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            const Text('🆘 ', style: TextStyle(fontSize: 20)),
+            const Text('Secretary Contact', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE63946).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Shri Ramdev Park Secretary',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.phone, color: AppTheme.saffron, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        '+91 98765 43210',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFE63946),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.email, color: AppTheme.saffron, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'secretary@ramdevpark.in',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              final message = Uri.encodeComponent('Emergency: Need immediate assistance');
+              final whatsappUrl = 'https://wa.me/919876543210?text=$message';
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Opening WhatsApp...')),
+              );
+            },
+            child: const Text('📱 WhatsApp', style: TextStyle(color: Color(0xFF25D366))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildHeroBanner({
