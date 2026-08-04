@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../config/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onSplashComplete;
@@ -18,14 +17,14 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1800),
       vsync: this,
     );
 
@@ -33,14 +32,14 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
 
     _animationController.forward();
 
-    // Navigate to login after 3 seconds
-    Timer(const Duration(seconds: 3), () {
+    // Navigate to login after 3.5 seconds
+    Timer(const Duration(milliseconds: 3500), () {
       widget.onSplashComplete();
     });
   }
@@ -53,11 +52,13 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: AppTheme.saffron,
+      backgroundColor: const Color(0xFF0A1128),
       body: Stack(
         children: [
-          // Gradient background
+          // Deep Navy Background with subtle gradient
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -66,183 +67,168 @@ class _SplashScreenState extends State<SplashScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppTheme.saffron,
-                  AppTheme.saffron.withOpacity(0.85),
-                  const Color(0xFFE8860B),
+                  const Color(0xFF0A1128),
+                  const Color(0xFF121212).withOpacity(0.95),
+                  const Color(0xFF0F0F1E),
                 ],
               ),
             ),
           ),
 
-          // Decorative top-left circle
+          // Decorative blob - top right
           Positioned(
-            top: -50,
-            left: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
-              ),
-            ),
-          ),
-
-          // Decorative bottom-right circle
-          Positioned(
-            bottom: -80,
+            top: -100,
             right: -80,
             child: Container(
-              width: 250,
-              height: 250,
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.06),
+                color: const Color(0xFFFF6F00).withOpacity(0.05),
               ),
             ),
           ),
 
-          // Decorative top-right accent
+          // Decorative blob - bottom left
           Positioned(
-            top: 60,
-            right: -30,
+            bottom: -120,
+            left: -60,
             child: Container(
-              width: 150,
-              height: 150,
+              width: 320,
+              height: 320,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+                color: const Color(0xFFFFD700).withOpacity(0.03),
               ),
             ),
           ),
 
           // Content
-          Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // App Icon
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        width: 180,
-                        height: 180,
-                        fit: BoxFit.cover,
+          Column(
+            children: [
+              // Top Section (Empty/Transparent for safe area)
+              SizedBox(height: screenHeight * 0.15),
+
+              // Center Section (Main Calligraphy)
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // App Icon/Symbol (optional - you can replace with your symbol)
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFFFF6F00).withOpacity(0.15),
+                              border: Border.all(
+                                color: const Color(0xFFFF6F00).withOpacity(0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '🙏',
+                                style: TextStyle(fontSize: 40),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 48),
+
+                          // Main Calligraphy - Vishwas (विश्वास)
+                          RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'विश्वास',
+                                  style: const TextStyle(
+                                    color: Color(0xFFFF6F00),
+                                    fontSize: 72,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 2,
+                                    height: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Subtitle - Maharashtra-cha (महाराष्ट्राचा)
+                          Text(
+                            'महाराष्ट्राचा',
+                            style: TextStyle(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
+                ),
+              ),
 
-                    const SizedBox(height: 32),
-
-                    // Title
-                    const Text(
-                      'MahaMaintain',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    const Text(
-                      'Pro',
-                      style: TextStyle(
-                        color: Color(0xFFFFD700),
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Jai Maharashtra with hands
-                    const Text(
-                      '🙏 जय महाराष्ट्र! 🙏',
-                      style: TextStyle(
-                        color: Color(0xFFFFD700),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Trust tagline
-                    const Text(
-                      'महाराष्ट्र का विश्वास',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Description
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        "Maharashtra's Smartest Home & Society Services",
-                        textAlign: TextAlign.center,
+              // Bottom Section (Tagline & Loader)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 80),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    children: [
+                      // Tagline
+                      Text(
+                        '"महाराष्ट्राचा स्वतःचा डिजिटल मंच"',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          height: 1.4,
+                          color: const Color(0xFFE0E0E0),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: 48),
+
+                      // Loading Spinner
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(
+                            const Color(0xFFFF6F00).withOpacity(0.8),
+                          ),
+                          strokeWidth: 2.5,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
 
+                      const SizedBox(height: 16),
 
-          // Loading indicator at bottom
-          Positioned(
-            bottom: 50,
-            left: 0,
-            right: 0,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Center(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(
-                          Colors.white.withOpacity(0.8),
+                      // Version
+                      Text(
+                        'v1.0.0',
+                        style: TextStyle(
+                          color: const Color(0xFFE0E0E0).withOpacity(0.6),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
                         ),
-                        strokeWidth: 2.5,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Loading...',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
