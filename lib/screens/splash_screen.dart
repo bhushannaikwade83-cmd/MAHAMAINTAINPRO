@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 /// Splash screen — "विश्वास महाराष्ट्राचा"
 ///
 /// pubspec.yaml:
 ///   flutter:
 ///     assets:
-///       - assets/images/splash_bg.png
+///       - assets/images/maharashtra.png
 ///     fonts:
 ///       - family: NotoSerifDevanagari
 ///         fonts:
@@ -13,8 +14,23 @@ import 'package:flutter/material.dart';
 ///             weight: 700
 ///           - asset: assets/fonts/NotoSerifDevanagari-Regular.ttf
 ///             weight: 400
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
+class SplashScreen extends StatefulWidget {
+  final VoidCallback? onSplashComplete;
+
+  const SplashScreen({this.onSplashComplete, super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(const Duration(milliseconds: 3500), () {
+      widget.onSplashComplete?.call();
+    });
+  }
 
   static const Color _bgNavy = Color(0xFF0A1020);
   static const Color _saffron = Color(0xFFD9761F);
