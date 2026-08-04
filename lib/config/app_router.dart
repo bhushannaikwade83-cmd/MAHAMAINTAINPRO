@@ -13,6 +13,7 @@ class AppRouter {
 
   // Demo emails for society users - used to determine user type
   static const List<String> _societyDemoEmails = [
+    'society@gmail.com',      // Main society demo button
     'society@maha.com',
     'admin@society.com',
     'societyadmin@demo.com',
