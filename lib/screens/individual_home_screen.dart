@@ -3,6 +3,7 @@ import 'dart:async';
 import '../config/app_theme.dart';
 import 'live_tracking_screen.dart';
 import 'service_category_screen.dart';
+import 'society_tab_screen.dart';
 
 class IndividualHomeScreen extends StatefulWidget {
   const IndividualHomeScreen({Key? key}) : super(key: key);
@@ -589,13 +590,11 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                         ),
                       ),
                       SizedBox(width: isSmall ? 10 : 12),
-                      // Access Society Features Button
+                      // Access Society Dashboard Button
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Opening Society Dashboard...')),
-                            );
+                            _navigateToSocietyDashboard();
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(vertical: isSmall ? 10 : 12, horizontal: 12),
@@ -614,12 +613,13 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  '🏢 Society',
+                                  '🏛️ Access Society Dashboard',
                                   style: TextStyle(
-                                    fontSize: isSmall ? 12 : 13,
+                                    fontSize: isSmall ? 11 : 12,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -1151,6 +1151,15 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
       ),
     );
     // In production: launchUrl(Uri.parse(whatsappUrl))
+  }
+
+  void _navigateToSocietyDashboard() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SocietyTabScreen(),
+      ),
+    );
   }
 
   void _showSecretaryContactDialog() {
