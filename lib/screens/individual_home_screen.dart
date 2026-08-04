@@ -97,16 +97,11 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
       backgroundColor: bgColor,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const LiveTrackingScreen(),
-            ),
-          );
+          _openWhatsApp();
         },
-        backgroundColor: AppTheme.saffron,
+        backgroundColor: const Color(0xFF25D366),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Icon(Icons.arrow_forward, color: Colors.white, size: isSmall ? 22 : 26),
+        child: Icon(Icons.whatsapp, color: Colors.white, size: isSmall ? 24 : 28),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -1029,6 +1024,20 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
         ),
       ),
     );
+  }
+
+  void _openWhatsApp() {
+    final message = Uri.encodeComponent('Hi! I need help with a service.');
+    final whatsappUrl = 'https://wa.me/919876543210?text=$message';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening WhatsApp...'),
+        backgroundColor: Color(0xFF25D366),
+        duration: Duration(seconds: 1),
+      ),
+    );
+    // In production: launchUrl(Uri.parse(whatsappUrl))
   }
 
   Widget _buildHeroBanner({
