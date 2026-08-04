@@ -18,10 +18,13 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Route to the appropriate independent dashboard based on user role
     // Each dashboard is completely independent with its own state
+    print('🎯 DashboardScreen - userRole: $userRole');
     if (userRole == 'society') {
+      print('🏢 Loading SOCIETY Dashboard');
       return SocietyDashboardScreen(onLogout: onLogout);
     } else {
       // Individual/user dashboard
+      print('👤 Loading INDIVIDUAL Dashboard');
       return IndividualDashboardScreen(onLogout: onLogout);
     }
   }

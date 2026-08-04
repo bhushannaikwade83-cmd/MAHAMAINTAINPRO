@@ -66,11 +66,17 @@ class AppRouter {
             email: _currentEmailForOtp,
             onVerificationSuccess: (email) {
               // Detect if user is from society based on demo email
+              print('🔍 OTP Verification - Email: $email');
+              print('📧 Email lowercase: ${email?.toLowerCase()}');
+              print('📋 Society emails: $_societyDemoEmails');
               if (_societyDemoEmails.contains(email?.toLowerCase())) {
+                print('✅ SOCIETY USER DETECTED');
                 setUserRole('society');
               } else {
+                print('👤 INDIVIDUAL USER DETECTED');
                 setUserRole('individual');
               }
+              print('🎯 Final role set to: $_userRole');
               context.go('/dashboard');
             },
             onBackPress: () {
