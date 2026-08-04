@@ -95,20 +95,47 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _openWhatsApp();
-        },
-        backgroundColor: const Color(0xFF25D366),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Text(
-          'W',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: isSmall ? 28 : 32,
-            fontWeight: FontWeight.bold,
+      floatingActionButton: Stack(
+        children: [
+          // WhatsApp FAB - Bottom Right
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: () {
+                _openWhatsApp();
+              },
+              backgroundColor: const Color(0xFF25D366),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Text(
+                'W',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isSmall ? 28 : 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
-        ),
+          // Tracking FAB - Bottom Left
+          Positioned(
+            bottom: 16,
+            left: 16,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LiveTrackingScreen(),
+                  ),
+                );
+              },
+              backgroundColor: AppTheme.saffron,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Icon(Icons.location_on, color: Colors.white, size: isSmall ? 22 : 26),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
