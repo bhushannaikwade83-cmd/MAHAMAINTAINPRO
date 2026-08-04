@@ -256,9 +256,16 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              _buildTicketCard('Water leakage — B Wing Corridor', 'Ticket #MRP-2847-3812 • 15 Jun', 'In Progress', Colors.amber),
-              _buildTicketCard('Lift not working — Tower A', 'Ticket #MRP-2847-3791 • 10 Jun', 'Resolved ✓', Colors.green),
-              _buildTicketCard('Gate motor making noise', 'Ticket #MRP-2847-3788 • 8 Jun', 'Resolved ✓', Colors.green),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _buildTicketCard('Water leakage — B Wing Corridor', 'Ticket #MRP-2847-3812 • 15 Jun', 'In Progress', Colors.amber),
+                    _buildTicketCard('Lift not working — Tower A', 'Ticket #MRP-2847-3791 • 10 Jun', 'Resolved ✓', Colors.green),
+                    _buildTicketCard('Gate motor making noise', 'Ticket #MRP-2847-3788 • 8 Jun', 'Resolved ✓', Colors.green),
+                  ],
+                ),
+              ),
               const SizedBox(height: 24),
 
               // Society Notices Section
@@ -288,8 +295,15 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              _buildNoticeCard('Water Supply Shutdown — 18 Jun', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', 'Posted by Committee • Today', Colors.orange),
-              _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', const Color(0xFFE67E22)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _buildNoticeCard('Water Supply Shutdown — 18 Jun', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', 'Posted by Committee • Today', Colors.orange),
+                    _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', const Color(0xFFE67E22)),
+                  ],
+                ),
+              ),
               const SizedBox(height: 30),
             ] else if (_selectedTab == 1) ...[
               // Photos Tab Content
@@ -422,6 +436,7 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
                     _buildCategoryNotice('EVENT', '🎉', 'AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', const Color(0xFF1ABC9C), '2 days ago'),
                     const SizedBox(height: 12),
                     _buildCategoryNotice('AMENITY UPDATE', '🏊', 'Pool Maintenance Schedule', 'Pool will be closed on weekends for maintenance.', Colors.amber, '5 days ago'),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
@@ -435,7 +450,7 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
 
   Widget _buildTicketCard(String title, String subtitle, String status, Color statusColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -499,7 +514,7 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
 
   Widget _buildNoticeCard(String title, String description, String footer, Color accentColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
