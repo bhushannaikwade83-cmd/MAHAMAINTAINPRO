@@ -63,15 +63,9 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
     ];
   }
 
-  // Get screens based on user role
-  List<Widget> get _screens {
-    if (!mounted) return [];
-    _updateScreens();
-    return _screens;
-  }
-
   @override
   Widget build(BuildContext context) {
+    _updateScreens();
     return Scaffold(
       body: _screens[_selectedTab],
       bottomNavigationBar: CustomFooter(
