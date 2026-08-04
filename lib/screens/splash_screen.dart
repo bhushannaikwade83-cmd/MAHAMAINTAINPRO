@@ -82,13 +82,10 @@ class _SplashScreenState extends State<SplashScreen>
             right: 0,
             bottom: 0,
             child: Opacity(
-              opacity: 0.3,
+              opacity: 0.35,
               child: Image.asset(
                 'assets/images/maharashtra.png',
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(); // Fallback if image not found
-                },
               ),
             ),
           ),
