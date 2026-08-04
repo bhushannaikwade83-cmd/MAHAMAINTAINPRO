@@ -3,7 +3,7 @@ import 'dart:async';
 import '../config/app_theme.dart';
 import 'live_tracking_screen.dart';
 import 'service_category_screen.dart';
-import 'society_tab_screen.dart';
+import 'society_screen.dart';
 
 class IndividualHomeScreen extends StatefulWidget {
   const IndividualHomeScreen({Key? key}) : super(key: key);
@@ -1157,7 +1157,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SocietyTabScreen(),
+        builder: (context) => const SocietyScreen(),
       ),
     );
   }
