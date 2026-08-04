@@ -208,6 +208,7 @@ class _FestivalServicesScreenState extends State<FestivalServicesScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

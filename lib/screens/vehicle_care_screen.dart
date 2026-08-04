@@ -208,6 +208,7 @@ class _VehicleCareScreenState extends State<VehicleCareScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

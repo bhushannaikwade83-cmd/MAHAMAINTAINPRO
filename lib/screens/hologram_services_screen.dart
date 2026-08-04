@@ -208,6 +208,7 @@ class _HologramServicesScreenState extends State<HologramServicesScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

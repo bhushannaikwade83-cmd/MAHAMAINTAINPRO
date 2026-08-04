@@ -208,6 +208,7 @@ class _PestControlScreenState extends State<PestControlScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

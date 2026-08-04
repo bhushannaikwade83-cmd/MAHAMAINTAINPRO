@@ -208,6 +208,7 @@ class _MensSalonScreenState extends State<MensSalonScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

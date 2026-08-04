@@ -208,6 +208,7 @@ class _HealthCareScreenState extends State<HealthCareScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

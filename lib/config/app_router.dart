@@ -7,10 +7,11 @@ import '../screens/dashboard_screen.dart';
 class AppRouter {
   static String? _currentPhoneForOtp;
   static String? _currentEmailForOtp;
-  // Role is now assigned by admin panel, not selected by user
-  static String _userRole = 'individual'; // Default role from admin panel
+  // Each session's role is determined based on email during OTP verification
+  // This prevents state bleeding between individual and society dashboards
+  static String _userRole = 'individual'; // Default role, updated on login
 
-  // Demo emails for society users
+  // Demo emails for society users - used to determine user type
   static const List<String> _societyDemoEmails = [
     'society@maha.com',
     'admin@society.com',

@@ -208,6 +208,7 @@ class _HomePaintingScreenState extends State<HomePaintingScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

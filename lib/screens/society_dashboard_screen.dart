@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import '../config/app_theme.dart';
 import '../widgets/custom_footer.dart';
 import 'emergency_sos_screen.dart';
 import 'profile_screen.dart';
 import 'ai_chat_screen.dart';
 
 class SocietyDashboardScreen extends StatefulWidget {
-  const SocietyDashboardScreen({Key? key}) : super(key: key);
+  final VoidCallback onLogout;
+
+  const SocietyDashboardScreen({
+    required this.onLogout,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<SocietyDashboardScreen> createState() => _SocietyDashboardScreenState();

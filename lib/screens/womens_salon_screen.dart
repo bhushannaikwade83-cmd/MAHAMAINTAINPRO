@@ -600,6 +600,7 @@ class _WomensSalonScreenState extends State<WomensSalonScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

@@ -756,6 +756,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

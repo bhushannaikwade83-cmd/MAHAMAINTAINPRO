@@ -208,6 +208,7 @@ class _ElectricianPlumberScreenState extends State<ElectricianPlumberScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }
