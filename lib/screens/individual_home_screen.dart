@@ -12,8 +12,23 @@ class IndividualHomeScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<IndividualHomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  late PageController _pageController;
   bool isDarkMode = false;
   int notificationCount = 3;
+  int _currentBannerIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   // Dark mode color getters
   Color get bgColor => isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFFAF3ED);
@@ -59,17 +74,16 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
       backgroundColor: bgColor,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Opening chat...'),
-              backgroundColor: const Color(0xFF4A7C7E),
-              duration: Duration(seconds: 1),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LiveTrackingScreen(),
             ),
           );
         },
-        backgroundColor: const Color(0xFF4A7C7E),
+        backgroundColor: AppTheme.saffron,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Icon(Icons.chat_bubble_outline, color: Colors.white, size: isSmall ? 24 : 28),
+        child: Icon(Icons.arrow_forward, color: Colors.white, size: isSmall ? 22 : 26),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -307,181 +321,59 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Active Booking Card
+            // Hero Banner Carousel
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LiveTrackingScreen(),
+              padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: isSmall ? 140 : 160,
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() => _currentBannerIndex = index);
+                      },
+                      children: [
+                        _buildHeroBanner(
+                          title: '50% Off Cleaning Services',
+                          subtitle: 'Limited time offer',
+                          bgColor: const Color(0xFFE8F4F8),
+                          textColor: const Color(0xFF2C5F7F),
+                        ),
+                        _buildHeroBanner(
+                          title: 'Book Expert Plumber',
+                          subtitle: '24/7 Emergency Service',
+                          bgColor: const Color(0xFFF0E8F8),
+                          textColor: const Color(0xFF5F2C7F),
+                        ),
+                        _buildHeroBanner(
+                          title: 'Free AC Maintenance Check',
+                          subtitle: 'This month only',
+                          bgColor: const Color(0xFFF8E8E8),
+                          textColor: const Color(0xFF7F2C2C),
+                        ),
+                      ],
                     ),
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFFFFF9F6), Color(0xFFFFE8DC)],
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: AppTheme.saffron.withOpacity(0.4),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.saffron.withOpacity(0.15),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                      BoxShadow(
-                        color: AppTheme.saffron.withOpacity(0.08),
-                        blurRadius: 32,
-                        offset: const Offset(0, 12),
-                      ),
-                    ],
                   ),
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      // Left Side - Text Content
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF4A7C7E),
-                                    borderRadius: BorderRadius.circular(5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF4A7C7E).withOpacity(0.5),
-                                        blurRadius: 6,
-                                        spreadRadius: 1,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Active Booking',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF4A7C7E),
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Today • In Progress',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFFFE5E5),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text('🧹', style: const TextStyle(fontSize: 20)),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Bathroom Deep Clean',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                          color: Colors.black87,
-                                          letterSpacing: -0.3,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        'Suresh arriving in 14 min',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade700,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                  SizedBox(height: isSmall ? 8 : 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      3,
+                      (index) => Container(
+                        width: _currentBannerIndex == index ? 28 : 8,
+                        height: 8,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: _currentBannerIndex == index
+                              ? AppTheme.saffron
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      // Right Side - Button & Time Badge
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: AppTheme.saffron,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.saffron.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Icon(Icons.arrow_forward, color: Colors.white, size: 22),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF4A7C7E).withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: const Color(0xFF4A7C7E).withOpacity(0.25),
-                                width: 1,
-                              ),
-                            ),
-                            child: const Text(
-                              '14 min',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF4A7C7E),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -1116,9 +1008,51 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  Widget _buildHeroBanner({
+    required String title,
+    required String subtitle,
+    required Color bgColor,
+    required Color textColor,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Opening $title...')),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+                letterSpacing: -0.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 13,
+                color: textColor.withOpacity(0.7),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
