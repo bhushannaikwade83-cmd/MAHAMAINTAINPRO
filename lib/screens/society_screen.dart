@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import 'society_registration_screen.dart';
 import 'emergency_sos_screen.dart';
+import 'society_dashboard_full_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SocietyScreen extends StatefulWidget {
   const SocietyScreen({Key? key}) : super(key: key);
@@ -14,6 +16,67 @@ class _SocietyScreenState extends State<SocietyScreen> {
   bool _isSocietyRegistered = false;
   int _selectedTab = 0;
   final List<String> _tabs = ['Dashboard', 'Photos', 'Notices'];
+  late TextEditingController _secretaryPhoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    _secretaryPhoneController = TextEditingController();
+    _loadSecretaryPhone();
+  }
+
+  Future<void> _loadSecretaryPhone() async {
+    final prefs = await SharedPreferences.getInstance();
+    final phone = prefs.getString('secretary_phone');
+    if (phone != null && phone.isNotEmpty) {
+      setState(() {
+        _isSocietyRegistered = true;
+        _secretaryPhoneController.text = phone;
+      });
+    }
+  }
+
+  Future<void> _saveSecretaryPhone() async {
+    if (_secretaryPhoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter secretary phone number'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('secretary_phone', _secretaryPhoneController.text);
+
+    setState(() => _isSocietyRegistered = true);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✅ Secretary contact saved! Accessing dashboard...'),
+        backgroundColor: Color(0xFF25D366),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SocietyDashboardFullScreen(
+            secretaryPhone: _secretaryPhoneController.text,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _secretaryPhoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,28 +176,41 @@ class _SocietyScreenState extends State<SocietyScreen> {
                         height: 1.5,
                       ),
                     ),
-                    SizedBox(height: isSmall ? 20 : 24),
+                    SizedBox(height: isSmall ? 16 : 20),
 
-                    // Register Button
+                    // Secretary Phone Input
+                    TextField(
+                      controller: _secretaryPhoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: 'Enter Society Secretary Phone',
+                        hintStyle: TextStyle(color: Colors.grey.shade400),
+                        prefixIcon: const Icon(Icons.phone, color: AppTheme.saffron),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppTheme.saffron, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 16 : 20),
+
+                    // Access Dashboard Button
                     SizedBox(
                       width: double.infinity,
                       height: isSmall ? 48 : 52,
                       child: ElevatedButton(
-                        onPressed: () async {
-                          final result = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SocietyRegistrationScreen(
-                                onRegistrationComplete: () {
-                                  setState(() => _isSocietyRegistered = true);
-                                },
-                              ),
-                            ),
-                          );
-                          if (result == true) {
-                            setState(() => _isSocietyRegistered = true);
-                          }
-                        },
+                        onPressed: _saveSecretaryPhone,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.saffron,
                           shape: RoundedRectangleBorder(
@@ -143,7 +219,7 @@ class _SocietyScreenState extends State<SocietyScreen> {
                           elevation: 4,
                         ),
                         child: Text(
-                          'Register Society Now',
+                          'Access Society Dashboard',
                           style: TextStyle(
                             fontSize: isSmall ? 14 : 15,
                             fontWeight: FontWeight.bold,
