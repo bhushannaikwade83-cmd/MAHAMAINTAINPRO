@@ -37,6 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Image.asset(
                 'assets/images/maharashtra.png',
                 fit: BoxFit.cover,
+                alignment: Alignment.bottomCenter,
               errorBuilder: (context, error, stackTrace) {
                 print('❌ IMAGE LOAD ERROR: $error');
                 print('📍 Stack trace: $stackTrace');
@@ -59,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
           Positioned(
-            bottom: 80,
+            bottom: 100,
             left: 0,
             right: 0,
             child: Center(
