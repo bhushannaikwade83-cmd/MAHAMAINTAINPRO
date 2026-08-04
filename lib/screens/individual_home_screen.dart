@@ -101,7 +101,14 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
         },
         backgroundColor: const Color(0xFF25D366),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Icon(Icons.whatsapp, color: Colors.white, size: isSmall ? 24 : 28),
+        child: Text(
+          'W',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: isSmall ? 28 : 32,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
