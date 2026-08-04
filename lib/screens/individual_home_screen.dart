@@ -21,7 +21,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   int notificationCount = 3;
   int _currentBannerIndex = 0;
   final int _totalBanners = 3;
-  final int _bannerSlideDelay = 4; // seconds
+  final int _bannerSlideDelay = 4;
 
   @override
   void initState() {
@@ -41,7 +41,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
             curve: Curves.easeInOut,
           );
         } catch (e) {
-          // Silently catch exceptions from disposed widgets
+          // Silently catch
         }
       }
     });
@@ -50,8 +50,12 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _pageController.dispose();
-    _bannerTimer.cancel();
+    try {
+      _pageController.dispose();
+      _bannerTimer.cancel();
+    } catch (e) {
+      // Handle if late variables weren't initialized
+    }
     super.dispose();
   }
 

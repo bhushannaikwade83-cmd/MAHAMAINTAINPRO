@@ -52,23 +52,27 @@ class _SocietyScreenState extends State<SocietyScreen> {
 
     setState(() => _isSocietyRegistered = true);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('✅ Secretary contact saved! Accessing dashboard...'),
-        backgroundColor: Color(0xFF25D366),
-        duration: Duration(seconds: 1),
-      ),
-    );
-
-    Future.delayed(const Duration(milliseconds: 500), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SocietyDashboardFullScreen(
-            secretaryPhone: _secretaryPhoneController.text,
-          ),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Secretary contact saved! Accessing dashboard...'),
+          backgroundColor: Color(0xFF25D366),
+          duration: Duration(seconds: 1),
         ),
       );
+    }
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SocietyDashboardFullScreen(
+              secretaryPhone: _secretaryPhoneController.text,
+            ),
+          ),
+        );
+      }
     });
   }
 

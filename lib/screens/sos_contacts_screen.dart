@@ -64,7 +64,6 @@ class _SOSContactsScreenState extends State<SOSContactsScreen> {
 
     setState(() {
       savedContacts = contacts;
-      // Clear input fields
       for (var controller in nameControllers) {
         controller.clear();
       }
@@ -73,13 +72,15 @@ class _SOSContactsScreenState extends State<SOSContactsScreen> {
       }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('✅ SOS Contacts saved successfully!'),
-        backgroundColor: Color(0xFF25D366),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ SOS Contacts saved successfully!'),
+          backgroundColor: Color(0xFF25D366),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _deleteContact(int index) async {
