@@ -30,13 +30,17 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
 
   void _startAutoSlide() {
     _bannerTimer = Timer.periodic(Duration(seconds: _bannerSlideDelay), (timer) {
-      if (_pageController.hasClients) {
-        final nextPage = (_currentBannerIndex + 1) % _totalBanners;
-        _pageController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeInOut,
-        );
+      if (mounted && _pageController.hasClients) {
+        try {
+          final nextPage = (_currentBannerIndex + 1) % _totalBanners;
+          _pageController.animateToPage(
+            nextPage,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeInOut,
+          );
+        } catch (e) {
+          // Silently catch exceptions from disposed widgets
+        }
       }
     });
   }
