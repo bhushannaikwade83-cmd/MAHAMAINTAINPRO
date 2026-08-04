@@ -1,0 +1,183 @@
+{
+   "checksum": "1476eeb5dc73fa99953e9635ca5456cb",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13414162685255840",
+            "date_last_used": "13414872636231749",
+            "guid": "e6aa6434-3f2d-4d7d-a702-a207859cae66",
+            "id": "10",
+            "name": "Online Courses - Learn Anything, On Your Schedule | Udemy",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.udemy.com/cart/success/2191979741/",
+            "visit_count": 3
+         }, {
+            "date_added": "13421604929914527",
+            "date_last_used": "0",
+            "guid": "d44402ca-9414-4120-95a8-8dd4c1805f31",
+            "id": "11",
+            "name": "Apple",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.apple.com/in/",
+            "visit_count": 1
+         }, {
+            "date_added": "13421604929922452",
+            "date_last_used": "0",
+            "guid": "e54b9547-1945-4f3d-af79-7361611f89ff",
+            "id": "12",
+            "name": "iCloud",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.icloud.com/",
+            "visit_count": 1
+         }, {
+            "date_added": "13421604929930932",
+            "date_last_used": "0",
+            "guid": "50bb7bac-81e5-4010-98fb-3fb5cc6a90e5",
+            "id": "13",
+            "name": "Google",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.google.co.in/?client=safari&channel=iphone_bm",
+            "visit_count": 1
+         }, {
+            "date_added": "13421604929934361",
+            "date_last_used": "0",
+            "guid": "501fc01a-156d-40f2-8ab3-0a88979c57a8",
+            "id": "14",
+            "name": "Zomato",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.zomato.com/",
+            "visit_count": 1
+         }, {
+            "date_added": "13421604929943010",
+            "date_last_used": "0",
+            "guid": "7eab9237-f26e-4d2d-b916-82f78cf0cf54",
+            "id": "15",
+            "name": "NDTV",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.ndtv.com/",
+            "visit_count": 1
+         }, {
+            "date_added": "13421604929950033",
+            "date_last_used": "0",
+            "guid": "0d550444-9b9d-4eb2-a73a-f117a79974bc",
+            "id": "16",
+            "name": "Hotstar",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.hotstar.com/",
+            "visit_count": 1
+         }, {
+            "date_added": "13421604929959311",
+            "date_last_used": "0",
+            "guid": "3bab89e6-49d1-4bea-a0c8-d985818f603f",
+            "id": "17",
+            "name": "Subtitles",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://my-subs.co/",
+            "visit_count": 1
+         }, {
+            "date_added": "13421604929966285",
+            "date_last_used": "0",
+            "guid": "4bfa6ea7-7a04-4f0e-a600-49fbc59a11f1",
+            "id": "18",
+            "name": "RF-Based Multiple Device Control | Full Electronics Project",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.electronicsforu.com/electronics-projects/hardware-diy/microcontroller-rf-based-multiple-device-control",
+            "visit_count": 1
+         }, {
+            "date_added": "13430320555629500",
+            "date_last_used": "0",
+            "guid": "46f084af-2252-4afd-87f7-2ae08766fe1b",
+            "id": "9",
+            "name": "Lenovo Support",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://support.lenovo.com/",
+            "visit_count": 0
+         }, {
+            "date_added": "13430320555629408",
+            "date_last_used": "0",
+            "guid": "991167a3-e10b-4cdb-aa00-465f5d0582a0",
+            "id": "8",
+            "name": "Lenovo",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://www.lenovo.com/",
+            "visit_count": 0
+         }, {
+            "date_added": "13430320555629144",
+            "date_last_used": "0",
+            "guid": "7e4d1ff8-a6b1-44a8-948f-c44556246358",
+            "id": "7",
+            "name": "McAfee",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://consroute.mcafee.com/app?csrc=browserfav&affid=714&clicksrc=browserfav",
+            "visit_count": 0
+         } ],
+         "date_added": "13430320555527460",
+         "date_last_used": "0",
+         "date_modified": "13430320555629500",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "Favorites bar",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13430320555527460",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13430320555527460",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "workspaces_v2": {
+         "children": [  ],
+         "date_added": "13430320555527460",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "75aa6670-344f-549d-b742-660f029506ab",
+         "id": "5",
+         "name": "Workspaces",
+         "source": "unknown",
+         "type": "folder"
+      }
+   },
+   "sync_metadata": "CjEKDgiIgQISCPCZIryfAQAAEgAqGFVlbnpsSm5DdzgvS0R4S0FqNjltWHc9PUgDoAYHEo4BCAMSiQEKHG5qZ0R1ODhlQ3J2WHA4NnBEN2ZIR2NxRnA4OD0SJDJhZWNjMzkzLTc3YjYtNWRhZS05ZTJhLWY1NTE5M2RkZTM0ZBgAIAAoADDawKujwDM4r82ro8AzQK/Nq6PAM0oceXpOQjAxY241NEE3Y1JVMHVUKy9QZ21UdFVvPVoAZQAAAADCPgJgABKtAQgSEqgBChxwYVRKYml0dlQxUDNVRHNOZFBsTmQwcCtVUVk9EiQ0YmZhNmVhNy03YTA0LTRmMGUtYTYwMC00OWZiYzU5YTExZjEYACAAKAAwxcSgqtwzOJvKoKrcM0CbyqCq3DNKHG1IVWp2aGRDOEh4b21GeUhFc291clVCQ2k0az1aHyId/npOcGw5VHhpMjVVdWdzby9oTFh5Z2Uzc0hQZz1lAAAAAMI+AmAFEq0BCBESqAEKHGpqOEdGZ24vV1FmaDZoTlVYV1lEempsMnRIcz0SJDNiYWI4OWU2LTQ5ZDEtNGJlYS1hMGM4LWQ5ODU4MThmNjAzZhgAIAAoADDExKCq3DM4/cmgqtwzQP3JoKrcM0ocU2hMU1RlSno0U1E0bjVUUVRtMEk0ZXlHZzI4PVofIh39Y2xEYy9HbmQ4UzJLRkJmTnMxSEdqRVN0Y1MwPWUAAAAAwj4CYAUSrQEIEBKoAQocQVVJbkxYR0JGcWhRYmdOMjZ3MWQ1NGNXdHdRPRIkMGQ1NTA0NDQtOWI5ZC00ZWIyLWE3M2EtZjExN2E3OTk3NGJjGAAgACgAMMPEoKrcMzidyaCq3DNAncmgqtwzShxFVVRvM20rMEFGdkoxVUJ0bzBOUEh4VjBXYm89Wh8iHftELzZ1TmJ2b1drbGRqNDE4S1UvWTVKNG5Gams9ZQAAAADCPgJgBRKtAQgPEqgBChx6OC81RnBmc2pxajgxcEFKa2RJaks3eU0yblk9EiQ3ZWFiOTIzNy1mMjZlLTRkMmQtYjkxNi04MmY3OGNmMGNmNTQYACAAKAAwwsSgqtwzOPbIoKrcM0D2yKCq3DNKHE8yT0VRTzU0QkZWN0Q5VHdUVlpOb0o3WHRUYz1aHyId9mJ6RFhyVE5qVGhRYnRISXFKdGFRTGtjbVg4Zz1lAAAAAMI+AmAFEq0BCA4SqAEKHDF5QW5NcTJ5YlUxRXdnQzRKYVZSd3FlajkxZz0SJDUwMWZjMDFhLTE1NmQtNDBmMi04YWIzLTBhODg5NzljNTdhOBgAIAAoADDBxKCq3DM40sigqtwzQNLIoKrcM0ocYTRkUHh2YTFtSzUwb3MyVTVSRlEyaXRQR2ZnPVofIh3sL0V2cndQb3padkEvR2xORG5kczd5dVZCL3NRPWUAAAAAwj4CYAUSrQEIDBKoAQoca2hKdXlDY0ZxZXAxRm9TSUpKV0FsK2Z2eFpvPRIkZTU0Yjk1NDctMTk0NS00ZjNkLWFmNzktNzM2MTYxMWY4OWZmGAAgACgAMMu+h47sMzi0yKCq3DNAtMigqtwzShx2RCtqc1czRVJHa21wTVlObVFCS2lJQktIdlU9Wh8iHbJCT1pTVURTUlRoeCtSMUVFQkZnSzV6d2lGa0U9ZdTWEevCPgJgBRKtAQgNEqgBChxscVZrbWVId3A3K3F5aU9xTU9GallLTmVhWnc9EiQ1MGJiN2JhYy04MWU1LTQwMTAtOThmYi0zZmI1Y2M2YTkwZTUYACAAKAAwvsSgqtwzOP7HoKrcM0D+x6Cq3DNKHHkvTHdxWUN6eGZiLzRRNG42YzVuNms3ck5KZz1aHyId2XdGK1QzckRXMkZLR1hENEZObmFKbU9oUGw5bz1lAAAAAMI+AmAFEo4BCAISiQEKHFljU1RvbnZFU1B3cUNzNEwyY3JWaHY2OEw5OD0SJGQ4NGI0M2FiLWNjOGEtNTcyMy05NTdjLTBhN2JmYzkzMTJmZhgAIAAoADDUwKujwDM4wcyro8AzQMHMq6PAM0ocb1BWa2h3QlJiVjY1S0NXUjIrSU9OSFdvT3U4PVoAZQAAAADCPgJgABKsAQgKEqcBChxGNElKQ0ZjckdEL1N3bk85NlhBc3I5OVY3WlE9EiRlNmFhNjQzNC0zZjJkLTRkN2QtYTcwMi1hMjA3ODU5Y2FlNjYYACAAKAAwpfWFoMMzOJiEws3AM0CYhMLNwDNKHGJkR1JjekJETFBjZlRPek94aUgzMURtYndMaz1aHiIcMEptT0c3TzFEM2dTVjRyZFo1ejFrTnh1bzFvPWW+3Umnwj4CYAUSjgEIARKJAQoceXhKLzZmdmtlY3I3a3A1RVF6QjR0V0xwZGJFPRIkMWY0N2UzZjEtZmE1Ny01NjliLThmYTYtN2RiZDY2NWNjYzcyGAAgACgAMNPAq6PAMziMzKujwDNAjMyro8AzShxhUkNXTGdoRjliNUlucUtJRHZ1Si9qdlFrRmM9WgBlAAAAAMI+AmAAEqwBCAsSpwEKHDVOYWN4am5YR0JvL2wzMW5GSWxFS0xaekF0bz0SJGQ0NDQwMmNhLTk0MTQtNDEyMC05NWE4LThkZDRjMTgwNWYzMRgAIAAoADCc4YiI9zM4msigqtwzQJrIoKrcM0ocOVNtNG50cWxWYVI5ZkpxMzVabmFSWURRVUNBPVoeIhxkN1RHYS9nbTA2OHdTOU1lVkgrc2NONjlqQTA9ZWOyZpfCPgJgBRKOAQgFEokBChx3UkJyWkwrNlBBOWF2S2dqTlA3SlhETGNmdnM9EiQ4YzBkMWUyNi0zNmQwLTVhZGMtYjYxOC0wM2EzMjRhNDY0MDQYACAAKAAw2cCro8AzOJLNq6PAM0CSzaujwDNKHG5teDY1c1FEdnhJOFRnRWV2K0ErbnR0b1NuND1aAGUAAAAAwj4CYAAwADgA",
+   "version": 1
+}
