@@ -1037,7 +1037,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
         );
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 14, vertical: isSmall ? 14 : 16),
+        padding: EdgeInsets.all(isSmall ? 12 : 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(isSmall ? 24 : 28),
@@ -1052,24 +1052,27 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
         child: Stack(
           children: [
             Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: isSmall ? 56 : 64,
-                  height: isSmall ? 56 : 64,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF0E6),
-                    borderRadius: BorderRadius.circular(isSmall ? 16 : 18),
-                  ),
+                Expanded(
                   child: Center(
-                    child: Text(
-                      emoji,
-                      style: TextStyle(fontSize: isSmall ? 28 : 32),
+                    child: Container(
+                      width: isSmall ? 56 : 64,
+                      height: isSmall ? 56 : 64,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF0E6),
+                        borderRadius: BorderRadius.circular(isSmall ? 16 : 18),
+                      ),
+                      child: Center(
+                        child: Text(
+                          emoji,
+                          style: TextStyle(fontSize: isSmall ? 28 : 32),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(height: isSmall ? 12 : 14),
                 Text(
                   title,
                   textAlign: TextAlign.center,
