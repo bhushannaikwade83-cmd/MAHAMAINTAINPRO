@@ -420,7 +420,7 @@ class _SOSContactsScreenState extends State<SOSContactsScreen> {
                             );
                           },
                           style: OutlinedButton.styleFrom(
-                            borderSide: const BorderSide(
+                            side: const BorderSide(
                               color: AppTheme.saffron,
                               width: 1.5,
                             ),
