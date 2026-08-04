@@ -612,7 +612,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: isSmall ? 12 : 14,
                     mainAxisSpacing: isSmall ? 12 : 14,
-                    childAspectRatio: 0.72,
+                    childAspectRatio: 0.95,
                     children: [
                       _buildActionCard(
                         emoji: '🧾',
@@ -1037,15 +1037,15 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
         );
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 8 : 10),
+        padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 14, vertical: isSmall ? 14 : 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(isSmall ? 24 : 28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 14,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -1056,20 +1056,20 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: isSmall ? 44 : 52,
-                  height: isSmall ? 44 : 52,
+                  width: isSmall ? 56 : 64,
+                  height: isSmall ? 56 : 64,
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF0E6),
-                    borderRadius: BorderRadius.circular(isSmall ? 13 : 15),
+                    borderRadius: BorderRadius.circular(isSmall ? 16 : 18),
                   ),
                   child: Center(
                     child: Text(
                       emoji,
-                      style: TextStyle(fontSize: isSmall ? 22 : 26),
+                      style: TextStyle(fontSize: isSmall ? 28 : 32),
                     ),
                   ),
                 ),
-                SizedBox(height: isSmall ? 6 : 8),
+                SizedBox(height: isSmall ? 12 : 14),
                 Text(
                   title,
                   textAlign: TextAlign.center,
