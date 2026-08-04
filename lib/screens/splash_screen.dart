@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: const Color(0xFF0A1128),
       body: Stack(
         children: [
-          // Deep Navy Background with subtle gradient
+          // Deep Navy Background with gradient overlay
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -75,30 +75,40 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // Decorative blob - top right
+          // India/Maharashtra Map Background
           Positioned(
-            top: -100,
-            right: -80,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFFF6F00).withOpacity(0.05),
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Opacity(
+              opacity: 0.3,
+              child: Image.asset(
+                'assets/images/india_map.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(); // Fallback if image not found
+                },
               ),
             ),
           ),
 
-          // Decorative blob - bottom left
+          // Additional gradient overlay for better text readability
           Positioned(
-            bottom: -120,
-            left: -60,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             child: Container(
-              width: 320,
-              height: 320,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFFFD700).withOpacity(0.03),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF0A1128).withOpacity(0.6),
+                    const Color(0xFF0F0F1E).withOpacity(0.8),
+                  ],
+                ),
               ),
             ),
           ),
