@@ -208,6 +208,9 @@ class _ACApplianceRepairScreenState extends State<ACApplianceRepairScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {
+          // This screen doesn't use navigation, but CustomFooter requires the callback
+        },
       ),
     );
   }

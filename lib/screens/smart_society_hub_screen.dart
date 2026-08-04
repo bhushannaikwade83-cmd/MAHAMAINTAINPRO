@@ -208,6 +208,7 @@ class _SmartSocietyHubScreenState extends State<SmartSocietyHubScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

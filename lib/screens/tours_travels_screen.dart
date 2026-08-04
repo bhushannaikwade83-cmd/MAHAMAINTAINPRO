@@ -208,6 +208,7 @@ class _ToursAndTravelsScreenState extends State<ToursAndTravelsScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

@@ -955,6 +955,7 @@ class _InstaHelpScreenState extends State<InstaHelpScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

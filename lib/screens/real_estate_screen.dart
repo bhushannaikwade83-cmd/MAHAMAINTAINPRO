@@ -208,6 +208,7 @@ class _RealEstateScreenState extends State<RealEstateScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

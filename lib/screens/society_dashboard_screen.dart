@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import '../config/app_theme.dart';
 import '../widgets/custom_footer.dart';
 import 'emergency_sos_screen.dart';
 import 'profile_screen.dart';
 import 'ai_chat_screen.dart';
 
 class SocietyDashboardScreen extends StatefulWidget {
-  const SocietyDashboardScreen({Key? key}) : super(key: key);
+  final VoidCallback onLogout;
+
+  const SocietyDashboardScreen({
+    required this.onLogout,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<SocietyDashboardScreen> createState() => _SocietyDashboardScreenState();
@@ -28,13 +32,13 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
+            // Header with orange gradient
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [const Color(0xFF2D1B4E), const Color(0xFF1A0F2E)],
+                  colors: [Color(0xFFE67E22), Color(0xFFD35400)],
                 ),
               ),
               padding: EdgeInsets.only(
@@ -46,21 +50,31 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Camera icon
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
+                  // Notification and Back icons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
-                        size: 20,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   // Title
@@ -68,7 +82,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                     'Society\nDashboard',
                     style: TextStyle(
                       fontSize: isSmall ? 28 : 32,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w900,
                       color: Colors.white,
                       height: 1.2,
                     ),
@@ -79,55 +93,98 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                     'Shri Ramdev Park CHS • Mira Road',
                     style: TextStyle(
                       fontSize: isSmall ? 12 : 13,
-                      color: Colors.white70,
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   // ID Card
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'ID: MRP-2847',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text(
+                              'ID: MRP-2847',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
 
-            // Content based on selected tab (footer handles navigation)
+            // Tab Navigation
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: List.generate(
+                  tabs.length,
+                  (index) => Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedTab = index),
+                      child: Column(
+                        children: [
+                          Text(
+                            tabs[index],
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: _selectedTab == index ? FontWeight.w700 : FontWeight.w500,
+                              color: _selectedTab == index ? Colors.black87 : Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (_selectedTab == index)
+                            Container(
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE67E22),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            )
+                          else
+                            Container(
+                              height: 3,
+                              color: Colors.transparent,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Content based on selected tab
             if (_selectedTab == 0) ...[
-              // Menu Items
+              // Dashboard Tab Content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
@@ -152,16 +209,16 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
+                    color: const Color(0xFFFFE5CC),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.red.shade200, width: 1),
+                    border: Border.all(color: const Color(0xFFE67E22), width: 1.5),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.2),
+                          color: const Color(0xFFE67E22).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text('📝', style: TextStyle(fontSize: 20)),
@@ -190,7 +247,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                           ],
                         ),
                       ),
-                      const Icon(Icons.arrow_forward, color: Colors.red, size: 20),
+                      const Icon(Icons.arrow_forward, color: Color(0xFFE67E22), size: 20),
                     ],
                   ),
                 ),
@@ -206,7 +263,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                     const Text(
                       'Complaints & Tickets',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Colors.black,
                         letterSpacing: -0.3,
@@ -216,7 +273,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                       'View All →',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.teal,
+                        color: const Color(0xFFE67E22),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -238,7 +295,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                     const Text(
                       '📣 Society Notices',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: Colors.black,
                         letterSpacing: -0.3,
@@ -248,7 +305,7 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                       'See All →',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.teal,
+                        color: const Color(0xFFE67E22),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -257,16 +314,16 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               ),
               const SizedBox(height: 12),
               _buildNoticeCard('Water Supply Shutdown — 18 Jun', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', 'Posted by Committee • Today', Colors.orange),
-              _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', Colors.teal),
+              _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', const Color(0xFFE67E22)),
               const SizedBox(height: 30),
             ] else if (_selectedTab == 1) ...[
-              // Share Photo Action
+              // Photos Tab Content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.orange,
+                    color: const Color(0xFFE67E22),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -331,13 +388,13 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               ),
               const SizedBox(height: 30),
             ] else if (_selectedTab == 2) ...[
-              // Post Notice Action
+              // Notices Tab Content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4A4A7E),
+                    color: const Color(0xFF6C4A9E),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -380,9 +437,19 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Notices List
-              _buildNoticeCard('Water Supply Shutdown — 18 Jun', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', 'Posted by Committee • Today', Colors.orange),
-              _buildNoticeCard('AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', '', Colors.teal),
+              // Notices List with categories
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _buildCategoryNotice('URGENT NOTICE', '🔧', 'Water Tank Maintenance', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', Colors.orange, 'Today'),
+                    const SizedBox(height: 12),
+                    _buildCategoryNotice('EVENT', '🎉', 'AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', const Color(0xFF1ABC9C), '2 days ago'),
+                    const SizedBox(height: 12),
+                    _buildCategoryNotice('AMENITY UPDATE', '🏊', 'Pool Maintenance Schedule', 'Pool will be closed on weekends for maintenance.', Colors.amber, '5 days ago'),
+                  ],
+                ),
+              ),
               const SizedBox(height: 30),
             ],
           ],
@@ -418,18 +485,16 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               break;
             case 3:
               // Profile
-              print('📱 Navigating to Profile Screen from Society Dashboard...');
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ProfileScreen(),
                 ),
-              ).then((_) {
-                print('✅ Returned from Profile Screen');
-              });
+              );
               break;
           }
         },
+        userRole: 'society',
       ),
     );
   }
@@ -555,6 +620,87 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
     );
   }
 
+  Widget _buildCategoryNotice(String category, String emoji, String title, String description, Color categoryColor, String timeAgo) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border(
+          left: BorderSide(color: categoryColor, width: 5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        color: Colors.white,
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: categoryColor.withOpacity(0.1),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(14),
+              ),
+            ),
+            child: Row(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: categoryColor,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  timeAgo,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Text(
+              description,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade700,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPhotoCard(String title, String emoji, Color bgColor) {
     return Container(
       decoration: BoxDecoration(
@@ -636,5 +782,4 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
       ),
     );
   }
-
 }

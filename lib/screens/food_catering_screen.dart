@@ -208,6 +208,7 @@ class _FoodCateringScreenState extends State<FoodCateringScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

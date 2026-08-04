@@ -208,6 +208,7 @@ class _ProfessionalCleaningScreenState extends State<ProfessionalCleaningScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }

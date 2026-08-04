@@ -208,6 +208,7 @@ class _PoojaServicesScreenState extends State<PoojaServicesScreen>
       ),
       bottomNavigationBar: CustomFooter(
         selectedIndex: _footerSelectedIndex,
+        onNavItemTap: (index) {},
       ),
     );
   }
