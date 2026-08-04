@@ -542,7 +542,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                       crossAxisCount: 3,
                       crossAxisSpacing: isSmall ? 8 : 12,
                       mainAxisSpacing: isSmall ? 12 : 14,
-                      childAspectRatio: 0.80,
+                      childAspectRatio: 0.65,
                     ),
                     itemCount: personalServices.length,
                     itemBuilder: (context, index) {
