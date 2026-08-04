@@ -40,7 +40,7 @@ class _SocietyDashboardFullScreenState extends State<SocietyDashboardFullScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Society Dashboard',
+              'Individual Society Dashboard',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
