@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_footer.dart';
-import 'search_screen.dart';
+import 'individual_home_screen.dart';
 import 'search_list_screen.dart';
 import 'ai_chat_screen.dart';
 import 'society_screen.dart';
@@ -36,7 +36,7 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
   // Get screens based on user role
   List<Widget> get _screens {
     return [
-      const SearchScreen(),           // Tab 0: Home
+      const IndividualHomeScreen(),           // Tab 0: Home
       const SearchListScreen(),       // Tab 1: Search
       const AiChatScreen(),           // Tab 2: AI Chat
       // Tab 3: Society - different based on user role
