@@ -567,68 +567,82 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'All quick actions',
-                    style: TextStyle(
-                      fontSize: isSmall ? 18 : 24,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.black,
-                      letterSpacing: -0.5,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Society Actions',
+                        style: TextStyle(
+                          fontSize: isSmall ? 18 : 24,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Opening Full Dashboard...')),
+                          );
+                        },
+                        child: Text(
+                          'Dashboard →',
+                          style: TextStyle(
+                            fontSize: isSmall ? 12 : 13,
+                            color: AppTheme.saffron,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: isSmall ? 6 : 8),
-                  Text(
-                    'Shri Ramdev Park · CHS, Mira Road',
-                    style: TextStyle(
-                      fontSize: isSmall ? 12 : 13,
-                      color: Colors.grey.shade600,
+                  SizedBox(height: isSmall ? 10 : 14),
+                  Container(
+                    width: isSmall ? 30 : 40,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: AppTheme.saffron,
+                      borderRadius: BorderRadius.circular(1),
                     ),
                   ),
                   SizedBox(height: isSmall ? 16 : 20),
                   GridView.count(
-                    crossAxisCount: 2,
+                    crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
-                    childAspectRatio: 0.98,
+                    crossAxisSpacing: isSmall ? 12 : 14,
+                    mainAxisSpacing: isSmall ? 12 : 14,
+                    childAspectRatio: 0.85,
                     children: [
                       _buildActionCard(
                         emoji: '🧾',
                         title: 'View Bill',
-                        subtitle: '₹2,450 due · Jul 2026',
-                        bgColor: const Color(0xFFD4A574),
+                        badge: null,
                       ),
                       _buildActionCard(
                         emoji: '✍️',
                         title: 'Complaint',
-                        subtitle: '2 open tickets',
-                        bgColor: const Color(0xFFD96B7A),
+                        badge: null,
                       ),
                       _buildActionCard(
                         emoji: '🛵',
                         title: 'Visitor Gate',
-                        subtitle: '1 visitor awaiting approval',
-                        bgColor: const Color(0xFF4A7C7E),
-                        badge: '1 pending',
+                        badge: '1',
                       ),
                       _buildActionCard(
                         emoji: '🔑',
                         title: 'Tenant Info',
-                        subtitle: 'Lease & owner details on file',
-                        bgColor: const Color(0xFFA78FCC),
+                        badge: null,
                       ),
                       _buildActionCard(
                         emoji: '🚗',
-                        title: 'Vehicle Pass',
-                        subtitle: '2 vehicles registered',
-                        bgColor: const Color(0xFFD9744A),
+                        title: 'Parking',
+                        badge: null,
                       ),
                       _buildActionCard(
                         emoji: '📊',
-                        title: 'Society Insights',
-                        subtitle: 'Spending & usage trends',
-                        bgColor: const Color(0xFF5B8FC4),
+                        title: 'Full Dashboard',
+                        badge: null,
                       ),
                     ],
                   ),
@@ -688,14 +702,17 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(isSmall ? 12 : 14),
+              width: isSmall ? 48 : 56,
+              height: isSmall ? 48 : 56,
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Text(
-                emoji,
-                style: TextStyle(fontSize: isSmall ? 38 : 48),
+              child: Center(
+                child: Text(
+                  emoji,
+                  style: TextStyle(fontSize: isSmall ? 28 : 30),
+                ),
               ),
             ),
             SizedBox(height: isSmall ? 8 : 12),
@@ -705,7 +722,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: isSmall ? 11 : 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.bold,
                   color: displayTextColor,
                   height: 1.2,
                   letterSpacing: 0.2,
@@ -717,23 +734,16 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
             if (hindi.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: isSmall ? 4 : 6),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppTheme.saffron.withOpacity(isDarkMode ? 0.3 : 0.2),
-                    borderRadius: BorderRadius.circular(6),
+                child: Text(
+                  hindi,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isSmall ? 9 : 10,
+                    color: AppTheme.saffron,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
                   ),
-                  child: Text(
-                    hindi,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: isSmall ? 9 : 10,
-                      color: AppTheme.saffron,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
-                    ),
-                    maxLines: 1,
-                  ),
+                  maxLines: 1,
                 ),
               ),
             if (time.isNotEmpty) ...[
@@ -1015,10 +1025,11 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   Widget _buildActionCard({
     required String emoji,
     required String title,
-    required String subtitle,
-    required Color bgColor,
     String? badge,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 380;
+
     return GestureDetector(
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1026,77 +1037,76 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 14, vertical: isSmall ? 12 : 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.07),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Stack(
           children: [
-            if (badge != null)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: isSmall ? 48 : 56,
+                  height: isSmall ? 48 : 56,
                   decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFFFFF0E6),
+                    borderRadius: BorderRadius.circular(isSmall ? 14 : 16),
                   ),
-                  child: Text(
-                    badge,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                  child: Center(
+                    child: Text(
+                      emoji,
+                      style: TextStyle(fontSize: isSmall ? 24 : 28),
                     ),
                   ),
                 ),
-              ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: bgColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Text(emoji, style: const TextStyle(fontSize: 21)),
-                ),
-                const SizedBox(height: 14),
+                SizedBox(height: isSmall ? 10 : 12),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
+                    fontWeight: FontWeight.bold,
+                    fontSize: isSmall ? 11 : 13,
+                    color: Colors.black87,
+                    letterSpacing: 0.2,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
+            if (badge != null)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: isSmall ? 22 : 26,
+                  height: isSmall ? 22 : 26,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE63946),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      badge,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
