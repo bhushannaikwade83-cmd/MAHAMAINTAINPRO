@@ -36,20 +36,22 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   }
 
   void _handleScrolling() {
-    // Check if scrolling down or up
-    if (_scrollController.position.userScrollDirection == ScrollDirection.down) {
+    final currentPosition = _scrollController.position.pixels;
+
+    // Check if scrolling down or up by comparing with last position
+    if (currentPosition > _lastScrollPosition) {
       // Scrolling down - hide buttons
       if (_showButtons) {
         setState(() => _showButtons = false);
       }
-      _lastScrollPosition = _scrollController.position.pixels;
-    } else if (_scrollController.position.userScrollDirection == ScrollDirection.up) {
+    } else if (currentPosition < _lastScrollPosition) {
       // Scrolling up - show buttons
       if (!_showButtons) {
         setState(() => _showButtons = true);
       }
-      _lastScrollPosition = _scrollController.position.pixels;
     }
+
+    _lastScrollPosition = currentPosition;
   }
 
   void _startAutoSlide() {
