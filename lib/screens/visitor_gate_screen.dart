@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
+import 'visitor_details_screen.dart';
 
 class VisitorGateScreen extends StatefulWidget {
   const VisitorGateScreen({Key? key}) : super(key: key);
@@ -178,15 +179,58 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                   itemCount: visitors.length,
                   itemBuilder: (context, index) {
                     final visitor = visitors[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: const Icon(Icons.person_outline),
-                        title: Text(visitor['name'] ?? ''),
-                        subtitle: Text(visitor['phone'] ?? ''),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteVisitor(index),
+                    return GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VisitorDetailsScreen(
+                            visitor: visitor,
+                            index: index,
+                            onDelete: _deleteVisitor,
+                          ),
+                        ),
+                      ).then((_) => setState(() {})),
+                      child: Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.person_outline, size: 20),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      visitor['name'] ?? '',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => _deleteVisitor(index),
+                                    child: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Phone: ${visitor['phone'] ?? ''}',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Purpose: ${visitor['purpose'] ?? ''}',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

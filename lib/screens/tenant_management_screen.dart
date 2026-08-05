@@ -180,13 +180,44 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                     final tenant = tenants[index];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: const Icon(Icons.person),
-                        title: Text(tenant['name'] ?? ''),
-                        subtitle: Text('Flat: ${tenant['flatNumber']} • ${tenant['phone']}'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteTenant(index),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.person, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    tenant['name'] ?? '',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => _deleteTenant(index),
+                                  child: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Flat: ${tenant['flatNumber'] ?? ''}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Phone: ${tenant['phone'] ?? ''}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     );
