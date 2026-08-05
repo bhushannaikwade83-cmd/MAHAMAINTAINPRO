@@ -17,17 +17,39 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   late PageController _pageController;
   late Timer _bannerTimer;
+  late ScrollController _scrollController;
   bool isDarkMode = false;
   int notificationCount = 3;
   int _currentBannerIndex = 0;
   final int _totalBanners = 3;
   final int _bannerSlideDelay = 4;
+  bool _showButtons = true;
+  double _lastScrollPosition = 0;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_handleScrolling);
     _startAutoSlide();
+  }
+
+  void _handleScrolling() {
+    // Check if scrolling down or up
+    if (_scrollController.position.userScrollDirection == ScrollDirection.down) {
+      // Scrolling down - hide buttons
+      if (_showButtons) {
+        setState(() => _showButtons = false);
+      }
+      _lastScrollPosition = _scrollController.position.pixels;
+    } else if (_scrollController.position.userScrollDirection == ScrollDirection.up) {
+      // Scrolling up - show buttons
+      if (!_showButtons) {
+        setState(() => _showButtons = true);
+      }
+      _lastScrollPosition = _scrollController.position.pixels;
+    }
   }
 
   void _startAutoSlide() {
@@ -52,6 +74,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     _searchController.dispose();
     try {
       _pageController.dispose();
+      _scrollController.dispose();
       _bannerTimer.cancel();
     } catch (e) {
       // Handle if late variables weren't initialized
@@ -101,49 +124,58 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
-      floatingActionButton: Stack(
-        children: [
-          // WhatsApp FAB - Bottom Right
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                _openWhatsApp();
-              },
-              backgroundColor: const Color(0xFF25D366),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Text(
-                'W',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isSmall ? 28 : 32,
-                  fontWeight: FontWeight.bold,
+      floatingActionButton: AnimatedOpacity(
+        opacity: _showButtons ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 300),
+        child: IgnorePointer(
+          ignoring: !_showButtons,
+          child: Stack(
+            children: [
+              // WhatsApp FAB - Bottom Right
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: FloatingActionButton(
+                  onPressed: () {
+                    _openWhatsApp();
+                  },
+                  backgroundColor: const Color(0xFF25D366),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Text(
+                    'W',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isSmall ? 28 : 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              // Tracking FAB - Bottom Left (Centered with equal spacing)
+              Positioned(
+                bottom: 16,
+                left: 16,
+                right: null,
+                child: FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LiveTrackingScreen(),
+                      ),
+                    );
+                  },
+                  backgroundColor: AppTheme.saffron,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Icon(Icons.location_on, color: Colors.white, size: isSmall ? 22 : 26),
+                ),
+              ),
+            ],
           ),
-          // Tracking FAB - Bottom Left
-          Positioned(
-            bottom: 16,
-            left: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LiveTrackingScreen(),
-                  ),
-                );
-              },
-              backgroundColor: AppTheme.saffron,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Icon(Icons.location_on, color: Colors.white, size: isSmall ? 22 : 26),
-            ),
-          ),
-        ],
+        ),
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           children: [
             // Orange Header
