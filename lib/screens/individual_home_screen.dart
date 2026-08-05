@@ -138,6 +138,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                 bottom: 16,
                 right: 15,
                 child: FloatingActionButton(
+                  heroTag: 'message_fab',
                   onPressed: () {
                     _openWhatsApp();
                   },
@@ -152,6 +153,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                 left: 15,
                 right: null,
                 child: FloatingActionButton(
+                  heroTag: 'location_fab',
                   onPressed: () {
                     Navigator.push(
                       context,
