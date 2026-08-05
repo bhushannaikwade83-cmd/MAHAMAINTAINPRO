@@ -153,10 +153,10 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                   ),
                 ),
               ),
-              // Tracking FAB - Bottom Left (Centered with equal spacing)
+              // Tracking FAB - Bottom Left (Equal spacing from left border)
               Positioned(
                 bottom: 16,
-                left: 16,
+                left: 24,
                 right: null,
                 child: FloatingActionButton(
                   onPressed: () {
