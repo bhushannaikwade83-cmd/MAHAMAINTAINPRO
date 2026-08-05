@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import '../widgets/custom_footer.dart';
 import 'individual_home_screen.dart';
 import 'search_list_screen.dart';
@@ -63,19 +64,41 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
     ];
   }
 
+  Future<bool> _handleBackButton() async {
+    // If on home page (tab 0), close the app
+    if (_selectedTab == 0) {
+      print('🚪 Back button on home - Exiting app');
+      // On Android, exit the app
+      if (Platform.isAndroid) {
+        SystemNavigator.pop();
+      }
+      return false;
+    }
+
+    // If not on home, navigate to home page instead of closing
+    print('🏠 Back button - Navigating to home');
+    setState(() {
+      _selectedTab = 0;
+    });
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     _updateScreens();
-    return Scaffold(
-      body: _screens[_selectedTab],
-      bottomNavigationBar: CustomFooter(
-        selectedIndex: _selectedTab,
-        onNavItemTap: (index) {
-          setState(() {
-            _selectedTab = index;
-          });
-        },
-        userRole: 'individual',
+    return WillPopScope(
+      onWillPop: _handleBackButton,
+      child: Scaffold(
+        body: _screens[_selectedTab],
+        bottomNavigationBar: CustomFooter(
+          selectedIndex: _selectedTab,
+          onNavItemTap: (index) {
+            setState(() {
+              _selectedTab = index;
+            });
+          },
+          userRole: 'individual',
+        ),
       ),
     );
   }
