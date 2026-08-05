@@ -127,33 +127,26 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       floatingActionButton: AnimatedOpacity(
-        opacity: _showButtons ? 1.0 : 0.0,
+        opacity: _showButtons ? 0.75 : 0.0,
         duration: const Duration(milliseconds: 300),
         child: IgnorePointer(
           ignoring: !_showButtons,
           child: Stack(
             children: [
-              // WhatsApp FAB - Bottom Right
+              // Message/Chat FAB - Bottom Right (same size as location button)
               Positioned(
                 bottom: 16,
-                right: 16,
+                right: 24,
                 child: FloatingActionButton(
                   onPressed: () {
                     _openWhatsApp();
                   },
                   backgroundColor: const Color(0xFF25D366),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Text(
-                    'W',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isSmall ? 28 : 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Icon(Icons.message, color: Colors.white, size: isSmall ? 22 : 26),
                 ),
               ),
-              // Tracking FAB - Bottom Left (Equal spacing from left border)
+              // Location FAB - Bottom Left (equal spacing from left border)
               Positioned(
                 bottom: 16,
                 left: 24,
