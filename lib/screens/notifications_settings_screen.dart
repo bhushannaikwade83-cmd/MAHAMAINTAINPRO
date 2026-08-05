@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_theme.dart';
 
 class NotificationsSettingsScreen extends StatefulWidget {
@@ -9,14 +10,70 @@ class NotificationsSettingsScreen extends StatefulWidget {
 }
 
 class _NotificationsSettingsScreenState extends State<NotificationsSettingsScreen> {
-  bool pushNotifications = true;
-  bool emailNotifications = true;
-  bool orderUpdates = true;
-  bool promotionalOffers = false;
-  bool reminderNotifications = true;
+  late bool pushNotifications;
+  late bool emailNotifications;
+  late bool orderUpdates;
+  late bool promotionalOffers;
+  late bool reminderNotifications;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      pushNotifications = prefs.getBool('notif_push') ?? true;
+      emailNotifications = prefs.getBool('notif_email') ?? true;
+      orderUpdates = prefs.getBool('notif_orders') ?? true;
+      promotionalOffers = prefs.getBool('notif_promo') ?? false;
+      reminderNotifications = prefs.getBool('notif_reminder') ?? true;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notif_push', pushNotifications);
+      await prefs.setBool('notif_email', emailNotifications);
+      await prefs.setBool('notif_orders', orderUpdates);
+      await prefs.setBool('notif_promo', promotionalOffers);
+      await prefs.setBool('notif_reminder', reminderNotifications);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notification settings saved!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving settings: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppTheme.saffron,
+          title: const Text('🔔 Notification Settings'),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppTheme.saffron,
@@ -88,11 +145,7 @@ class _NotificationsSettingsScreenState extends State<NotificationsSettingsScree
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Notification settings saved!')),
-                );
-              },
+              onPressed: _saveSettings,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.saffron,
                 minimumSize: const Size(double.infinity, 48),
