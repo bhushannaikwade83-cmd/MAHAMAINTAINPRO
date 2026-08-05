@@ -133,10 +133,10 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
           ignoring: !_showButtons,
           child: Stack(
             children: [
-              // Message/Chat FAB - Bottom Right (same size as location button)
+              // Message/Chat FAB - Bottom Right (equal spacing as location button)
               Positioned(
                 bottom: 16,
-                right: 24,
+                right: 16,
                 child: FloatingActionButton(
                   onPressed: () {
                     _openWhatsApp();
@@ -149,7 +149,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
               // Location FAB - Bottom Left (equal spacing from left border)
               Positioned(
                 bottom: 16,
-                left: 24,
+                left: 16,
                 right: null,
                 child: FloatingActionButton(
                   onPressed: () {
