@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
 
@@ -14,7 +15,26 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
   final _tenantNameController = TextEditingController();
   final _flatNumberController = TextEditingController();
   final _phoneController = TextEditingController();
+  DateTime? _agreementValidTill;
   bool _isSaving = false;
+
+  Future<void> _pickAgreementValidTill() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _agreementValidTill ?? DateTime.now().add(const Duration(days: 365)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 10)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: AppTheme.saffron)),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() => _agreementValidTill = picked);
+    }
+  }
 
   Future<List<dynamic>> _loadTenants() async {
     final prefs = await SharedPreferences.getInstance();
@@ -31,6 +51,12 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
       );
       return;
     }
+    if (_agreementValidTill == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select the agreement valid till date!')),
+      );
+      return;
+    }
 
     setState(() => _isSaving = true);
 
@@ -42,6 +68,7 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
         'name': _tenantNameController.text,
         'flatNumber': _flatNumberController.text,
         'phone': _phoneController.text,
+        'agreementValidTill': _agreementValidTill!.toIso8601String(),
         'timestamp': DateTime.now().toString(),
       });
 
@@ -51,6 +78,7 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
       _tenantNameController.clear();
       _flatNumberController.clear();
       _phoneController.clear();
+      setState(() => _agreementValidTill = null);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -117,6 +145,37 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                     _buildTextField('Flat Number', _flatNumberController, Icons.home, hintText: 'A-101, B-205'),
                     const SizedBox(height: 12),
                     _buildTextField('Phone Number', _phoneController, Icons.phone, keyboardType: TextInputType.phone),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Agreement Valid Till',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _isSaving ? null : _pickAgreementValidTill,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.event, color: AppTheme.saffron, size: 20),
+                            const SizedBox(width: 10),
+                            Text(
+                              _agreementValidTill != null
+                                  ? DateFormat('d MMM yyyy').format(_agreementValidTill!)
+                                  : 'Select date',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _agreementValidTill != null ? Colors.black87 : Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _isSaving ? null : _addTenant,
@@ -217,6 +276,24 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                               style: const TextStyle(fontSize: 12, color: Colors.grey),
                               overflow: TextOverflow.ellipsis,
                             ),
+                            if (tenant['agreementValidTill'] != null) ...[
+                              const SizedBox(height: 4),
+                              Builder(builder: (context) {
+                                final validTill = DateTime.tryParse(tenant['agreementValidTill']);
+                                final expired = validTill != null && validTill.isBefore(DateTime.now());
+                                return Text(
+                                  validTill != null
+                                      ? 'Agreement Valid Till: ${DateFormat('d MMM yyyy').format(validTill)}${expired ? ' (Expired)' : ''}'
+                                      : 'Agreement Valid Till: N/A',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: expired ? Colors.red : Colors.grey,
+                                    fontWeight: expired ? FontWeight.w600 : FontWeight.normal,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              }),
+                            ],
                           ],
                         ),
                       ),

@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import 'dart:convert';
 import '../config/app_theme.dart';
+import '../data/service_catalog.dart';
+import 'add_complaint_screen.dart';
+import 'all_categories_screen.dart';
 import 'live_tracking_screen.dart';
+import 'parking_management_screen.dart';
+import 'search_list_screen.dart';
 import 'service_category_screen.dart';
 import 'society_screen.dart';
 import 'sos_contacts_screen.dart';
+import 'sos_emergency_screen.dart';
+import 'tenant_management_screen.dart';
 
 class IndividualHomeScreen extends StatefulWidget {
-  const IndividualHomeScreen({Key? key}) : super(key: key);
+  final void Function(int tabIndex)? onNavigateToTab;
+  final String userRole;
+
+  const IndividualHomeScreen({this.onNavigateToTab, this.userRole = 'individual', Key? key}) : super(key: key);
 
   @override
   State<IndividualHomeScreen> createState() => _SearchScreenState();
@@ -90,35 +103,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   Color get textColor => isDarkMode ? Colors.white : Colors.black;
   Color get textSecondaryColor => isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
 
-  final List<Map<String, dynamic>> personalServices = [
-    {'emoji': '⚡', 'name': 'Insta Help', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFE5E5)},
-    {'emoji': '💇‍♀️', 'name': 'Women\'s Salon', 'hindi': 'सौंदर्य', 'time': '', 'color': Color(0xFFFFF0E5)},
-    {'emoji': '💆‍♂️', 'name': 'Men\'s Salon', 'hindi': 'Massage', 'time': '', 'color': Color(0xFFF0F5FF)},
-    {'emoji': '🧹', 'name': 'Cleaning', 'hindi': 'स्वच्छता', 'time': '', 'color': Color(0xFFE5F5E5)},
-    {'emoji': '🎨', 'name': 'Painting', 'hindi': 'New', 'time': '', 'color': Color(0xFFFFF5E5)},
-    {'emoji': '❄️', 'name': 'AC & Appliance', 'hindi': '', 'time': '46 min', 'color': Color(0xFFE5F5FF)},
-    {'emoji': '🔧', 'name': 'Electric / Plumb', 'hindi': '', 'time': '46 min', 'color': Color(0xFFFFF5E5)},
-    {'emoji': '🚗', 'name': 'Vehicle Care', 'hindi': 'Car & Bike', 'time': '', 'color': Color(0xFFFFE5F5)},
-    {'emoji': '🍳', 'name': 'Food & Catering', 'hindi': 'Home Cook', 'time': '', 'color': Color(0xFFF5E5FF)},
-    {'emoji': '🏥', 'name': 'Health & Care', 'hindi': 'Nurse / Physio', 'time': '', 'color': Color(0xFFE5FFE5)},
-    {'emoji': '🙏', 'name': 'Pooja Services', 'hindi': 'पूजा सेवा', 'time': '', 'color': Color(0xFFFFFFE5)},
-    {'emoji': '🎉', 'name': 'Festival Services', 'hindi': 'New', 'time': '', 'color': Color(0xFFFFE5E5)},
-    {'emoji': '🐜', 'name': 'Pest Control', 'hindi': 'कीट नियंत्रण', 'time': '', 'color': Color(0xFFFFF5E5)},
-    {'emoji': '🏢', 'name': 'Society Hub', 'hindi': 'समाज', 'time': '', 'color': Color(0xFFE5F5FF)},
-    {'emoji': '🏠', 'name': 'Real Estate', 'hindi': 'New', 'time': '', 'color': Color(0xFFFFE5F5)},
-    {'emoji': '🔮', 'name': 'Hologram', 'hindi': 'New', 'time': '', 'color': Color(0xFFF5E5FF)},
-    {'emoji': '✈️', 'name': 'Tours & Travels', 'hindi': 'Hire Driver', 'time': '', 'color': Color(0xFFE5FFE5)},
-  ];
-
-  final List<Map<String, dynamic>> societyServices = [
-    {'emoji': '📄', 'name': 'View Bill', 'color': Color(0xFFFFE5E5)},
-    {'emoji': '✏️', 'name': 'Complaint', 'color': Color(0xFFFFF0E5)},
-    {'emoji': '🛵', 'name': 'Visitor Gate', 'color': Color(0xFFF0F5FF), 'badge': '1'},
-    {'emoji': '🔑', 'name': 'Tenant Info', 'color': Color(0xFFE5F5E5)},
-    {'emoji': '🚗', 'name': 'Parking', 'color': Color(0xFFFFF5E5)},
-    {'emoji': '📊', 'name': 'Full Dashboard', 'color': Color(0xFFE5F5FF)},
-  ];
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -126,48 +110,51 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: AnimatedOpacity(
         opacity: _showButtons ? 0.75 : 0.0,
         duration: const Duration(milliseconds: 300),
         child: IgnorePointer(
           ignoring: !_showButtons,
-          child: Stack(
-            children: [
-              // Message/Chat FAB - Bottom Right (15px from right edge)
-              Positioned(
-                bottom: 16,
-                right: 15,
-                child: FloatingActionButton(
-                  heroTag: 'message_fab',
-                  onPressed: () {
-                    _openWhatsApp();
-                  },
-                  backgroundColor: const Color(0xFF25D366),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Icon(Icons.message, color: Colors.white, size: isSmall ? 22 : 26),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Stack(
+              children: [
+                // Message/Chat FAB - Bottom Right (15px from right edge)
+                Positioned(
+                  bottom: 16,
+                  right: 15,
+                  child: FloatingActionButton(
+                    heroTag: 'message_fab',
+                    onPressed: () {
+                      _openWhatsApp();
+                    },
+                    backgroundColor: const Color(0xFF25D366),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Icon(Icons.message, color: Colors.white, size: isSmall ? 22 : 26),
+                  ),
                 ),
-              ),
-              // Location FAB - Bottom Left (15px from left edge)
-              Positioned(
-                bottom: 16,
-                left: 15,
-                right: null,
-                child: FloatingActionButton(
-                  heroTag: 'location_fab',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LiveTrackingScreen(),
-                      ),
-                    );
-                  },
-                  backgroundColor: AppTheme.saffron,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Icon(Icons.location_on, color: Colors.white, size: isSmall ? 22 : 26),
+                // Location FAB - Bottom Left (15px from left edge)
+                Positioned(
+                  bottom: 16,
+                  left: 15,
+                  child: FloatingActionButton(
+                    heroTag: 'location_fab',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LiveTrackingScreen(),
+                        ),
+                      );
+                    },
+                    backgroundColor: AppTheme.saffron,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Icon(Icons.location_on, color: Colors.white, size: isSmall ? 22 : 26),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -186,10 +173,10 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                 ),
               ),
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + (isSmall ? 10 : 12),
+                top: MediaQuery.of(context).padding.top + (isSmall ? 8 : 10),
                 left: isSmall ? 12 : 16,
                 right: isSmall ? 12 : 16,
-                bottom: isSmall ? 12 : 16,
+                bottom: isSmall ? 10 : 12,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +308,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   // Society Name & Greeting
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,10 +370,17 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   // Search Bar
                   TextField(
                     controller: _searchController,
+                    readOnly: true,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SearchListScreen()),
+                      );
+                    },
                     decoration: InputDecoration(
                       hintText: '🔍 Search services...',
                       hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
@@ -414,7 +408,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
               child: Column(
                 children: [
                   SizedBox(
-                    height: isSmall ? 140 : 160,
+                    height: isSmall ? 175 : 200,
                     child: PageView(
                       controller: _pageController,
                       onPageChanged: (index) {
@@ -500,7 +494,12 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AllCategoriesScreen()),
+                          );
+                        },
                         child: Text(
                           'See all →',
                           style: TextStyle(
@@ -528,6 +527,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                       final service = personalServices[index];
                       return _buildServiceCard(
                         emoji: service['emoji'],
+                        iconPath: getCategoryIcon(service['name']),
                         name: service['name'],
                         hindi: service['hindi'],
                         time: service['time'],
@@ -585,87 +585,77 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                     ),
                   ),
                   SizedBox(height: isSmall ? 14 : 18),
-                  // Quick Action Buttons
-                  Row(
-                    children: [
-                      // SOS Button
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SOSContactsScreen(),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: isSmall ? 10 : 12, horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE63946),
-                              borderRadius: BorderRadius.circular(isSmall ? 12 : 14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFE63946).withOpacity(0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '🆘 SOS',
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 12 : 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
+                  // Emergency SOS Button - large, full-width, always the
+                  // most prominent quick action here.
+                  GestureDetector(
+                    onTap: _openSOS,
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: isSmall ? 18 : 22, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE63946),
+                        borderRadius: BorderRadius.circular(isSmall ? 16 : 18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFE63946).withOpacity(0.35),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('🆘', style: TextStyle(fontSize: isSmall ? 24 : 28)),
+                          SizedBox(width: isSmall ? 10 : 12),
+                          Text(
+                            'SOS Emergency',
+                            style: TextStyle(
+                              fontSize: isSmall ? 18 : 21,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                      SizedBox(width: isSmall ? 10 : 12),
-                      // Access Society Dashboard Button
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            _navigateToSocietyDashboard();
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: isSmall ? 10 : 12, horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.saffron,
-                              borderRadius: BorderRadius.circular(isSmall ? 12 : 14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.saffron.withOpacity(0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '🏛️ Access Society Dashboard',
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 11 : 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
+                    ),
+                  ),
+                  SizedBox(height: isSmall ? 10 : 12),
+                  // Access Society Dashboard Button
+                  GestureDetector(
+                    onTap: () {
+                      _navigateToSocietyDashboard();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: isSmall ? 10 : 12, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.saffron,
+                        borderRadius: BorderRadius.circular(isSmall ? 12 : 14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.saffron.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '🏛️ Access Society Dashboard',
+                            style: TextStyle(
+                              fontSize: isSmall ? 11 : 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   SizedBox(height: isSmall ? 16 : 20),
                   GridView.count(
@@ -680,31 +670,46 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                         emoji: '🧾',
                         title: 'View Bill',
                         badge: null,
+                        onTap: () => _runIfSocietyMember(_showViewBillSheet),
                       ),
                       _buildActionCard(
                         emoji: '✍️',
                         title: 'Complaint',
                         badge: null,
+                        onTap: () => _runIfSocietyMember(() => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AddComplaintScreen()),
+                            )),
                       ),
                       _buildActionCard(
                         emoji: '🛵',
                         title: 'Visitor Gate',
                         badge: '1',
+                        onTap: () => _runIfSocietyMember(_showVisitorGateRequest),
                       ),
                       _buildActionCard(
                         emoji: '🔑',
                         title: 'Tenant Info',
                         badge: null,
+                        onTap: () => _runIfSocietyMember(() => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const TenantManagementScreen()),
+                            )),
                       ),
                       _buildActionCard(
                         emoji: '🚗',
                         title: 'Parking',
                         badge: null,
+                        onTap: () => _runIfSocietyMember(() => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ParkingManagementScreen()),
+                            )),
                       ),
                       _buildActionCard(
                         emoji: '📊',
                         title: 'Full Dashboard',
                         badge: null,
+                        onTap: _navigateToSocietyDashboard,
                       ),
                     ],
                   ),
@@ -720,6 +725,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
 
   Widget _buildServiceCard({
     required String emoji,
+    String? iconPath,
     required String name,
     required String hindi,
     required String time,
@@ -733,20 +739,22 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     final displaySecondaryColor = secondaryColorOverride ?? textSecondaryColor;
     return GestureDetector(
       onTap: () {
-        final categoryServices = _getServicesForCategory(name, emoji);
+        final categoryServices = getServicesForCategory(name, emoji);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ServiceCategoryScreen(
               categoryName: name,
               categoryEmoji: emoji,
-              description: _getCategoryDescription(name),
+              categoryIconPath: iconPath,
+              description: getCategoryDescription(name),
               services: categoryServices,
             ),
           ),
         );
       },
       child: Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isDarkMode ? cardColor : Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -758,98 +766,178 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
             ),
           ],
         ),
-        padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: isSmall ? 48 : 56,
-              height: isSmall ? 48 : 56,
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Text(
-                  emoji,
-                  style: TextStyle(fontSize: isSmall ? 28 : 30),
-                ),
-              ),
-            ),
-            SizedBox(height: isSmall ? 8 : 12),
-            Flexible(
-              child: Text(
-                name,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: isSmall ? 11 : 13,
-                  fontWeight: FontWeight.bold,
-                  color: displayTextColor,
-                  height: 1.2,
-                  letterSpacing: 0.2,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (hindi.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(top: isSmall ? 4 : 6),
-                child: Text(
-                  hindi,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: isSmall ? 9 : 10,
-                    color: AppTheme.saffron,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-            if (time.isNotEmpty) ...[
-              const Spacer(),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 10, vertical: 4),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.neonGreen.withOpacity(0.2),
-                      AppTheme.neonGreen.withOpacity(0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppTheme.neonGreen.withOpacity(isDarkMode ? 0.5 : 0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '⚡',
-                      style: TextStyle(fontSize: isSmall ? 8 : 10),
+        padding: iconPath != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
+        child: iconPath != null
+            ? _buildPhotoServiceCard(iconPath: iconPath, name: name, time: time, isSmall: isSmall)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: isSmall ? 48 : 56,
+                    height: isSmall ? 48 : 56,
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    SizedBox(width: isSmall ? 2 : 4),
-                    Text(
-                      time,
+                    child: Center(
+                      child: Text(
+                        emoji,
+                        style: TextStyle(fontSize: isSmall ? 28 : 30),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: isSmall ? 8 : 12),
+                  Flexible(
+                    child: Text(
+                      name,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: isSmall ? 8 : 10,
-                        color: AppTheme.neonGreen,
+                        fontSize: isSmall ? 11 : 13,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 0.3,
+                        color: displayTextColor,
+                        height: 1.2,
+                        letterSpacing: 0.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (hindi.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.only(top: isSmall ? 4 : 6),
+                      child: Text(
+                        hindi,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isSmall ? 9 : 10,
+                          color: AppTheme.saffron,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                        maxLines: 1,
+                      ),
+                    ),
+                  if (time.isNotEmpty) ...[
+                    const Spacer(),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.neonGreen.withOpacity(0.2),
+                            AppTheme.neonGreen.withOpacity(0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppTheme.neonGreen.withOpacity(isDarkMode ? 0.5 : 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '⚡',
+                            style: TextStyle(fontSize: isSmall ? 8 : 10),
+                          ),
+                          SizedBox(width: isSmall ? 2 : 4),
+                          Text(
+                            time,
+                            style: TextStyle(
+                              fontSize: isSmall ? 8 : 10,
+                              color: AppTheme.neonGreen,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                ),
+                ],
               ),
-            ],
-          ],
-        ),
       ),
+    );
+  }
+
+  /// Category tile that's a real photo, filling the whole card, with the
+  /// category name (and time badge) overlaid on a dark scrim at the bottom
+  /// so the text stays readable against any photo.
+  Widget _buildPhotoServiceCard({
+    required String iconPath,
+    required String name,
+    required String time,
+    required bool isSmall,
+  }) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(iconPath, fit: BoxFit.cover),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Container(
+            padding: EdgeInsets.fromLTRB(isSmall ? 8 : 10, isSmall ? 20 : 24, isSmall ? 8 : 10, isSmall ? 8 : 10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Colors.black.withOpacity(0.85)],
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isSmall ? 11 : 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                    letterSpacing: 0.2,
+                    shadows: const [Shadow(color: Colors.black87, blurRadius: 4)],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (time.isNotEmpty) ...[
+                  SizedBox(height: isSmall ? 4 : 6),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppTheme.neonGreen.withOpacity(0.25),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.neonGreen, width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('⚡', style: TextStyle(fontSize: isSmall ? 8 : 10)),
+                        SizedBox(width: isSmall ? 2 : 4),
+                        Text(
+                          time,
+                          style: TextStyle(
+                            fontSize: isSmall ? 8 : 10,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -984,120 +1072,23 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     );
   }
 
-  String _getCategoryDescription(String categoryName) {
-    final descriptions = {
-      "Insta Help": "Instant help for common problems",
-      "Women's Salon": "At-home beauty & wellness services",
-      "Men's Salon": "Haircut, massage & grooming services",
-      "Cleaning": "Deep clean, kitchen, bathroom & more",
-      "Painting": "Interior, exterior, waterproofing & texture",
-      "AC & Appliance": "AC, fridge, washing machine, TV & more",
-      "Electric / Plumb": "46-min response • All home repairs",
-      "Vehicle Care": "Car & bike wash, detailing, AC & repairs",
-      "Food & Catering": "Home cook, tiffin, party catering & more",
-      "Health & Care": "Nurse, physio, blood test & elder care",
-      "Pooja Services": "Pandit, pooja samagri & full setup",
-      "Festival Services": "Ganpati, Diwali, Navratri & all festivals",
-      "Pest Control": "Safe, effective & certified treatments",
-      "Society Hub": "Gate, lift, CCTV, AMC & management",
-      "Real Estate": "Buy, sell, rent & property services",
-      "Hologram": "3D hologram display, events & branding",
-      "Tours & Travels": "Car rentals, tour packages & professional drivers",
-    };
-    return descriptions[categoryName] ?? "Professional services";
-  }
-
-  List<Map<String, dynamic>> _getServicesForCategory(String categoryName, String emoji) {
-    final servicesMap = {
-      "Insta Help": [
-        {'name': 'Electrical Fault', 'emoji': '⚡', 'duration': '30-45 min', 'rating': 4.8, 'price': 149},
-        {'name': 'Leaking Tap / Pipe', 'emoji': '💧', 'duration': '30-45 min', 'rating': 4.7, 'price': 179},
-        {'name': 'Door Lock Issue', 'emoji': '🔑', 'duration': '30-45 min', 'rating': 4.8, 'price': 199},
-      ],
-      "Women's Salon": [
-        {'name': 'Hair Cut & Styling (Women)', 'emoji': '✂️', 'duration': '45-60 min', 'rating': 4.9, 'price': 399},
-        {'name': 'Facial (Basic / D-Tan)', 'emoji': '🧴', 'duration': '60 min', 'rating': 4.8, 'price': 499},
-        {'name': 'Full Body Waxing', 'emoji': '✨', 'duration': '90 min', 'rating': 4.7, 'price': 799},
-      ],
-      "Men's Salon": [
-        {'name': 'Hair Cut & Styling (Men)', 'emoji': '✂️', 'duration': '30-45 min', 'rating': 4.9, 'price': 249},
-        {'name': 'Head Massage', 'emoji': '💆‍♂️', 'duration': '30 min', 'rating': 4.9, 'price': 299},
-        {'name': 'Beard Grooming', 'emoji': '🧔', 'duration': '30 min', 'rating': 4.8, 'price': 199},
-      ],
-      "Cleaning": [
-        {'name': 'Home Deep Clean (1BHK)', 'emoji': '🧹', 'duration': '3-4 hrs', 'rating': 4.9, 'price': 999},
-        {'name': 'Home Deep Clean (2BHK)', 'emoji': '🧹', 'duration': '4-5 hrs', 'rating': 4.9, 'price': 1499},
-      ],
-      "Painting": [
-        {'name': 'Wall Painting (Per sq.ft)', 'emoji': '🎨', 'rating': 4.6, 'price': 35},
-        {'name': 'Full Home Painting (1BHK)', 'emoji': '🏠', 'duration': '2-3 days', 'rating': 4.8, 'price': 8999},
-      ],
-      "AC & Appliance": [
-        {'name': 'AC Service & Deep Clean', 'emoji': '❄️', 'duration': '1.5-2 hrs', 'rating': 4.8, 'price': 499},
-        {'name': 'AC Gas Refill (R32 / R410)', 'emoji': '❄️', 'duration': '1-1.5 hrs', 'rating': 4.7, 'price': 1299},
-      ],
-      "Electric / Plumb": [
-        {'name': 'Electrician (General Visit)', 'emoji': '⚡', 'duration': '45 min', 'rating': 4.8, 'price': 199},
-        {'name': 'Fan Installation / Repair', 'emoji': '💨', 'duration': '30-45 min', 'rating': 4.8, 'price': 249},
-      ],
-      "Vehicle Care": [
-        {'name': 'Car Wash (Basic Exterior)', 'emoji': '🚗', 'duration': '45 min', 'rating': 4.7, 'price': 299},
-        {'name': 'Car Interior Deep Clean', 'emoji': '🚗', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 799},
-      ],
-      "Food & Catering": [
-        {'name': 'Home Cook (Per Visit)', 'emoji': '👨‍🍳', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 499},
-        {'name': 'Tiffin Service (Monthly)', 'emoji': '📦', 'duration': 'Monthly', 'rating': 4.7, 'price': 3499},
-      ],
-      "Health & Care": [
-        {'name': 'Nurse / Attendant (Day Shift)', 'emoji': '👩‍⚕️', 'duration': '8 hrs', 'rating': 4.9, 'price': 1499},
-        {'name': 'Nurse / Attendant (Night Shift)', 'emoji': '👩‍⚕️', 'duration': '10 hrs', 'rating': 4.9, 'price': 1799},
-      ],
-      "Pooja Services": [
-        {'name': 'Ganesh Pooja Setup & Pandit', 'emoji': '🐘', 'duration': '2-3 hrs', 'rating': 4.9, 'price': 2499},
-        {'name': 'Griha Pravesh Pooja', 'emoji': '🏠', 'duration': '3-4 hrs', 'rating': 4.9, 'price': 3499},
-      ],
-      "Festival Services": [
-        {'name': 'Ganpati Decoration & Setup', 'emoji': '🪔', 'rating': 4.9, 'price': 3999},
-        {'name': 'Ganpati Visarjan Arrangements', 'emoji': '🐘', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 1999},
-      ],
-      "Pest Control": [
-        {'name': 'General Pest Control (1BHK)', 'emoji': '🐜', 'duration': '1-2 hrs', 'rating': 4.7, 'price': 799},
-        {'name': 'General Pest Control (2BHK)', 'emoji': '🐜', 'duration': '1.5-2 hrs', 'rating': 4.7, 'price': 999},
-      ],
-      "Society Hub": [
-        {'name': 'Society Gate Motor Repair', 'emoji': '🚪', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 1299},
-        {'name': 'Lift Maintenance / Repair', 'emoji': '🛗', 'rating': 4.9, 'price': 2499},
-      ],
-      "Real Estate": [
-        {'name': 'Property Site Visit & Inspection', 'emoji': '🏠', 'duration': '2-3 hrs', 'rating': 4.8, 'price': 499},
-        {'name': 'Flat / Home for Rent (Listing)', 'emoji': '🔑', 'duration': '7-14 days', 'rating': 4.7, 'price': 999},
-      ],
-      "Hologram": [
-        {'name': '3D Hologram Fan Display (Rental)', 'emoji': '🔮', 'rating': 4.9, 'price': 2999},
-        {'name': 'Hologram Fan Purchase & Setup', 'emoji': '✨', 'duration': '1-2 days', 'rating': 4.9, 'price': 14999},
-      ],
-      "Tours & Travels": [
-        {'name': 'Hire Driver (Local - 4 hrs)', 'emoji': '👨‍✈️', 'duration': '4 hrs', 'rating': 4.8, 'price': 499},
-        {'name': 'Hire Driver (Local - 8 hrs)', 'emoji': '👨‍✈️', 'duration': '8 hrs', 'rating': 4.9, 'price': 899},
-      ],
-    };
-    return servicesMap[categoryName] ?? [];
-  }
 
   Widget _buildActionCard({
     required String emoji,
     required String title,
     String? badge,
+    VoidCallback? onTap,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
 
     return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Opening $title...'), duration: const Duration(seconds: 1)),
-        );
-      },
+      onTap: onTap ??
+          () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Opening $title...'), duration: const Duration(seconds: 1)),
+            );
+          },
       child: Container(
         padding: EdgeInsets.all(isSmall ? 12 : 14),
         decoration: BoxDecoration(
@@ -1178,6 +1169,273 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     );
   }
 
+  /// The 6 Society Actions cards only do their real thing for society
+  /// members. 'society' role accounts are always members. 'individual'
+  /// accounts must register + get admin-approved first (same gate as the
+  /// Society tab) - not-yet-registered taps open that registration screen,
+  /// already-pending taps just remind them to wait.
+  Future<void> _runIfSocietyMember(VoidCallback action) async {
+    if (widget.userRole == 'society') {
+      action();
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final status = prefs.getString('society_registration_status');
+    if (!mounted) return;
+
+    if (status == 'pending') {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Text('⏳', style: TextStyle(fontSize: 22)),
+              SizedBox(width: 8),
+              Expanded(child: Text('Approval Pending')),
+            ],
+          ),
+          content: const Text(
+            'Please wait until the admin approves you as a society member. '
+            'You will be provided a Society Member Account ID once approved.',
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.saffron),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SocietyScreen()),
+    );
+  }
+
+  /// Shows outstanding maintenance bills (uploaded by the society admin)
+  /// with a Pay Now button. NOTE: this opens Razorpay's site as a
+  /// placeholder redirect - a real checkout for the exact bill amount
+  /// needs a Razorpay merchant account wired up to a backend, which
+  /// doesn't exist yet.
+  Future<void> _showViewBillSheet() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bills = (prefs.getStringList('bills') ?? [])
+        .map((e) => jsonDecode(e) as Map<String, dynamic>)
+        .toList();
+    final pending = bills.where((b) => b['status'] == 'Pending').toList();
+    double total = 0;
+    for (final b in pending) {
+      total += double.tryParse(b['amount'].toString()) ?? 0;
+    }
+
+    if (!mounted) return;
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('🧾 Maintenance Bill', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(
+                'Uploaded and updated by your society admin',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 16),
+              if (pending.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text('No pending bills 🎉', style: TextStyle(color: Colors.grey.shade600)),
+                  ),
+                )
+              else ...[
+                ...pending.map((b) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              b['description'] ?? '',
+                              style: const TextStyle(fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text('₹${b['amount']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
+                    )),
+                const Divider(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total Outstanding', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(
+                      '₹${total.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.saffron, fontSize: 18),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _payViaRazorpay,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.saffron,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Pay Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _payViaRazorpay() async {
+    final uri = Uri.parse('https://razorpay.com/payment-link/');
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open Razorpay')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open Razorpay: $e')),
+        );
+      }
+    }
+  }
+
+  /// The one cross-account link in this app: a security guard captures a
+  /// visitor and it shows up here for the resident to approve/deny. Until
+  /// a real guard-submitted request exists (same local storage, so this
+  /// only works if guard + resident are testing on the same device/browser
+  /// for now), shows a demo request so the interaction is visible.
+  Future<void> _showVisitorGateRequest() async {
+    final prefs = await SharedPreferences.getInstance();
+    final visitors = prefs.getStringList('visitors') ?? [];
+
+    Map<String, dynamic>? pendingEntry;
+    int pendingIndex = -1;
+    for (int i = visitors.length - 1; i >= 0; i--) {
+      final v = jsonDecode(visitors[i]) as Map<String, dynamic>;
+      if (v['guardName'] != null && (v['status'] == null || v['status'] == 'pending')) {
+        pendingEntry = v;
+        pendingIndex = i;
+        break;
+      }
+    }
+
+    final isDemo = pendingEntry == null;
+    final entry = pendingEntry ??
+        {
+          'name': 'Swiggy Delivery Partner',
+          'purpose': 'Food Delivery',
+          'flatNo': 'Your Flat',
+          'photoBase64': null,
+        };
+
+    if (!mounted) return;
+    final decision = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('🚪 Visitor at Gate'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: entry['photoBase64'] != null
+                  ? Image.memory(base64Decode(entry['photoBase64']), width: 100, height: 100, fit: BoxFit.cover)
+                  : Container(
+                      width: 100,
+                      height: 100,
+                      color: Colors.orange.shade50,
+                      child: const Center(child: Text('🛵', style: TextStyle(fontSize: 48))),
+                    ),
+            ),
+            const SizedBox(height: 12),
+            Text(entry['name'] ?? 'Visitor', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
+            Text('${entry['purpose'] ?? ''} • Flat ${entry['flatNo'] ?? ''}', style: TextStyle(color: Colors.grey.shade600)),
+            if (isDemo) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Demo request - no real guest at the gate yet',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'deny'),
+            child: const Text('Deny Entry', style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, 'approve'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Approve Entry', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (decision == null) return;
+
+    if (!isDemo && pendingIndex != -1) {
+      final v = jsonDecode(visitors[pendingIndex]) as Map<String, dynamic>;
+      v['status'] = decision == 'approve' ? 'Approved' : 'Denied';
+      visitors[pendingIndex] = jsonEncode(v);
+      await prefs.setStringList('visitors', visitors);
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(decision == 'approve' ? '✅ Entry approved - guard notified' : '❌ Entry denied'),
+          backgroundColor: decision == 'approve' ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _openSOS() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasContacts = (prefs.getString('sos_contacts') ?? '').isNotEmpty;
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => hasContacts ? const SOSEmergencyScreen() : const SOSContactsScreen(),
+      ),
+    );
+  }
+
   void _openWhatsApp() {
     final message = Uri.encodeComponent('Hi! I need help with a service.');
     final whatsappUrl = 'https://wa.me/919876543210?text=$message';
@@ -1193,6 +1451,12 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   }
 
   void _navigateToSocietyDashboard() {
+    if (widget.onNavigateToTab != null) {
+      // Switch to the Society tab in the bottom nav, which already
+      // shows the correct screen for the user's role.
+      widget.onNavigateToTab!(3);
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -1306,7 +1570,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
           color: bgColor,
           borderRadius: BorderRadius.circular(16),
         ),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1314,7 +1578,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
             Text(
               title,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 21,
                 fontWeight: FontWeight.bold,
                 color: textColor,
                 letterSpacing: -0.3,
@@ -1322,11 +1586,11 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               subtitle,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 14,
                 color: textColor.withOpacity(0.7),
                 fontWeight: FontWeight.w500,
               ),

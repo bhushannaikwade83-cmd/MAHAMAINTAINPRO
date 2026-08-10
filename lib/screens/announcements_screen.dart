@@ -4,7 +4,9 @@ import 'dart:convert';
 import '../config/app_theme.dart';
 
 class AnnouncementsScreen extends StatefulWidget {
-  const AnnouncementsScreen({Key? key}) : super(key: key);
+  final bool isCommittee;
+
+  const AnnouncementsScreen({this.isCommittee = false, Key? key}) : super(key: key);
 
   @override
   State<AnnouncementsScreen> createState() => _AnnouncementsScreenState();
@@ -95,56 +97,69 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Post Announcement',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTextField('Title', _titleController, Icons.title),
-                    const SizedBox(height: 12),
-                    _buildTextField(
-                      'Description',
-                      _descriptionController,
-                      Icons.description,
-                      maxLines: 4,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _isSaving ? null : _addAnnouncement,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.saffron,
-                        minimumSize: const Size(double.infinity, 48),
+            if (widget.isCommittee) ...[
+              const Text(
+                'Post Announcement',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTextField('Title', _titleController, Icons.title),
+                      const SizedBox(height: 12),
+                      _buildTextField(
+                        'Description',
+                        _descriptionController,
+                        Icons.description,
+                        maxLines: 4,
                       ),
-                      child: _isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                strokeWidth: 2,
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _isSaving ? null : _addAnnouncement,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.saffron,
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Post Announcement',
+                                style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
-                            )
-                          : const Text(
-                              'Post Announcement',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Recent Announcements',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 24),
+              const Text(
+                'All Announcements',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+            ] else ...[
+              const Text(
+                'Latest Announcements',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Posted by your society admin',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 12),
+            ],
             FutureBuilder<List<dynamic>>(
               future: _loadAnnouncements(),
               builder: (context, snapshot) {
@@ -169,12 +184,16 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                   );
                 }
 
+                // Newest first
+                final displayList = announcements.reversed.toList();
+
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: announcements.length,
-                  itemBuilder: (context, index) {
-                    final announcement = announcements[index];
+                  itemCount: displayList.length,
+                  itemBuilder: (context, displayIndex) {
+                    final announcement = displayList[displayIndex];
+                    final storageIndex = announcements.length - 1 - displayIndex;
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: Padding(
@@ -194,10 +213,11 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                                     ),
                                   ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => _deleteAnnouncement(index),
-                                ),
+                                if (widget.isCommittee)
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _deleteAnnouncement(storageIndex),
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 8),

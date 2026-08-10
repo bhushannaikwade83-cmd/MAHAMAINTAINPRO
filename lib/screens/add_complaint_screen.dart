@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
+import 'dart:typed_data';
 import '../config/app_theme.dart';
 
 class AddComplaintScreen extends StatefulWidget {
@@ -14,6 +16,7 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   String _selectedCategory = 'Maintenance';
+  Uint8List? _photoBytes;
   bool _isSaving = false;
 
   final List<String> categories = [
@@ -30,6 +33,52 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
     final prefs = await SharedPreferences.getInstance();
     final complaints = prefs.getStringList('complaints') ?? [];
     return complaints.map((item) => jsonDecode(item)).toList();
+  }
+
+  Future<void> _pickPhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Add a Photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera, color: AppTheme.saffron),
+              title: const Text('Take a Photo'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: AppTheme.saffron),
+              title: const Text('Choose from Gallery'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    try {
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 80);
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      setState(() => _photoBytes = bytes);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open camera/gallery: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _submitComplaint() async {
@@ -54,6 +103,7 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
         'category': _selectedCategory,
         'status': 'Open',
         'timestamp': DateTime.now().toString(),
+        if (_photoBytes != null) 'photoBase64': base64Encode(_photoBytes!),
       });
 
       complaints.add(newComplaint);
@@ -61,6 +111,7 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
 
       _titleController.clear();
       _descriptionController.clear();
+      _photoBytes = null;
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -152,6 +203,52 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
                       _descriptionController,
                       Icons.description,
                       maxLines: 4,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Photo (optional)',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _isSaving ? null : _pickPhoto,
+                      child: Container(
+                        width: double.infinity,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: _photoBytes != null
+                            ? Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Image.memory(_photoBytes!, fit: BoxFit.cover),
+                                  Positioned(
+                                    right: 8,
+                                    top: 8,
+                                    child: GestureDetector(
+                                      onTap: () => setState(() => _photoBytes = null),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                        child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo_outlined, size: 32, color: AppTheme.saffron),
+                                  const SizedBox(height: 6),
+                                  Text('Tap to add a photo', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                                ],
+                              ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -274,6 +371,18 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            if (complaint['photoBase64'] != null) ...[
+                              const SizedBox(height: 10),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.memory(
+                                  base64Decode(complaint['photoBase64']),
+                                  height: 100,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 12),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -31,6 +31,19 @@ class CustomFooter extends StatelessWidget {
                 _buildNavItem(context, Icons.monetization_on_rounded, 'Earnings', 2),
                 _buildNavItem(context, Icons.person_rounded, 'Profile', 3),
               ]
+            : userRole == 'guard'
+            ? [
+                // Security guard tabs: Capture, Gate Log, Profile
+                _buildNavItem(context, Icons.camera_alt_rounded, 'Capture', 0),
+                _buildNavItem(context, Icons.history_rounded, 'Gate Log', 1),
+                _buildNavItem(context, Icons.person_rounded, 'Profile', 2),
+              ]
+            : userRole == 'committee'
+            ? [
+                // Society committee tabs: Dashboard, Profile
+                _buildNavItem(context, Icons.apartment_rounded, 'Dashboard', 0),
+                _buildNavItem(context, Icons.person_rounded, 'Profile', 1),
+              ]
             : [
                 // User tabs: Home, Search, AI Chat, Society, Bookings, Profile
                 _buildNavItem(context, Icons.home_rounded, 'Home', 0),

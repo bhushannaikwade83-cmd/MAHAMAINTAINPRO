@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>MahaMaintain Pro needs camera access so you can take and share photos with your society.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MahaMaintain Pro needs photo library access so you can choose and share photos with your society.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -19,6 +19,20 @@ class AppRouter {
     'societyadmin@demo.com',
   ];
 
+  // Demo emails for society committee members
+  static const List<String> _committeeDemoEmails = [
+    'committee@gmail.com',    // Main committee demo button
+    'committee@maha.com',
+    'committee@society.com',
+  ];
+
+  // Demo emails for security guards
+  static const List<String> _securityGuardDemoEmails = [
+    'guard@gmail.com',        // Main security guard demo button
+    'guard@maha.com',
+    'security@society.com',
+  ];
+
   static GoRouter createRouter(SupabaseAuthRepository authRepository) {
     return GoRouter(
       redirect: (context, state) async {
@@ -70,7 +84,14 @@ class AppRouter {
               print('🔍 OTP Verification - Email: $email');
               print('📧 Email lowercase: ${email?.toLowerCase()}');
               print('📋 Society emails: $_societyDemoEmails');
-              if (_societyDemoEmails.contains(email?.toLowerCase())) {
+              final lowerEmail = email?.toLowerCase();
+              if (_committeeDemoEmails.contains(lowerEmail)) {
+                print('✅ COMMITTEE USER DETECTED');
+                setUserRole('committee');
+              } else if (_securityGuardDemoEmails.contains(lowerEmail)) {
+                print('✅ SECURITY GUARD USER DETECTED');
+                setUserRole('security_guard');
+              } else if (_societyDemoEmails.contains(lowerEmail)) {
                 print('✅ SOCIETY USER DETECTED');
                 setUserRole('society');
               } else {

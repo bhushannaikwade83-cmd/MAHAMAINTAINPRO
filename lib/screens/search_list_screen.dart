@@ -1,8 +1,34 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
+import '../data/service_catalog.dart';
+import 'add_complaint_screen.dart';
+import 'announcements_screen.dart';
+import 'bills_maintenance_screen.dart';
+import 'parking_management_screen.dart';
+import 'service_category_screen.dart';
+import 'tenant_management_screen.dart';
+import 'visitor_gate_screen.dart';
+
+class _SearchEntry {
+  final String emoji;
+  final String? iconPath;
+  final String title;
+  final String subtitle;
+  final WidgetBuilder builder;
+
+  _SearchEntry({
+    required this.emoji,
+    this.iconPath,
+    required this.title,
+    required this.subtitle,
+    required this.builder,
+  });
+}
 
 class SearchListScreen extends StatefulWidget {
-  const SearchListScreen({Key? key}) : super(key: key);
+  final bool isCommittee;
+
+  const SearchListScreen({this.isCommittee = false, Key? key}) : super(key: key);
 
   @override
   State<SearchListScreen> createState() => _SearchListScreenState();
@@ -10,26 +36,86 @@ class SearchListScreen extends StatefulWidget {
 
 class _SearchListScreenState extends State<SearchListScreen> {
   final TextEditingController _searchController = TextEditingController();
+  String _query = '';
 
-  final List<Map<String, dynamic>> services = [
-    {'emoji': '⚡', 'name': 'Insta Help', 'time': '46 min available'},
-    {'emoji': '🧹', 'name': 'Cleaning Service', 'time': '52 min available'},
-    {'emoji': '🔧', 'name': 'Electrical Repair', 'time': '1 hour available'},
-    {'emoji': '💆', 'name': 'Salon Services', 'time': '2 hours available'},
-    {'emoji': '🚗', 'name': 'Vehicle Care', 'time': '3 hours available'},
-    {'emoji': '🏥', 'name': 'Health & Care', 'time': '45 min available'},
-    {'emoji': '🍳', 'name': 'Food & Catering', 'time': '1 hour available'},
-    {'emoji': '🎨', 'name': 'Painting', 'time': '1.5 hours available'},
+  late final List<_SearchEntry> _allEntries = [
+    for (final service in personalServices)
+      _SearchEntry(
+        emoji: service['emoji'] as String,
+        iconPath: getCategoryIcon(service['name'] as String),
+        title: service['name'] as String,
+        subtitle: getCategoryDescription(service['name'] as String),
+        builder: (context) => ServiceCategoryScreen(
+          categoryName: service['name'] as String,
+          categoryEmoji: service['emoji'] as String,
+          categoryIconPath: getCategoryIcon(service['name'] as String),
+          description: getCategoryDescription(service['name'] as String),
+          services: getServicesForCategory(service['name'] as String, service['emoji'] as String),
+        ),
+      ),
+    _SearchEntry(
+      emoji: '🛵',
+      title: 'Visitor Gate',
+      subtitle: 'Register and manage society visitors',
+      builder: (context) => const VisitorGateScreen(),
+    ),
+    _SearchEntry(
+      emoji: '🚗',
+      title: 'Parking Management',
+      subtitle: 'Request and track guest parking',
+      builder: (context) => const ParkingManagementScreen(),
+    ),
+    _SearchEntry(
+      emoji: '👥',
+      title: 'Tenant Management',
+      subtitle: 'Register and manage society tenants',
+      builder: (context) => const TenantManagementScreen(),
+    ),
+    _SearchEntry(
+      emoji: '📋',
+      title: 'Bills & Maintenance',
+      subtitle: 'View and add maintenance bills',
+      builder: (context) => BillsMaintenanceScreen(isCommittee: widget.isCommittee),
+    ),
+    _SearchEntry(
+      emoji: '📢',
+      title: 'Announcements',
+      subtitle: 'Society announcements and notices',
+      builder: (context) => AnnouncementsScreen(isCommittee: widget.isCommittee),
+    ),
+    _SearchEntry(
+      emoji: '✍️',
+      title: 'Add Complaint',
+      subtitle: 'Raise a complaint with your society',
+      builder: (context) => const AddComplaintScreen(),
+    ),
   ];
+
+  List<_SearchEntry> get _filteredEntries {
+    if (_query.trim().isEmpty) return _allEntries;
+    final query = _query.trim().toLowerCase();
+    return _allEntries
+        .where((entry) =>
+            entry.title.toLowerCase().contains(query) ||
+            entry.subtitle.toLowerCase().contains(query))
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
+    final results = _filteredEntries;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: SafeArea(
         child: Column(
           children: [
             // Orange Header
@@ -41,111 +127,58 @@ class _SearchListScreenState extends State<SearchListScreen> {
                   colors: [AppTheme.saffron, AppTheme.saffronDark],
                 ),
               ),
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 12,
-                left: 16,
-                right: 16,
-                bottom: 20,
-              ),
+              padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top bar
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            Text('👤', style: TextStyle(fontSize: 18)),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'YOUR SERVICES',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'Personal Services',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text('🔔', style: TextStyle(fontSize: 20)),
+                      if (Navigator.canPop(context))
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Icon(Icons.arrow_back, color: Colors.white),
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text('🌙', style: TextStyle(fontSize: 20)),
-                          ),
-                        ],
+                        ),
+                      Text(
+                        'Search',
+                        style: TextStyle(
+                          fontSize: isSmall ? 22 : 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Society Name
-                  Text(
-                    'Shri Ramdev Park',
-                    style: TextStyle(
-                      fontSize: isSmall ? 22 : 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        'CHS, Mira Road',
-                        style: TextStyle(
-                          fontSize: isSmall ? 13 : 15,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.expand_more, size: 18, color: Colors.white),
-                    ],
+                  Text(
+                    'Find services, society features & more',
+                    style: TextStyle(
+                      fontSize: isSmall ? 12 : 13,
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  // Search Bar
                   TextField(
                     controller: _searchController,
+                    autofocus: false,
+                    onChanged: (value) => setState(() => _query = value),
                     decoration: InputDecoration(
                       hintText: 'Search services, society',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
                       prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: Icon(Icons.close, color: Colors.grey.shade400),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                              },
+                            ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -159,16 +192,14 @@ class _SearchListScreenState extends State<SearchListScreen> {
               ),
             ),
 
-            // Search Services Header
+            // Results Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppTheme.saffron,
-              ),
+              color: AppTheme.saffron,
               child: Text(
-                'Search Services',
-                style: TextStyle(
+                _query.trim().isEmpty ? 'All Services' : 'Results for "${_query.trim()}"',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -176,44 +207,35 @@ class _SearchListScreenState extends State<SearchListScreen> {
               ),
             ),
 
-            // Services List
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Search Input in List
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search services, soc...',
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+            // Results List
+            Expanded(
+              child: results.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.search_off, size: 48, color: Colors.grey.shade400),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No results found for "${_query.trim()}"',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            ),
+                          ],
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: results.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final entry = results[index];
+                        return _buildResultItem(context, entry);
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Services List
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: services.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final service = services[index];
-                      return _buildServiceListItem(
-                        emoji: service['emoji'],
-                        name: service['name'],
-                        time: service['time'],
-                      );
-                    },
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -221,71 +243,64 @@ class _SearchListScreenState extends State<SearchListScreen> {
     );
   }
 
-  static Widget _buildServiceListItem({
-    required String emoji,
-    required String name,
-    required String time,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 28),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.search, size: 14, color: AppTheme.saffron),
-                    const SizedBox(width: 6),
-                    Text(
-                      time,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+  Widget _buildResultItem(BuildContext context, _SearchEntry entry) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: entry.builder),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-          Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 20),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            entry.iconPath != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(entry.iconPath!, width: 36, height: 36, fit: BoxFit.cover),
+                  )
+                : Text(entry.emoji, style: const TextStyle(fontSize: 28)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    entry.subtitle,
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 20),
+          ],
+        ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 }

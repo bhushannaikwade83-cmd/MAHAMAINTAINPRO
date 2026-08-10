@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 
@@ -62,18 +63,28 @@ class _VisitorDetailsScreenState extends State<VisitorDetailsScreen> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppTheme.saffron.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 32,
-                            color: AppTheme.saffron,
-                          ),
-                        ),
+                        widget.visitor['photoBase64'] != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.memory(
+                                  base64Decode(widget.visitor['photoBase64']),
+                                  width: 56,
+                                  height: 56,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.saffron.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 32,
+                                  color: AppTheme.saffron,
+                                ),
+                              ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -101,10 +112,18 @@ class _VisitorDetailsScreenState extends State<VisitorDetailsScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
+                    if (widget.visitor['flatNo'] != null) ...[
+                      _buildInfoRow('Flat', widget.visitor['flatNo'], Icons.home_outlined),
+                      const SizedBox(height: 12),
+                    ],
                     _buildInfoRow('Phone', widget.visitor['phone'] ?? 'N/A', Icons.phone),
                     const SizedBox(height: 12),
                     _buildInfoRow('Purpose', widget.visitor['purpose'] ?? 'N/A', Icons.info),
                     const SizedBox(height: 12),
+                    if (widget.visitor['guardName'] != null) ...[
+                      _buildInfoRow('Logged By', '${widget.visitor['guardName']} (${widget.visitor['gate'] ?? ''})', Icons.shield_outlined),
+                      const SizedBox(height: 12),
+                    ],
                     _buildInfoRow(
                       'Visit Date',
                       widget.visitor['timestamp'] != null

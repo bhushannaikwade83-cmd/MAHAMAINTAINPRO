@@ -1,8 +1,44 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
+import '../data/booking_store.dart';
+import 'live_tracking_screen.dart';
+import 'search_list_screen.dart';
 
-class BookingsScreen extends StatelessWidget {
+class BookingsScreen extends StatefulWidget {
   const BookingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<BookingsScreen> createState() => _BookingsScreenState();
+}
+
+class _BookingsScreenState extends State<BookingsScreen> {
+  List<Map<String, dynamic>> _bookings = [];
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+    // Refresh periodically so the live status (Confirmed -> Provider
+    // Assigned -> On the Way -> Arrived) actually visibly ticks forward
+    // while this screen is open.
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  Future<void> _load() async {
+    final bookings = await loadBookings();
+    if (!mounted) return;
+    setState(() => _bookings = bookings);
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +159,13 @@ class BookingsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Search Bar
                   TextField(
+                    readOnly: true,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SearchListScreen()),
+                      );
+                    },
                     decoration: InputDecoration(
                       hintText: 'Search services, society',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -169,39 +212,30 @@ class BookingsScreen extends StatelessWidget {
             // Bookings List
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildBookingCard(
-                    service: 'Bathroom Deep Clean',
-                    provider: 'Provider: Suresh Kumar',
-                    dateTime: 'Today • 2:30 PM - 4:30 PM',
-                    price: '₹548',
-                    status: 'Active',
-                    statusColor: Colors.green,
-                    hasCheckmark: true,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildBookingCard(
-                    service: 'AC Maintenance',
-                    provider: 'Provider: Rajesh Sharma',
-                    dateTime: 'Yesterday • 10:00 AM',
-                    price: '₹799',
-                    status: 'Completed',
-                    statusColor: Colors.grey,
-                    hasCheckmark: false,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildBookingCard(
-                    service: 'Plumbing Repair',
-                    provider: 'Provider: Anil Singh',
-                    dateTime: 'Tomorrow • 3:00 PM',
-                    price: '₹650',
-                    status: 'Scheduled',
-                    statusColor: Colors.orange,
-                    hasCheckmark: false,
-                  ),
-                ],
-              ),
+              child: _bookings.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          Icon(Icons.assignment_outlined, size: 48, color: Colors.grey.shade400),
+                          const SizedBox(height: 16),
+                          Text('No bookings yet', style: TextStyle(color: Colors.grey.shade600, fontSize: 15)),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Book a service and it will show up here',
+                            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        for (final booking in _bookings) ...[
+                          _buildBookingCard(booking),
+                          const SizedBox(height: 16),
+                        ],
+                      ],
+                    ),
             ),
           ],
         ),
@@ -209,135 +243,109 @@ class BookingsScreen extends StatelessWidget {
     );
   }
 
-  static Widget _buildBookingCard({
-    required String service,
-    required String provider,
-    required String dateTime,
-    required String price,
-    required String status,
-    required Color statusColor,
-    required bool hasCheckmark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+  Widget _buildBookingCard(Map<String, dynamic> booking) {
+    final bookedAt = DateTime.tryParse(booking['timestamp'] ?? '') ?? DateTime.now();
+    final statusInfo = getBookingStatus(bookedAt);
+    final services = (booking['services'] as List<dynamic>? ?? [])
+        .map((s) => (s as Map)['name'] as String? ?? '')
+        .where((n) => n.isNotEmpty)
+        .join(', ');
+    final address = booking['address'] as Map<String, dynamic>? ?? {};
+    final addressLine = [address['flat'], address['building']].where((e) => e != null && e.toString().isNotEmpty).join(', ');
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LiveTrackingScreen(booking: booking)),
       ),
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          service,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            booking['categoryName'] ?? 'Service',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          provider,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade700,
+                          const SizedBox(height: 4),
+                          if (services.isNotEmpty)
+                            Text(services, style: TextStyle(fontSize: 12, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Provider: ${booking['providerEmoji'] ?? ''} ${booking['providerName'] ?? 'Assigning...'}',
+                            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Text(
-                              hasCheckmark ? '✓' : '✗',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: hasCheckmark ? Colors.green : Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              dateTime,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
+                          if (addressLine.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text('📍 $addressLine', style: TextStyle(fontSize: 12, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    price,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.saffron,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Details',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          // Status Badge
-          Positioned(
-            top: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: statusColor,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                status,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '₹${booking['totalPrice'] ?? 0}',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.saffron,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Track / Details',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            // Status Badge
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusInfo.color,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  statusInfo.label,
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

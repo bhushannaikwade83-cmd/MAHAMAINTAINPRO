@@ -115,7 +115,7 @@ class _ParkingManagementScreenState extends State<ParkingManagementScreen> {
                   children: [
                     _buildTextField('Vehicle Type', _vehicleTypeController, Icons.directions_car, hintText: 'Car, Bike, etc.'),
                     const SizedBox(height: 12),
-                    _buildTextField('Vehicle Number', _vehicleNumberController, Icons.license, hintText: 'MH 01 XX 0000'),
+                    _buildTextField('Vehicle Number', _vehicleNumberController, Icons.confirmation_number, hintText: 'MH 01 XX 0000'),
                     const SizedBox(height: 12),
                     _buildTextField('Number of Days', _daysController, Icons.calendar_today, keyboardType: TextInputType.number),
                     const SizedBox(height: 16),

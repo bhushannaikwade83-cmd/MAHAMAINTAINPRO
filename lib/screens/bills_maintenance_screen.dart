@@ -4,7 +4,9 @@ import 'dart:convert';
 import '../config/app_theme.dart';
 
 class BillsMaintenanceScreen extends StatefulWidget {
-  const BillsMaintenanceScreen({Key? key}) : super(key: key);
+  final bool isCommittee;
+
+  const BillsMaintenanceScreen({this.isCommittee = false, Key? key}) : super(key: key);
 
   @override
   State<BillsMaintenanceScreen> createState() => _BillsMaintenanceScreenState();
@@ -76,6 +78,48 @@ class _BillsMaintenanceScreenState extends State<BillsMaintenanceScreen> {
     setState(() {});
   }
 
+  Future<void> _payBill(int index, String description, String amount) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Payment'),
+        content: Text('Pay ₹$amount for "$description"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.saffron),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Pay Now', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final bills = prefs.getStringList('bills') ?? [];
+    if (index < 0 || index >= bills.length) return;
+
+    final bill = jsonDecode(bills[index]) as Map<String, dynamic>;
+    bill['status'] = 'Paid';
+    bills[index] = jsonEncode(bill);
+    await prefs.setStringList('bills', bills);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment successful!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
     _descriptionController.dispose();
@@ -96,51 +140,69 @@ class _BillsMaintenanceScreenState extends State<BillsMaintenanceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Add Maintenance Bill',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTextField('Description', _descriptionController, Icons.description, hintText: 'e.g., Water Tank Cleaning'),
-                    const SizedBox(height: 12),
-                    _buildTextField('Amount (₹)', _amountController, Icons.currency_rupee, keyboardType: TextInputType.number),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _isSaving ? null : _addBill,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.saffron,
-                        minimumSize: const Size(double.infinity, 48),
-                      ),
-                      child: _isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                strokeWidth: 2,
+            if (widget.isCommittee) ...[
+              const Text(
+                'Add Maintenance Bill',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Visible to all society members once added',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTextField('Description', _descriptionController, Icons.description, hintText: 'e.g., Water Tank Cleaning'),
+                      const SizedBox(height: 12),
+                      _buildTextField('Amount (₹)', _amountController, Icons.currency_rupee, keyboardType: TextInputType.number),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _isSaving ? null : _addBill,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.saffron,
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Add Bill',
+                                style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
-                            )
-                          : const Text(
-                              'Add Bill',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Maintenance Bills',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 24),
+              const Text(
+                'All Maintenance Bills',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+            ] else ...[
+              const Text(
+                'Your Maintenance Bills',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Uploaded and updated by your society admin',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 16),
+            ],
             FutureBuilder<List<dynamic>>(
               future: _loadBills(),
               builder: (context, snapshot) {
@@ -158,50 +220,54 @@ class _BillsMaintenanceScreenState extends State<BillsMaintenanceScreen> {
                         children: const [
                           Icon(Icons.receipt_long, size: 48, color: Colors.grey),
                           SizedBox(height: 16),
-                          Text('No bills added yet'),
+                          Text('No bills uploaded yet'),
                         ],
                       ),
                     ),
                   );
                 }
 
-                double totalAmount = 0;
+                double outstandingAmount = 0;
                 for (var bill in bills) {
-                  totalAmount += double.tryParse(bill['amount'].toString()) ?? 0;
+                  if (bill['status'] == 'Pending') {
+                    outstandingAmount += double.tryParse(bill['amount'].toString()) ?? 0;
+                  }
                 }
 
                 return Column(
                   children: [
                     Card(
+                      color: outstandingAmount > 0 ? Colors.orange.shade50 : Colors.green.shade50,
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Total Amount',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            Text(
+                              widget.isCommittee ? 'Total Outstanding (All Members)' : 'Total Outstanding',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              '₹${totalAmount.toStringAsFixed(2)}',
-                              style: const TextStyle(
+                              '₹${outstandingAmount.toStringAsFixed(2)}',
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.saffron,
+                                color: outstandingAmount > 0 ? Colors.orange.shade800 : Colors.green.shade700,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: bills.length,
                       itemBuilder: (context, index) {
                         final bill = bills[index];
-                        final statusColor = bill['status'] == 'Pending' ? Colors.orange : Colors.green;
+                        final isPending = bill['status'] == 'Pending';
+                        final statusColor = isPending ? Colors.orange : Colors.green;
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: Padding(
@@ -223,10 +289,11 @@ class _BillsMaintenanceScreenState extends State<BillsMaintenanceScreen> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    GestureDetector(
-                                      onTap: () => _deleteBill(index),
-                                      child: const Icon(Icons.delete, color: Colors.red, size: 20),
-                                    ),
+                                    if (widget.isCommittee)
+                                      GestureDetector(
+                                        onTap: () => _deleteBill(index),
+                                        child: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                      ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
@@ -246,6 +313,27 @@ class _BillsMaintenanceScreenState extends State<BillsMaintenanceScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                if (isPending && !widget.isCommittee) ...[
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () => _payBill(
+                                        index,
+                                        bill['description'] ?? '',
+                                        bill['amount'].toString(),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.saffron,
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                      ),
+                                      child: const Text(
+                                        'Pay Bill Now',
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),

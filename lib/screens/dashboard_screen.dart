@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'individual_dashboard_screen.dart';
+import 'security_guard_dashboard_screen.dart';
+import 'committee_dashboard_screen.dart';
 
-/// Router screen that displays the Individual Dashboard for all users.
-/// User role is passed to child screens to customize content (e.g., Society tab).
+/// Router screen that displays the correct dashboard shell for the user's role.
+/// Individual/Society share the tabbed consumer dashboard (Home, Search, AI
+/// Chat, Society, Bookings, Profile). Committee and Security Guard each get
+/// their own dedicated, much narrower shell - they manage the society or
+/// gate, they don't book personal services, so none of the consumer tabs
+/// belong in their app at all.
 class DashboardScreen extends StatelessWidget {
   final String userRole;
   final VoidCallback onLogout;
@@ -16,9 +22,12 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print('🎯 DashboardScreen - userRole: $userRole');
-    // All users see the same dashboard structure
-    // User role is passed to customize content in tabs (e.g., Society tab)
-    print('📱 Loading INDIVIDUAL Dashboard structure for all users');
+    if (userRole == 'security_guard') {
+      return SecurityGuardDashboardScreen(onLogout: onLogout);
+    }
+    if (userRole == 'committee') {
+      return CommitteeDashboardScreen(onLogout: onLogout);
+    }
     return IndividualDashboardScreen(
       onLogout: onLogout,
       userRole: userRole,

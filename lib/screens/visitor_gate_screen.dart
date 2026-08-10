@@ -4,6 +4,43 @@ import 'dart:convert';
 import '../config/app_theme.dart';
 import 'visitor_details_screen.dart';
 
+Widget _buildVisitorAvatar(Map visitor, {double size = 40}) {
+  final photoBase64 = visitor['photoBase64'] as String?;
+  if (photoBase64 != null) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.memory(base64Decode(photoBase64), width: size, height: size, fit: BoxFit.cover),
+    );
+  }
+  return Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: Colors.grey.shade200,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: const Icon(Icons.person_outline, color: Colors.grey),
+  );
+}
+
+Widget? _buildStatusBadge(Map visitor) {
+  final status = visitor['status'] as String?;
+  if (status == null || status == 'pending') return null;
+  final isApproved = status == 'Approved';
+  final color = isApproved ? Colors.green : Colors.red;
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.12),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      isApproved ? 'Approved ✓' : 'Denied ✗',
+      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color),
+    ),
+  );
+}
+
 class VisitorGateScreen extends StatefulWidget {
   const VisitorGateScreen({Key? key}) : super(key: key);
 
@@ -148,6 +185,92 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                   ),
                   const SizedBox(height: 24),
                   const Text(
+                    'Recent Visitors (Last 5)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Visitors who came to see you',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 12),
+                  FutureBuilder<List<dynamic>>(
+                    future: _loadVisitors(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      final allVisitors = snapshot.data ?? [];
+                      final recentVisitors = allVisitors.reversed.take(5).toList();
+
+                      if (recentVisitors.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Column(
+                              children: const [
+                                Icon(Icons.people_outline, size: 40, color: Colors.grey),
+                                SizedBox(height: 12),
+                                Text('No visitors yet'),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: recentVisitors.length,
+                        itemBuilder: (context, index) {
+                          final visitor = recentVisitors[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            color: Colors.orange.shade50,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  _buildVisitorAvatar(visitor),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          visitor['name'] ?? 'Unknown',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          visitor['flatNo'] != null
+                                              ? '${visitor['purpose'] ?? 'N/A'} • Flat ${visitor['flatNo']}'
+                                              : (visitor['purpose'] ?? 'N/A'),
+                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (visitor['guardName'] != null)
+                                          Text(
+                                            'Logged by ${visitor['guardName']} • ${visitor['gate'] ?? ''}',
+                                            style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (_buildStatusBadge(visitor) != null) _buildStatusBadge(visitor)!,
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
                     'Registered Visitors',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
@@ -197,40 +320,58 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                               margin: const EdgeInsets.only(bottom: 12),
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
-                                child: Column(
+                                child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.person_outline, size: 20),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            visitor['name'] ?? 'Unknown',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
+                                    _buildVisitorAvatar(visitor, size: 48),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  visitor['name'] ?? 'Unknown',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              GestureDetector(
+                                                onTap: () => _deleteVisitor(index),
+                                                child: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          if (visitor['flatNo'] != null)
+                                            Text(
+                                              'Flat: ${visitor['flatNo']}',
+                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                              overflow: TextOverflow.ellipsis,
+                                            )
+                                          else
+                                            Text(
+                                              'Phone: ${visitor['phone'] ?? 'N/A'}',
+                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Purpose: ${visitor['purpose'] ?? 'N/A'}',
+                                            style: const TextStyle(fontSize: 12, color: Colors.grey),
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () => _deleteVisitor(index),
-                                          child: const Icon(Icons.delete, color: Colors.red, size: 20),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Phone: ${visitor['phone'] ?? 'N/A'}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Purpose: ${visitor['purpose'] ?? 'N/A'}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                      overflow: TextOverflow.ellipsis,
+                                          if (_buildStatusBadge(visitor) != null) ...[
+                                            const SizedBox(height: 6),
+                                            _buildStatusBadge(visitor)!,
+                                          ],
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
