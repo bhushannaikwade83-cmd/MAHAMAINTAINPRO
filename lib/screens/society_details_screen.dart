@@ -81,7 +81,7 @@ class _SocietyDetailsScreenState extends State<SocietyDetailsScreen>
 
     try {
       final response = await http.post(
-        Uri.parse('https://digitrixmedia.com/api/signup.php'),
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/signup.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'individual_name': widget.individualName,
