@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../config/app_theme.dart';
 import '../main.dart' show authRepositoryProvider;
 import 'individual_signup_screen.dart';
@@ -63,11 +65,56 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void _sendOtp() async {
     setState(() => _isLoading = true);
     try {
-      final authRepository = ref.read(authRepositoryProvider);
       final email = _emailController.text.trim();
-      await authRepository.sendOtp(email);
-      widget.onOtpPhoneChange(email);
-      widget.onOtpSent();
+
+      // First, verify login credentials with backend
+      final loginResponse = await http.post(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/login.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      ).timeout(const Duration(seconds: 10));
+
+      final loginData = jsonDecode(loginResponse.body);
+
+      if (loginResponse.statusCode == 200 && loginData['success']) {
+        // User is approved, proceed with OTP
+        final authRepository = ref.read(authRepositoryProvider);
+        await authRepository.sendOtp(email);
+        widget.onOtpPhoneChange(email);
+        widget.onOtpSent();
+      } else if (loginResponse.statusCode == 403) {
+        // Pending or rejected status
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loginData['message'] ?? 'Registration not approved'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      } else if (loginResponse.statusCode == 401) {
+        // Not registered
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loginData['message'] ?? 'Email not registered'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loginData['message'] ?? 'Login failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
