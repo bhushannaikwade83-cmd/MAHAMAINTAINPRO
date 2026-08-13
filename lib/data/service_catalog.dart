@@ -16,6 +16,9 @@ const Map<String, String> _categoryIcons = {
   'Fire Safety': 'assets/images/categories/fire_safety.jpeg',
   'Water Proofing': 'assets/images/categories/waterproofing.jpeg',
   'Blood Testing': 'assets/images/categories/blood_testing.jpeg',
+  'Men\'s Salon & Massage': 'assets/images/categories/mens_salon.jpeg',
+  'Festival Services': 'assets/images/categories/festival_services.jpeg',
+  'Interior Designer': 'assets/images/categories/interior_designer.jpeg',
 };
 
 /// Photo for a category tile (Home grid, All Categories, Search, category header).
