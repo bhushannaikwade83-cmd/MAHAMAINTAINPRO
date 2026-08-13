@@ -188,13 +188,21 @@ class _SocietyDetailsScreenState extends State<SocietyDetailsScreen>
                                 ),
                               ),
                             ),
-                            Text(
-                              'Society Details',
-                              style: TextStyle(
-                                fontSize: isSmall ? 20 : 24,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: -0.6,
+                            Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text(
+                                  'Society Details',
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 20 : 24,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -0.6,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 40),
