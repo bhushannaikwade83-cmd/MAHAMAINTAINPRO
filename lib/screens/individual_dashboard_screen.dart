@@ -86,14 +86,6 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
   }
 
   Future<bool> _handleBackButton() async {
-    // If the current tab has something pushed on top, pop that first so
-    // the bottom nav (and the tab's own screen) stays in place.
-    final currentNavigator = _navigatorKeys[_selectedTab].currentState;
-    if (currentNavigator != null && currentNavigator.canPop()) {
-      currentNavigator.pop();
-      return false;
-    }
-
     // If on home page (tab 0), check double-tap to exit
     if (_selectedTab == 0) {
       final now = DateTime.now();
@@ -119,7 +111,8 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
       return false;
     }
 
-    // If not on home, navigate to home page instead of closing
+    // If not on home, always navigate directly to home page (Tab 0)
+    // Ignore any internal navigation stack
     print('🏠 Back button - Navigating to home');
     setState(() {
       _selectedTab = 0;
