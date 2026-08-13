@@ -210,7 +210,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             SizedBox(height: isSmall ? 10 : 14),
                             Text(
-                              'महाराष्ट्र का विश्वास • Premium Services',
+                              'महाराष्ट्राचा विश्वास • Premium Services',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.9),
                                 fontSize: isSmall ? 12 : 13,
@@ -518,6 +518,62 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       ),
                                       child: Text(
                                         '🏢 Society Demo',
+                                        style: TextStyle(
+                                          fontSize: isSmall ? 12 : 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: isSmall ? 10 : 12),
+                                  // Society Committee Demo Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: isSmall ? 42 : 46,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        _emailController.text = 'committee@gmail.com';
+                                        setState(() {});
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.teal,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        elevation: 2,
+                                      ),
+                                      child: Text(
+                                        '🗳️ Committee Demo',
+                                        style: TextStyle(
+                                          fontSize: isSmall ? 12 : 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: isSmall ? 10 : 12),
+                                  // Security Guard Demo Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: isSmall ? 42 : 46,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        _emailController.text = 'guard@gmail.com';
+                                        setState(() {});
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blueGrey.shade700,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        elevation: 2,
+                                      ),
+                                      child: Text(
+                                        '🛡️ Security Guard Demo',
                                         style: TextStyle(
                                           fontSize: isSmall ? 12 : 13,
                                           fontWeight: FontWeight.w700,

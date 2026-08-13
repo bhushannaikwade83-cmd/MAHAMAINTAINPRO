@@ -191,7 +191,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                           ),
                           SizedBox(height: isSmall ? 8 : 12),
                           Text(
-                            'महाराष्ट्र का विश्वास',
+                            'महाराष्ट्राचा विश्वास',
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: isSmall ? 13 : 15,

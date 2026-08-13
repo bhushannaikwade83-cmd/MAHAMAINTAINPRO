@@ -1,0 +1,58 @@
+Running `(cd /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/; ANDROID_HOME=/Users/bhushan/Library/Android/sdk TMPDIR=/var/folders/rx/0xyq9z2j0jxdxfk0684bn0bm0000gn/T/ ANDROID_NDK_ROOT=/Users/bhushan/Library/Android/sdk/ndk/28.2.13676358 PATH=/Applications/Xcode.app/Contents/SharedFrameworks/SwiftBuild.framework/Versions/A/PlugIns/SWBBuildService.bundle/Contents/PlugIns/SWBUniversalPlatformPlugin.bundle/Contents/Frameworks/SWBUniversalPlatform.framework/Resources:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/local/bin:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/libexec:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/usr/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/usr/local/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/local/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/local/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/Users/bhushan/Library/Android/sdk/platform-tools HOME=/Users/bhushan ANDROID_NDK_HOME=/Users/bhushan/Library/Android/sdk/ndk/28.2.13676358 /opt/homebrew/share/flutter/bin/cache/dart-sdk/bin/dart --packages=/Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/package_config.json /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/objective_c/c43ab5f317/hook.dill --config=/Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/objective_c/c43ab5f317/input.json )`.
+INFO: 2026-08-13 12:10:31.718001: Using compiler /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang from BuildInput.cCompiler.cc.
+
+INFO: 2026-08-13 12:10:31.722593: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/include/dart_api_dl.c -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/include/dart_api_dl.c.o
+
+INFO: 2026-08-13 12:10:31.723980: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c.c -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c.c.o
+
+INFO: 2026-08-13 12:10:31.724191: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -x objective-c -fobjc-arc -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/input_stream_adapter.m -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/input_stream_adapter.m.o
+
+INFO: 2026-08-13 12:10:31.724356: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -x objective-c -fobjc-arc -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c.m -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c.m.o
+
+INFO: 2026-08-13 12:10:31.724498: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -x objective-c -fobjc-arc -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/observer.m -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/observer.m.o
+
+INFO: 2026-08-13 12:10:31.724635: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -x objective-c -fobjc-arc -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/ns_number.m -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/ns_number.m.o
+
+INFO: 2026-08-13 12:10:31.724772: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -x objective-c -fobjc-arc -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/protocol.m -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/protocol.m.o
+
+INFO: 2026-08-13 12:10:31.724940: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 -x objective-c -fobjc-arc -c /Users/bhushan/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c_bindings_generated.m -fpic -gline-tables-only -I src -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c_bindings_generated.m.o
+
+INFO: 2026-08-13 12:10:31.783682: 
+INFO: 2026-08-13 12:10:31.783788: 
+INFO: 2026-08-13 12:10:31.783830: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/include/dart_api_dl.c.o
+
+INFO: 2026-08-13 12:10:31.788516: 
+INFO: 2026-08-13 12:10:31.788554: 
+INFO: 2026-08-13 12:10:31.788567: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c.c.o
+
+INFO: 2026-08-13 12:10:31.821129: 
+INFO: 2026-08-13 12:10:31.821182: 
+INFO: 2026-08-13 12:10:31.821198: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/observer.m.o
+
+INFO: 2026-08-13 12:10:31.836778: 
+INFO: 2026-08-13 12:10:31.836824: 
+INFO: 2026-08-13 12:10:31.836842: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/protocol.m.o
+
+INFO: 2026-08-13 12:10:31.926061: 
+INFO: 2026-08-13 12:10:31.926110: 
+INFO: 2026-08-13 12:10:31.926124: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c.m.o
+
+INFO: 2026-08-13 12:10:31.933741: 
+INFO: 2026-08-13 12:10:31.933792: 
+INFO: 2026-08-13 12:10:31.933810: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/input_stream_adapter.m.o
+
+INFO: 2026-08-13 12:10:31.936075: 
+INFO: 2026-08-13 12:10:31.936114: 
+INFO: 2026-08-13 12:10:31.936128: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/ns_number.m.o
+
+INFO: 2026-08-13 12:10:31.968848: 
+INFO: 2026-08-13 12:10:31.968891: 
+INFO: 2026-08-13 12:10:31.968904: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c_bindings_generated.m.o
+
+INFO: 2026-08-13 12:10:31.969288: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -shared -Wl,-encryptable -undefined dynamic_lookup -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -target arm64-apple-ios -mios-version-min=13 /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/include/dart_api_dl.c.o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c.c.o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/input_stream_adapter.m.o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c.m.o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/observer.m.o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/ns_number.m.o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/protocol.m.o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/obj/src/objective_c_bindings_generated.m.o -o /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/objective_c.dylib
+
+INFO: 2026-08-13 12:10:32.012150: 
+INFO: 2026-08-13 12:10:32.012216: ld: warning: -undefined dynamic_lookup is deprecated on iOS
+
+INFO: 2026-08-13 12:10:32.012232: Generated /Users/bhushan/Desktop/PROJECTS/maha-maintanpro-main/.dart_tool/hooks_runner/shared/objective_c/build/c43ab5f317/objective_c.dylib
+

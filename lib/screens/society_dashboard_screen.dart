@@ -3,6 +3,12 @@ import '../widgets/custom_footer.dart';
 import 'emergency_sos_screen.dart';
 import 'profile_screen.dart';
 import 'ai_chat_screen.dart';
+import 'visitor_gate_screen.dart';
+import 'parking_management_screen.dart';
+import 'tenant_management_screen.dart';
+import 'bills_maintenance_screen.dart';
+import 'announcements_screen.dart';
+import 'add_complaint_screen.dart';
 
 class SocietyDashboardScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -189,15 +195,55 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   children: [
-                    _buildMenuCard('🚪', 'Visitor Gate', 'Manage visitor entries'),
+                    _buildMenuCard(
+                      '🚪',
+                      'Visitor Gate',
+                      'Manage visitor entries',
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const VisitorGateScreen()),
+                      ).then((_) => setState(() {})),
+                    ),
                     const SizedBox(height: 12),
-                    _buildMenuCard('🚗', 'Parking Management', 'Request guest parking'),
+                    _buildMenuCard(
+                      '🚗',
+                      'Parking Management',
+                      'Request guest parking',
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ParkingManagementScreen()),
+                      ).then((_) => setState(() {})),
+                    ),
                     const SizedBox(height: 12),
-                    _buildMenuCard('👥', 'Tenant Management', 'Register tenants'),
+                    _buildMenuCard(
+                      '👥',
+                      'Tenant Management',
+                      'Register tenants',
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const TenantManagementScreen()),
+                      ).then((_) => setState(() {})),
+                    ),
                     const SizedBox(height: 12),
-                    _buildMenuCard('📋', 'Bills & Maintenance', 'View maintenance bills'),
+                    _buildMenuCard(
+                      '📋',
+                      'Bills & Maintenance',
+                      'View maintenance bills',
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const BillsMaintenanceScreen()),
+                      ).then((_) => setState(() {})),
+                    ),
                     const SizedBox(height: 12),
-                    _buildMenuCard('📢', 'Announcements', 'View society notices'),
+                    _buildMenuCard(
+                      '📢',
+                      'Announcements',
+                      'View society notices',
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AnnouncementsScreen()),
+                      ).then((_) => setState(() {})),
+                    ),
                   ],
                 ),
               ),
@@ -206,49 +252,55 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
               // Add Complaint Action
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFE5CC),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE67E22), width: 1.5),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE67E22).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AddComplaintScreen()),
+                  ).then((_) => setState(() {})),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFE5CC),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE67E22), width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE67E22).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text('📝', style: TextStyle(fontSize: 20)),
                         ),
-                        child: const Text('📝', style: TextStyle(fontSize: 20)),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Add Complaint',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Add Complaint',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Report an issue to management',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey,
+                              SizedBox(height: 2),
+                              Text(
+                                'Report an issue to management',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.arrow_forward, color: Color(0xFFE67E22), size: 20),
-                    ],
+                        const Icon(Icons.arrow_forward, color: Color(0xFFE67E22), size: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -735,50 +787,53 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> {
     );
   }
 
-  Widget _buildMenuCard(String emoji, String title, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 36)),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade500,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
+  Widget _buildMenuCard(String emoji, String title, String subtitle, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
             ),
-          ),
-          Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 22),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 36)),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 22),
+          ],
+        ),
       ),
     );
   }

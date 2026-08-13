@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
+import '../data/service_catalog.dart';
+import 'booking_address_screen.dart';
 
 class ServiceCategoryScreen extends StatefulWidget {
   final String categoryName;
   final String categoryEmoji;
+  final String? categoryIconPath;
   final String description;
   final List<Map<String, dynamic>> services;
 
   const ServiceCategoryScreen({
     required this.categoryName,
     required this.categoryEmoji,
+    this.categoryIconPath,
     required this.description,
     required this.services,
     Key? key,
@@ -28,7 +32,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     _services = widget.services.map((s) => <String, dynamic>{...s, 'quantity': 0}).toList();
   }
 
-  int get totalPrice => _services.fold(0, (sum, item) => sum + ((item['price'] as int) * (item['quantity'] as int)));
+  int get totalPrice => _services.fold(0, (sum, item) => sum + (((item['price'] as int?) ?? 0) * (item['quantity'] as int)));
   int get totalServices => _services.fold(0, (sum, item) => sum + (item['quantity'] as int));
 
   @override
@@ -84,33 +88,53 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     ],
                   ),
                   SizedBox(height: isSmall ? 10 : 12),
-                  // Title with emoji and badge if new
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: widget.categoryName,
-                          style: TextStyle(
-                            fontSize: isSmall ? 22 : 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                  // Title with icon/emoji and badge if new
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.categoryIconPath != null) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.asset(
+                            widget.categoryIconPath!,
+                            width: isSmall ? 30 : 36,
+                            height: isSmall ? 30 : 36,
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        TextSpan(
-                          text: ' ${widget.categoryEmoji}',
-                          style: TextStyle(fontSize: isSmall ? 22 : 26),
-                        ),
-                        if (widget.categoryName.contains('New') || widget.description.contains('New'))
-                          TextSpan(
-                            text: '\n◆ New',
-                            style: TextStyle(
-                              fontSize: isSmall ? 10 : 11,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        SizedBox(width: isSmall ? 8 : 10),
                       ],
-                    ),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: widget.categoryName,
+                                style: TextStyle(
+                                  fontSize: isSmall ? 22 : 26,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (widget.categoryIconPath == null)
+                                TextSpan(
+                                  text: ' ${widget.categoryEmoji}',
+                                  style: TextStyle(fontSize: isSmall ? 22 : 26),
+                                ),
+                              if (widget.categoryName.contains('New') || widget.description.contains('New'))
+                                TextSpan(
+                                  text: '\n◆ New',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 10 : 11,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: isSmall ? 6 : 8),
                   Text(
@@ -180,10 +204,15 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Booking $totalServices service(s) for ₹$totalPrice'),
-                            backgroundColor: AppTheme.saffron,
+                        final selected = _services.where((s) => (s['quantity'] as int) > 0).toList();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookingAddressScreen(
+                              categoryName: widget.categoryName,
+                              selectedServices: selected,
+                              totalPrice: totalPrice,
+                            ),
                           ),
                         );
                       },
@@ -239,9 +268,18 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Center(
-                child: Text(service['emoji'] ?? '🔧', style: const TextStyle(fontSize: 28)),
-              ),
+              child: Builder(builder: (context) {
+                final iconPath = getServiceIcon(widget.categoryName, service['name'] ?? '');
+                if (iconPath != null) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.asset(iconPath, fit: BoxFit.cover),
+                  );
+                }
+                return Center(
+                  child: Text(service['emoji'] ?? '🔧', style: const TextStyle(fontSize: 28)),
+                );
+              }),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -280,11 +318,11 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '₹${service['price'] ?? 0}',
-                    style: const TextStyle(
-                      fontSize: 15,
+                    service['price'] != null ? '₹${service['price']}' : 'Price on request',
+                    style: TextStyle(
+                      fontSize: service['price'] != null ? 15 : 12,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.saffron,
+                      color: service['price'] != null ? AppTheme.saffron : Colors.grey.shade600,
                     ),
                   ),
                 ],
