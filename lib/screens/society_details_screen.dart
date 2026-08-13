@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../config/app_theme.dart';
 
 class SocietyDetailsScreen extends StatefulWidget {
@@ -78,18 +80,45 @@ class _SocietyDetailsScreenState extends State<SocietyDetailsScreen>
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Send data to Supabase
-      // For now, show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration submitted! Awaiting admin approval.'),
-          backgroundColor: Colors.green,
-        ),
+      final response = await http.post(
+        Uri.parse('https://cloud.servercontroll.site/api/signup.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'individual_name': widget.individualName,
+          'individual_phone': widget.individualPhone,
+          'individual_email': widget.individualEmail,
+          'individual_address': widget.individualAddress,
+          'society_name': _societyNameController.text.trim(),
+          'society_address': _societyAddressController.text.trim(),
+          'pincode': _pincodeController.text.trim(),
+          'flat_number': _flatNumberController.text.trim(),
+        }),
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw Exception('Request timeout'),
       );
 
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      });
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseData['message'] ?? 'Registration submitted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseData['message'] ?? 'Registration failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
