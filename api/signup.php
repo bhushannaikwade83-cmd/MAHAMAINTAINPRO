@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Database credentials
 $servername = "localhost";
 $username = "digitrix_maha_user";
-$password = "YOUR_PASSWORD"; // Replace with actual password
+$password = "maha_user@70";
 $dbname = "digitrix_maha_maintain_pro";
 
 // Create connection
