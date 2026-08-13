@@ -6,9 +6,9 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 // Database credentials
 $servername = "localhost";
-$username = "maha_user";
+$username = "digitrix_maha_user";
 $password = "YOUR_PASSWORD"; // Replace with actual password
-$dbname = "maha_maintain_pro";
+$dbname = "digitrix_maha_maintain_pro";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
