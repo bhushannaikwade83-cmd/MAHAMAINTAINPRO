@@ -87,7 +87,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 18 * scale,
+                      fontSize: 16 * scale,
                       letterSpacing: 0.3,
                       color: _saffron,
                       shadows: const <Shadow>[
@@ -106,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     style: TextStyle(
                       fontFamily: _fontFamily,
                       fontWeight: FontWeight.w700,
-                      fontSize: 64 * scale,
+                      fontSize: 60 * scale,
                       height: 1.25,
                       letterSpacing: 0.5,
                       color: _saffron,
@@ -126,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     style: TextStyle(
                       fontFamily: _fontFamily,
                       fontWeight: FontWeight.w700,
-                      fontSize: 44 * scale,
+                      fontSize: 40 * scale,
                       height: 1.35,
                       letterSpacing: 0.5,
                       color: _goldPale,
