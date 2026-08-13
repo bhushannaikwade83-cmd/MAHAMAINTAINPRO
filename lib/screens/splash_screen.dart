@@ -83,6 +83,24 @@ class _SplashScreenState extends State<SplashScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
+                    'महा मैंटेन प्रो',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18 * scale,
+                      letterSpacing: 0.3,
+                      color: _saffron,
+                      shadows: const <Shadow>[
+                        Shadow(
+                          color: Color(0x99000000),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 12 * scale),
+                  Text(
                     'विश्वास',
                     textAlign: TextAlign.center,
                     style: TextStyle(
