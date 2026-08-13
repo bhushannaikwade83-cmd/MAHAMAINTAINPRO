@@ -59,6 +59,7 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
   late final List<Widget> _screens;
   final List<GlobalKey<NavigatorState>> _navigatorKeys =
       List.generate(_tabCount, (_) => GlobalKey<NavigatorState>());
+  DateTime? _lastBackPressTime;
 
   @override
   void initState() {
@@ -93,12 +94,28 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
       return false;
     }
 
-    // If on home page (tab 0), close the app
+    // If on home page (tab 0), check double-tap to exit
     if (_selectedTab == 0) {
-      print('🚪 Back button on home - Exiting app');
-      if (Platform.isAndroid) {
-        SystemNavigator.pop();
+      final now = DateTime.now();
+      if (_lastBackPressTime != null &&
+          now.difference(_lastBackPressTime!) < const Duration(seconds: 2)) {
+        // Double tap within 2 seconds - exit app
+        print('🚪 Double back tap - Exiting app');
+        if (Platform.isAndroid) {
+          SystemNavigator.pop();
+        }
+        return false;
       }
+
+      // First tap - show snackbar
+      _lastBackPressTime = now;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Press back again to exit'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black87,
+        ),
+      );
       return false;
     }
 
