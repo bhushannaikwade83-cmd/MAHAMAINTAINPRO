@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_theme.dart';
 import '../main.dart' show authRepositoryProvider;
+import 'otp_verification_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final VoidCallback onOtpSent;
@@ -62,11 +63,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void _sendOtp() async {
     setState(() => _isLoading = true);
     try {
-      final authRepository = ref.read(authRepositoryProvider);
-      final email = _phoneController.text.trim();
-      await authRepository.sendOtp(email);
-      widget.onOtpPhoneChange(email);
-      widget.onOtpSent();
+      final phoneNumber = _phoneController.text.trim();
+
+      // TODO: Send OTP via SMS API
+      // For now, navigate to OTP verification
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtpVerificationScreen(
+            phoneNumber: phoneNumber,
+            onBackPress: () => Navigator.pop(context),
+          ),
+        ),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
