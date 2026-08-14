@@ -30,6 +30,10 @@
 	<string>MahaMaintain Pro needs camera access so you can take and share photos with your society.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>MahaMaintain Pro needs photo library access so you can choose and share photos with your society.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MahaMaintain Pro needs your location to provide location-based services and better recommendations.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>MahaMaintain Pro needs your location to provide location-based services and better recommendations.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
