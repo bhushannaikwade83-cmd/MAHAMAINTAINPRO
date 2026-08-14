@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_theme.dart';
 import '../main.dart' show authRepositoryProvider;
-import 'individual_signup_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final VoidCallback onOtpSent;
@@ -632,77 +631,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
-                            SizedBox(height: isSmall ? 20 : 24),
-
-                            // Sign Up Section
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    height: 1,
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12),
-                                  child: Text(
-                                    'OR',
-                                    style: TextStyle(
-                                      fontSize: isSmall ? 12 : 13,
-                                      color: Colors.grey.shade600,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    height: 1,
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: isSmall ? 16 : 20),
-                            SizedBox(
-                              width: double.infinity,
-                              height: isSmall ? 50 : 56,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => IndividualSignupScreen(
-                                          onBackPress: () => Navigator.pop(context),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: AppTheme.saffron,
-                                        width: 2.5,
-                                      ),
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        'Create New Account →',
-                                        style: TextStyle(
-                                          fontSize: isSmall ? 15 : 16,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppTheme.saffron,
-                                          letterSpacing: 0.3,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
                               ),
                             ),
                           ],
