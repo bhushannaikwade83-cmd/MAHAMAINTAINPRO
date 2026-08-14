@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../config/app_theme.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -18,9 +21,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-  String _currentLocation = 'Fetching location...';
+  String? _currentLocation;
+  String? _currentLatitude;
+  String? _currentLongitude;
   bool _isLoading = false;
   bool _geoLocationLoading = false;
+  bool _locationSelected = false;
+  bool _showLocationDialog = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -35,7 +42,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
-    _fetchCurrentLocation();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showLocationPermissionDialog();
+    });
   }
 
   @override
@@ -46,18 +55,171 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
     super.dispose();
   }
 
+  void _showLocationPermissionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                size: 48,
+                color: AppTheme.saffron,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Enable Location',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.saffron,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'We need your location to provide better service',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _fetchCurrentLocation();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.saffron,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Use Current Location',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() => _locationSelected = true);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade200,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Enter Manually',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.saffron,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _fetchCurrentLocation() async {
     setState(() => _geoLocationLoading = true);
     try {
-      // TODO: Integrate with location_geolocator package
-      // For now, show placeholder
-      setState(() {
-        _currentLocation = 'Mumbai, Maharashtra\n(19.0760° N, 72.8777° E)';
-      });
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
+        setState(() {
+          _currentLatitude = position.latitude.toString();
+          _currentLongitude = position.longitude.toString();
+          _currentLocation = '${position.latitude}, ${position.longitude}';
+          _locationSelected = true;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location fetched successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location permission denied'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _geoLocationLoading = false);
+    }
+  }
+
+  void _refreshLocation() async {
+    setState(() => _geoLocationLoading = true);
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
       setState(() {
-        _currentLocation = 'Failed to fetch location';
+        _currentLatitude = position.latitude.toString();
+        _currentLongitude = position.longitude.toString();
+        _currentLocation = '${position.latitude}, ${position.longitude}';
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location updated'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       setState(() => _geoLocationLoading = false);
     }
@@ -65,15 +227,15 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
 
   bool _isFormValid() {
     return _nameController.text.trim().isNotEmpty &&
-        _addressController.text.trim().isNotEmpty &&
-        _currentLocation.isNotEmpty;
+        _locationSelected &&
+        (_currentLocation != null || _addressController.text.trim().isNotEmpty);
   }
 
   void _completeProfile() async {
     if (!_isFormValid()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill all fields'),
+          content: Text('Please fill all required fields'),
           backgroundColor: Colors.red,
         ),
       );
@@ -83,19 +245,35 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Save profile to database
-      // For now, show success and navigate to dashboard
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile setup complete!'),
-          backgroundColor: Colors.green,
-        ),
+      final response = await _saveProfileToDatabase(
+        name: _nameController.text.trim(),
+        address: _addressController.text.trim().isNotEmpty
+            ? _addressController.text.trim()
+            : _currentLocation ?? '',
+        latitude: _currentLatitude ?? '0',
+        longitude: _currentLongitude ?? '0',
       );
 
-      // Navigate to dashboard
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      });
+      if (response['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile setup complete!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate to dashboard
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to save profile'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -105,6 +283,43 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
       );
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<Map<String, dynamic>> _saveProfileToDatabase({
+    required String name,
+    required String address,
+    required String latitude,
+    required String longitude,
+  }) async {
+    try {
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/save-profile.php');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phone_number': widget.phoneNumber,
+          'full_name': name,
+          'address': address,
+          'latitude': latitude,
+          'longitude': longitude,
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}'
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}'
+      };
     }
   }
 
@@ -201,74 +416,106 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
                               maxLines: 3,
                             ),
                             SizedBox(height: isSmall ? 14 : 16),
-                            Text(
-                              'Current Location',
-                              style: TextStyle(
-                                fontSize: isSmall ? 12 : 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(height: isSmall ? 6 : 8),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: isSmall ? 12 : 14,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                border: Border.all(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
+                            if (_locationSelected)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(
-                                    Icons.gps_fixed,
-                                    color: Colors.grey.shade600,
-                                    size: isSmall ? 18 : 20,
+                                  Text(
+                                    'Current Location',
+                                    style: TextStyle(
+                                      fontSize: isSmall ? 12 : 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
                                   ),
-                                  SizedBox(width: isSmall ? 10 : 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  SizedBox(height: isSmall ? 6 : 8),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: isSmall ? 12 : 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade50,
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          _currentLocation,
-                                          style: TextStyle(
-                                            fontSize: isSmall ? 12 : 13,
-                                            color: Colors.black87,
-                                            fontWeight: FontWeight.w500,
+                                        Icon(
+                                          Icons.gps_fixed,
+                                          color: Colors.grey.shade600,
+                                          size: isSmall ? 18 : 20,
+                                        ),
+                                        SizedBox(width: isSmall ? 10 : 12),
+                                        Expanded(
+                                          child: Text(
+                                            _currentLocation ?? 'Location not set',
+                                            style: TextStyle(
+                                              fontSize: isSmall ? 12 : 13,
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
                                         ),
+                                        if (_geoLocationLoading)
+                                          SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation(
+                                                AppTheme.saffron,
+                                              ),
+                                            ),
+                                          )
+                                        else if (_currentLocation != null)
+                                          GestureDetector(
+                                            onTap: _refreshLocation,
+                                            child: Icon(
+                                              Icons.refresh,
+                                              color: AppTheme.saffron,
+                                              size: isSmall ? 18 : 20,
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ),
-                                  if (_geoLocationLoading)
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation(
-                                          AppTheme.saffron,
-                                        ),
+                                  SizedBox(height: isSmall ? 14 : 16),
+                                ],
+                              )
+                            else
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: isSmall ? 12 : 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      border: Border.all(
+                                        color: Colors.blue.shade200,
+                                        width: 1.5,
                                       ),
-                                    )
-                                  else
-                                    GestureDetector(
-                                      onTap: _fetchCurrentLocation,
-                                      child: Icon(
-                                        Icons.refresh,
-                                        color: AppTheme.saffron,
-                                        size: isSmall ? 18 : 20,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '📍 Please select location option above',
+                                      style: TextStyle(
+                                        fontSize: isSmall ? 12 : 13,
+                                        color: Colors.blue.shade700,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
+                                  ),
+                                  SizedBox(height: isSmall ? 14 : 16),
                                 ],
                               ),
-                            ),
                             SizedBox(height: isSmall ? 20 : 28),
                             SizedBox(
                               width: double.infinity,
