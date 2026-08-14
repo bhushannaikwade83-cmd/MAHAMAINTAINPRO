@@ -21,13 +21,13 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  bool _emailFocused = false;
-  final FocusNode _emailFocus = FocusNode();
+  bool _phoneFocused = false;
+  final FocusNode _phoneFocus = FocusNode();
   String? _userRole;
   DateTime? _logoTapDownTime;
 
@@ -46,16 +46,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
         );
     _animationController.forward();
-    _emailFocus.addListener(() {
-      setState(() => _emailFocused = _emailFocus.hasFocus);
+    _phoneFocus.addListener(() {
+      setState(() => _phoneFocused = _phoneFocus.hasFocus);
     });
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _phoneController.dispose();
     _animationController.dispose();
-    _emailFocus.dispose();
+    _phoneFocus.dispose();
     super.dispose();
   }
 
@@ -63,7 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     setState(() => _isLoading = true);
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      final email = _emailController.text.trim();
+      final email = _phoneController.text.trim();
       await authRepository.sendOtp(email);
       widget.onOtpPhoneChange(email);
       widget.onOtpSent();
@@ -72,8 +72,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     }
   }
 
-  bool _isValidEmail(String email) {
-    return email.contains('@') && email.contains('.') && email.length > 5;
+  bool _isValidPhone(String phone) {
+    return phone.length == 10 && phone.contains(RegExp(r'^[0-9]{10}$'));
   }
 
   @override
@@ -307,11 +307,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                             // Email Input Field - Simple & Clean
                             TextField(
-                              controller: _emailController,
-                              focusNode: _emailFocus,
-                              keyboardType: TextInputType.emailAddress,
+                              controller: _phoneController,
+                              focusNode: _phoneFocus,
+                              keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
-                                hintText: 'your.email@example.com',
+                                hintText: 'Enter 10-digit mobile number',
                                 hintStyle: TextStyle(
                                   fontSize: isSmall ? 12 : 13,
                                   color: Colors.grey.shade500,
@@ -362,7 +362,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             SizedBox(height: isSmall ? 14 : 16),
                             AnimatedScale(
-                              scale: _isValidEmail(_emailController.text) ? 1.02 : 1.0,
+                              scale: _isValidPhone(_phoneController.text) ? 1.02 : 1.0,
                               duration: const Duration(milliseconds: 200),
                               child: SizedBox(
                                 width: double.infinity,
@@ -371,7 +371,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   color: Colors.transparent,
                                   child: InkWell(
                                     onTap:
-                                        _isValidEmail(_emailController.text) && !_isLoading
+                                        _isValidPhone(_phoneController.text) && !_isLoading
                                             ? _sendOtp
                                             : null,
                                     borderRadius: BorderRadius.circular(14),
@@ -478,7 +478,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     height: isSmall ? 42 : 46,
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        _emailController.text = 'member@gmail.com';
+                                        _phoneController.text = '9876543210';
                                         setState(() {});
                                       },
                                       style: ElevatedButton.styleFrom(
@@ -506,7 +506,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     height: isSmall ? 42 : 46,
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        _emailController.text = 'society@gmail.com';
+                                        _phoneController.text = '9123456789';
                                         setState(() {});
                                       },
                                       style: ElevatedButton.styleFrom(
@@ -534,7 +534,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     height: isSmall ? 42 : 46,
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        _emailController.text = 'committee@gmail.com';
+                                        _phoneController.text = '9876543211';
                                         setState(() {});
                                       },
                                       style: ElevatedButton.styleFrom(
@@ -562,7 +562,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     height: isSmall ? 42 : 46,
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        _emailController.text = 'guard@gmail.com';
+                                        _phoneController.text = '9123456788';
                                         setState(() {});
                                       },
                                       style: ElevatedButton.styleFrom(
