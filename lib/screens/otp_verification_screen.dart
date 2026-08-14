@@ -21,8 +21,8 @@ class OtpVerificationScreen extends ConsumerStatefulWidget {
 
 class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
     with SingleTickerProviderStateMixin {
-  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
+  final List<TextEditingController> _otpControllers = List.generate(4, (_) => TextEditingController());
+  final List<FocusNode> _otpFocusNodes = List.generate(4, (_) => FocusNode());
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -54,7 +54,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
 
   String get _otpCode => _otpControllers.map((c) => c.text).join();
 
-  bool get _isOtpComplete => _otpCode.length == 6;
+  bool get _isOtpComplete => _otpCode.length == 4;
 
   void _handleOtpInput(String value, int index) {
     if (value.length > 1) {
@@ -62,7 +62,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
       return;
     }
 
-    if (value.isNotEmpty && index < 5) {
+    if (value.isNotEmpty && index < 3) {
       _otpFocusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
       _otpFocusNodes[index - 1].requestFocus();
@@ -248,7 +248,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
                             ),
                             SizedBox(height: isSmall ? 8 : 10),
                             Text(
-                              'Enter the 6-digit OTP sent to ${widget.phoneNumber}',
+                              'Enter the 4-digit OTP sent to ${widget.phoneNumber}',
                               style: TextStyle(
                                 fontSize: isSmall ? 12 : 13,
                                 color: Colors.grey.shade600,
@@ -260,7 +260,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: List.generate(
-                                6,
+                                4,
                                 (index) => SizedBox(
                                   width: isSmall ? 45 : 50,
                                   height: isSmall ? 45 : 50,
