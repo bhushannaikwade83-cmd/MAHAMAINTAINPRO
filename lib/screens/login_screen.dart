@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../config/app_theme.dart';
 import '../main.dart' show authRepositoryProvider;
 import 'otp_verification_screen.dart';
@@ -65,20 +67,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     try {
       final phoneNumber = _phoneController.text.trim();
 
-      // TODO: Send OTP via SMS API
-      // For now, navigate to OTP verification
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OtpVerificationScreen(
-            phoneNumber: phoneNumber,
-            onBackPress: () => Navigator.pop(context),
+      // Validate phone
+      if (!_isValidPhone(phoneNumber)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter a valid 10-digit phone number'),
+            backgroundColor: Colors.red,
           ),
+        );
+        return;
+      }
+
+      // Send OTP via API
+      final response = await _sendOtpApi(phoneNumber);
+
+      if (response['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('OTP sent successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate to OTP verification
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpVerificationScreen(
+              phoneNumber: phoneNumber,
+              onBackPress: () => Navigator.pop(context),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to send OTP'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
         ),
       );
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<Map<String, dynamic>> _sendOtpApi(String phoneNumber) async {
+    try {
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/send-otp.php');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone_number': phoneNumber}),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}'
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}'
+      };
     }
   }
 
