@@ -772,6 +772,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: isSmall ? 48 : 56,
