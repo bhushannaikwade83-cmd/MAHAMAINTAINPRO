@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Check if individual exists
-    $check_sql = "SELECT id FROM individuals WHERE phone_number = '$phone_number' LIMIT 1";
+    $check_sql = "SELECT id FROM individuals WHERE phone = '$phone_number' LIMIT 1";
     debug_log("Check SQL: $check_sql");
     $check_result = $conn->query($check_sql);
 
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                            longitude = '$longitude'
                            $email_update,
                            updated_at = NOW()
-                       WHERE phone_number = '$phone_number'";
+                       WHERE phone = '$phone_number'";
 
         debug_log("Update SQL: $update_sql");
 
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         debug_log("Creating new profile");
         $email_value = $email ? "'$email'" : 'NULL';
         $insert_sql = "INSERT INTO individuals
-                       (phone_number, full_name, email, address, latitude, longitude, status, created_at)
+                       (phone, full_name, email, address, latitude, longitude, status, created_at)
                        VALUES ('$phone_number', '$full_name', $email_value, '$address', '$latitude', '$longitude', 'pending', NOW())";
 
         debug_log("Insert SQL: $insert_sql");
