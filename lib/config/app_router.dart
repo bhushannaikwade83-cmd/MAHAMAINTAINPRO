@@ -37,17 +37,28 @@ class AppRouter {
   static GoRouter createRouter(SupabaseAuthRepository authRepository) {
     return GoRouter(
       redirect: (context, state) async {
-        final isAuthenticated = authRepository.isAuthenticated();
-        final isLoggingIn = state.matchedLocation == '/login' ||
-            state.matchedLocation == '/otp';
-
-        // Check if user has a saved login session
+        // Check if user has a saved login session FIRST
         final prefs = await SharedPreferences.getInstance();
         final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
         final userPhone = prefs.getString('userPhone');
 
-        // If on login/OTP screens, stay there
-        if (isLoggingIn) {
+        final isAuthenticated = authRepository.isAuthenticated();
+        final isLoggingIn = state.matchedLocation == '/login' ||
+            state.matchedLocation == '/otp' ||
+            state.matchedLocation == '/';
+
+        // If trying to go to login/otp/home and already logged in, go to dashboard
+        if (isLoggingIn && (isLoggedIn || isAuthenticated)) {
+          if (isLoggedIn && userPhone != null) {
+            return '/dashboard';
+          }
+          if (isAuthenticated) {
+            return '/dashboard';
+          }
+        }
+
+        // If on login/OTP screens and not logged in, stay there
+        if (state.matchedLocation == '/login' || state.matchedLocation == '/otp') {
           return null;
         }
 
@@ -61,7 +72,12 @@ class AppRouter {
           return '/dashboard';
         }
 
-        // If not authenticated, go to login
+        // If not authenticated and trying to access dashboard, go to login
+        if (state.matchedLocation == '/dashboard') {
+          return '/login';
+        }
+
+        // Default to login
         return '/login';
       },
       routes: [
