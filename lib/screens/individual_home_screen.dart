@@ -38,6 +38,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   final int _bannerSlideDelay = 4;
   bool _showButtons = true;
   double _lastScrollPosition = 0;
+  String _userName = 'User';
 
   @override
   void initState() {
@@ -46,6 +47,19 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     _scrollController = ScrollController();
     _scrollController.addListener(_handleScrolling);
     _startAutoSlide();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final name = prefs.getString('userName') ?? 'User';
+      setState(() {
+        _userName = name;
+      });
+    } catch (e) {
+      debugPrint('Error loading user name: $e');
+    }
   }
 
   void _handleScrolling() {
@@ -217,12 +231,14 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'Home Services',
+                                  _userName,
                                   style: TextStyle(
                                     fontSize: isSmall ? 11 : 12,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
