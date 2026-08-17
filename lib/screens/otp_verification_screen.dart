@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import '../config/app_theme.dart';
-import 'profile_setup_screen.dart';
+import 'individual_signup_screen.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
@@ -155,7 +155,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProfileSetupScreen(
+            builder: (context) => IndividualSignUpScreen(
               phoneNumber: widget.phoneNumber,
             ),
           ),

@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $phone_number = $conn->real_escape_string(trim($data['phone_number']));
     $full_name = $conn->real_escape_string(trim($data['full_name']));
+    $email = isset($data['email']) && !empty($data['email']) ? $conn->real_escape_string(trim($data['email'])) : NULL;
     $address = isset($data['address']) ? $conn->real_escape_string(trim($data['address'])) : '';
     $latitude = isset($data['latitude']) ? $conn->real_escape_string($data['latitude']) : '0';
     $longitude = isset($data['longitude']) ? $conn->real_escape_string($data['longitude']) : '0';
@@ -52,11 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($check_result->num_rows > 0) {
         // Update existing profile
+        $email_update = $email ? ", email = '$email'" : '';
         $update_sql = "UPDATE individuals
                        SET full_name = '$full_name',
                            address = '$address',
                            latitude = '$latitude',
-                           longitude = '$longitude',
+                           longitude = '$longitude'
+                           $email_update,
                            updated_at = NOW()
                        WHERE phone_number = '$phone_number'";
 
@@ -73,9 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     } else {
         // Create new individual profile
+        $email_value = $email ? "'$email'" : 'NULL';
         $insert_sql = "INSERT INTO individuals
-                       (phone_number, full_name, address, latitude, longitude, status, created_at)
-                       VALUES ('$phone_number', '$full_name', '$address', '$latitude', '$longitude', 'pending', NOW())";
+                       (phone_number, full_name, email, address, latitude, longitude, status, created_at)
+                       VALUES ('$phone_number', '$full_name', $email_value, '$address', '$latitude', '$longitude', 'pending', NOW())";
 
         if ($conn->query($insert_sql)) {
             http_response_code(200);
