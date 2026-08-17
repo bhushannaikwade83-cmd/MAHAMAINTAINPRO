@@ -68,7 +68,8 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
       }
 
       setState(() {
-        _userName = name ?? 'User';
+        // Add MR. prefix to name (can be enhanced with gender selection later)
+        _userName = name != null && name.isNotEmpty ? 'MR. $name' : 'USER';
       });
       debugPrint('✅ User name loaded: $_userName');
     } catch (e) {
@@ -268,7 +269,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                                   ),
                                 ),
                                 Text(
-                                  _userName,
+                                  _userName.toUpperCase(),
                                   style: TextStyle(
                                     fontSize: isSmall ? 11 : 12,
                                     color: Colors.white,
