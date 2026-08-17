@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:async';
 import '../config/app_theme.dart';
@@ -152,14 +154,32 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
           ),
         );
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => IndividualSignUpScreen(
-              phoneNumber: widget.phoneNumber,
+        // Check if user already exists
+        final userExists = await _checkUserExists(widget.phoneNumber);
+
+        if (userExists) {
+          // Existing user - save session and go to dashboard
+          await _saveLoginSession(widget.phoneNumber);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Welcome back!'),
+              backgroundColor: Colors.blue,
             ),
-          ),
-        );
+          );
+          Future.delayed(const Duration(milliseconds: 500), () {
+            context.go('/dashboard');
+          });
+        } else {
+          // New user - go to signup
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => IndividualSignUpScreen(
+                phoneNumber: widget.phoneNumber,
+              ),
+            ),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -199,6 +219,40 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
       }
     } catch (e) {
       return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  Future<bool> _checkUserExists(String phoneNumber) async {
+    try {
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-user.php');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone_number': phoneNumber}),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['exists'] == true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error checking user: $e');
+      return false;
+    }
+  }
+
+  Future<void> _saveLoginSession(String phoneNumber) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userPhone', phoneNumber);
+      await prefs.setString('userType', 'individual');
+      await prefs.setString('loginTime', DateTime.now().toIso8601String());
+      debugPrint('✅ Login session saved');
+    } catch (e) {
+      debugPrint('❌ Error saving session: $e');
     }
   }
 
