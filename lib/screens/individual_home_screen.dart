@@ -769,11 +769,12 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
         padding: iconPath != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
         child: iconPath != null
             ? _buildPhotoServiceCard(iconPath: iconPath, name: name, time: time, isSmall: isSmall)
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   Container(
                     width: isSmall ? 48 : 56,
                     height: isSmall ? 48 : 56,
@@ -859,6 +860,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                     ),
                   ],
                 ],
+                ),
               ),
       ),
     );
