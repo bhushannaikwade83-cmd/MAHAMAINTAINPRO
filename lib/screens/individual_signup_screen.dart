@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
 
@@ -246,7 +247,7 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
         );
 
         Future.delayed(const Duration(seconds: 1), () {
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          context.go('/dashboard');
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
