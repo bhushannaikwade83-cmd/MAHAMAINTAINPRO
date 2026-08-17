@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
 
@@ -239,6 +240,12 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
       );
 
       if (response['success'] == true) {
+        // Save login session
+        await _saveLoginSession(
+          _mobileController.text.trim(),
+          _nameController.text.trim(),
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Sign up successful!'),
@@ -266,6 +273,20 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
       );
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _saveLoginSession(String phoneNumber, String name) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userPhone', phoneNumber);
+      await prefs.setString('userName', name);
+      await prefs.setString('userType', 'individual');
+      await prefs.setString('loginTime', DateTime.now().toIso8601String());
+      debugPrint('✅ Login session saved for $phoneNumber');
+    } catch (e) {
+      debugPrint('❌ Error saving login session: $e');
     }
   }
 

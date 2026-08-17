@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../repositories/auth_repository.dart';
 import '../screens/login_screen.dart';
 import '../screens/otp_screen.dart';
@@ -40,9 +41,19 @@ class AppRouter {
         final isLoggingIn = state.matchedLocation == '/login' ||
             state.matchedLocation == '/otp';
 
+        // Check if user has a saved login session
+        final prefs = await SharedPreferences.getInstance();
+        final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+        final userPhone = prefs.getString('userPhone');
+
         // If on login/OTP screens, stay there
         if (isLoggingIn) {
           return null;
+        }
+
+        // If has saved session, go to dashboard
+        if (isLoggedIn && userPhone != null) {
+          return '/dashboard';
         }
 
         // If authenticated, go to dashboard

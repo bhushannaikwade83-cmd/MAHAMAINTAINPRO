@@ -156,7 +156,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: const Text('Cancel'),
                         ),
                         TextButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            // Clear login session
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.clear();
+
                             Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(builder: (context) => LoginScreen(
