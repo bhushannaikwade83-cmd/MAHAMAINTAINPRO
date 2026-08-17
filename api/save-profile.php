@@ -76,7 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (!$check_result) {
         debug_log("Check query error: " . $conn->error);
+        http_response_code(500);
+        die(json_encode(['success' => false, 'message' => 'Database query error: ' . $conn->error]));
     }
+
+    debug_log("Check result rows: " . $check_result->num_rows);
 
     if ($check_result->num_rows > 0) {
         // Update existing profile
