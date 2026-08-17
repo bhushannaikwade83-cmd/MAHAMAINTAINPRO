@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 import '../config/app_theme.dart';
@@ -53,12 +54,48 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   Future<void> _loadUserName() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final name = prefs.getString('userName') ?? 'User';
+      var name = prefs.getString('userName');
+
+      // If name not in SharedPreferences, fetch from database
+      if (name == null || name.isEmpty) {
+        final phoneNumber = prefs.getString('userPhone');
+        if (phoneNumber != null && phoneNumber.isNotEmpty) {
+          name = await _fetchUserNameFromDatabase(phoneNumber);
+          if (name != null && name.isNotEmpty) {
+            await prefs.setString('userName', name);
+          }
+        }
+      }
+
       setState(() {
-        _userName = name;
+        _userName = name ?? 'User';
       });
+      debugPrint('✅ User name loaded: $_userName');
     } catch (e) {
-      debugPrint('Error loading user name: $e');
+      debugPrint('❌ Error loading user name: $e');
+    }
+  }
+
+  Future<String?> _fetchUserNameFromDatabase(String phoneNumber) async {
+    try {
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-user.php');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone_number': phoneNumber}),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['exists'] == true && data['full_name'] != null) {
+          return data['full_name'];
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error fetching name from database: $e');
+      return null;
     }
   }
 
