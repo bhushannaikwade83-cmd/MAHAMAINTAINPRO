@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
-import 'booking_address_screen.dart';
+import '../utils/constants.dart';
+import 'schedule_service_screen.dart';
 
 class ServiceCategoryScreen extends StatefulWidget {
   final String categoryName;
   final String categoryEmoji;
   final String? categoryIconPath;
+  final String? categoryImagePath;
   final String description;
   final List<Map<String, dynamic>> services;
 
@@ -14,6 +16,7 @@ class ServiceCategoryScreen extends StatefulWidget {
     required this.categoryName,
     required this.categoryEmoji,
     this.categoryIconPath,
+    this.categoryImagePath,
     required this.description,
     required this.services,
     Key? key,
@@ -208,7 +211,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BookingAddressScreen(
+                            builder: (context) => ScheduleServiceScreen(
                               categoryName: widget.categoryName,
                               selectedServices: selected,
                               totalPrice: totalPrice,

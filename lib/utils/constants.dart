@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+/// API and server configuration
+class ApiConfig {
+  static const String baseUrl = 'https://digitrixmedia.com/mahamaintainpro';
+  static const String imagesUrl = '$baseUrl/assets/services';
+}
+
 /// Central color palette for Maha Maintain CRM.
 class AppColors {
   static const teal = Color(0xFF0F766E);
