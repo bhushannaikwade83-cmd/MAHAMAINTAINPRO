@@ -43,11 +43,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Check if user exists
-    $sql = "SELECT id, full_name, email FROM individuals WHERE phone = '$phone_number' LIMIT 1";
+    $sql = "SELECT id, full_name, email, address, latitude, longitude FROM individuals WHERE phone = '$phone_number' LIMIT 1";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
+
+        // Debug logging
+        error_log("=== CHECK USER API ===");
+        error_log("Phone: $phone_number");
+        error_log("Raw User Data: " . json_encode($user));
+        error_log("Latitude value: " . var_export($user['latitude'], true));
+        error_log("Longitude value: " . var_export($user['longitude'], true));
+        error_log("Address value: " . var_export($user['address'], true));
+
         http_response_code(200);
         echo json_encode([
             'success' => true,
@@ -55,6 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'user_id' => $user['id'],
             'full_name' => $user['full_name'],
             'email' => $user['email'],
+            'address' => $user['address'],
+            'latitude' => $user['latitude'],
+            'longitude' => $user['longitude'],
+            'phone' => $phone_number,
             'message' => 'User found'
         ]);
     } else {

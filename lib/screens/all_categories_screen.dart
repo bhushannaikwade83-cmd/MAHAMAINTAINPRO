@@ -1,11 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
 import 'service_category_screen.dart';
 
 /// Full list of service categories, reached via "See all" on the home screen.
-class AllCategoriesScreen extends StatelessWidget {
+class AllCategoriesScreen extends StatefulWidget {
   const AllCategoriesScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AllCategoriesScreen> createState() => _AllCategoriesScreenState();
+}
+
+class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
+  late List<Map<String, dynamic>> _categories = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['categories'] != null) {
+          setState(() {
+            _categories = List<Map<String, dynamic>>.from(data['categories']);
+            _isLoading = false;
+          });
+          debugPrint('✅ Categories loaded: ${_categories.length} found');
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading categories: $e');
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +56,11 @@ class AllCategoriesScreen extends StatelessWidget {
         title: const Text('All Categories'),
         elevation: 0,
       ),
-      body: GridView.builder(
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(color: AppTheme.saffron),
+            )
+          : GridView.builder(
         padding: EdgeInsets.all(isSmall ? 12 : 16),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -27,16 +68,20 @@ class AllCategoriesScreen extends StatelessWidget {
           mainAxisSpacing: isSmall ? 12 : 14,
           childAspectRatio: 0.95,
         ),
-        itemCount: personalServices.length,
+        itemCount: _categories.length,
         itemBuilder: (context, index) {
-          final service = personalServices[index];
-          final emoji = service['emoji'] as String;
-          final name = service['name'] as String;
-          final bgColor = service['color'] as Color;
+          final category = _categories[index];
+          final emoji = category['emoji'] as String? ?? '🔧';
+          final name = category['name'] as String? ?? 'Service';
+          final colorHex = category['color'] as String? ?? '#FFFFFF';
+          final bgColor = _hexToColor(colorHex);
           final iconPath = getCategoryIcon(name);
 
           return GestureDetector(
             onTap: () {
+              final services = (category['services'] as List<dynamic>?)
+                  ?.map((s) => Map<String, dynamic>.from(s as Map))
+                  .toList() ?? [];
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -45,7 +90,7 @@ class AllCategoriesScreen extends StatelessWidget {
                     categoryEmoji: emoji,
                     categoryIconPath: iconPath,
                     description: getCategoryDescription(name),
-                    services: getServicesForCategory(name, emoji),
+                    services: services,
                   ),
                 ),
               );
@@ -102,6 +147,7 @@ class AllCategoriesScreen extends StatelessWidget {
                     )
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           width: isSmall ? 48 : 56,
@@ -114,19 +160,21 @@ class AllCategoriesScreen extends StatelessWidget {
                             child: Text(emoji, style: TextStyle(fontSize: isSmall ? 28 : 30)),
                           ),
                         ),
-                        SizedBox(height: isSmall ? 8 : 12),
-                        Text(
-                          name,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isSmall ? 11 : 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            height: 1.2,
-                            letterSpacing: 0.2,
+                        SizedBox(height: isSmall ? 4 : 6),
+                        Flexible(
+                          child: Text(
+                            name,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isSmall ? 10 : 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                              height: 1.1,
+                              letterSpacing: 0.1,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -135,5 +183,15 @@ class AllCategoriesScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Color _hexToColor(String hexColor) {
+    hexColor = hexColor.replaceFirst('#', '');
+    if (hexColor.length == 6) {
+      return Color(int.parse('FF$hexColor', radix: 16));
+    } else if (hexColor.length == 8) {
+      return Color(int.parse(hexColor, radix: 16));
+    }
+    return const Color(0xFFFFFFFF);
   }
 }

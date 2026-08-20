@@ -16,7 +16,12 @@ class CustomFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(6, 10, 6, 22),
+      padding: EdgeInsets.fromLTRB(
+        6,
+        10,
+        6,
+        22 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: AppTheme.borderColor, width: 0.8)),

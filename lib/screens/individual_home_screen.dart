@@ -7,6 +7,7 @@ import 'dart:convert';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
 import 'add_complaint_screen.dart';
+import 'address_settings_screen.dart';
 import 'all_categories_screen.dart';
 import 'live_tracking_screen.dart';
 import 'parking_management_screen.dart';
@@ -27,7 +28,7 @@ class IndividualHomeScreen extends StatefulWidget {
   State<IndividualHomeScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<IndividualHomeScreen> {
+class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
   late PageController _pageController;
   late Timer _bannerTimer;
@@ -40,38 +41,65 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   bool _showButtons = true;
   double _lastScrollPosition = 0;
   String _userName = 'User';
+  String _buildingName = '';
+  String _locationInfo = '';
+  List<Map<String, dynamic>> _services = [];
+  List<Map<String, dynamic>> _categoriesWithServices = [];
+  bool _loadingServices = true;
+  late Timer _liveRefreshTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _pageController = PageController();
     _scrollController = ScrollController();
     _scrollController.addListener(_handleScrolling);
     _startAutoSlide();
     _loadUserName();
+    _loadAddressDetails();
+    _loadServices();
+    _startLiveRefresh();
+  }
+
+  void _startLiveRefresh() {
+    _liveRefreshTimer = Timer.periodic(Duration(seconds: 15), (_) {
+      if (mounted) _loadServices();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadServices();
+    }
   }
 
   Future<void> _loadUserName() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var name = prefs.getString('userName');
+      final phoneNumber = prefs.getString('userPhone');
 
-      // If name not in SharedPreferences, fetch from database
-      if (name == null || name.isEmpty) {
-        final phoneNumber = prefs.getString('userPhone');
-        if (phoneNumber != null && phoneNumber.isNotEmpty) {
-          name = await _fetchUserNameFromDatabase(phoneNumber);
-          if (name != null && name.isNotEmpty) {
-            await prefs.setString('userName', name);
+      if (phoneNumber != null && phoneNumber.isNotEmpty) {
+        // Always fetch fresh name from database
+        final name = await _fetchUserNameFromDatabase(phoneNumber);
+        if (name != null && name.isNotEmpty) {
+          await prefs.setString('userName', name);
+          if (mounted) {
+            setState(() {
+              _userName = 'SHRI ${name.toUpperCase()}';
+            });
           }
+          debugPrint('✅ User name loaded from database: $_userName');
+          return;
         }
       }
 
-      setState(() {
-        // Add MR. prefix to name (can be enhanced with gender selection later)
-        _userName = name != null && name.isNotEmpty ? 'MR. $name' : 'USER';
-      });
-      debugPrint('✅ User name loaded: $_userName');
+      if (mounted) {
+        setState(() {
+          _userName = 'USER';
+        });
+      }
     } catch (e) {
       debugPrint('❌ Error loading user name: $e');
     }
@@ -98,6 +126,126 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
       debugPrint('Error fetching name from database: $e');
       return null;
     }
+  }
+
+  Future<void> _loadAddressDetails() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('userPhone');
+
+      if (phoneNumber == null) return;
+
+      // Fetch latest address from database
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone_number': phoneNumber}),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && (data['addresses'] as List?)?.isNotEmpty == true) {
+          final latestAddress = (data['addresses'] as List)[0];
+          final buildingName = latestAddress['building_name']?.toString() ?? '';
+          final fullAddress = latestAddress['full_address']?.toString() ?? '';
+
+          // Extract city and direction from full address
+          final parts = fullAddress.split(',').map((p) => p.trim()).toList();
+          String city = '';
+          String direction = '';
+
+          // Find city and direction
+          for (int i = 0; i < parts.length; i++) {
+            final part = parts[i];
+            if (part.contains('West') || part.contains('East') || part.contains('North') || part.contains('South')) {
+              direction = part;
+              if (i > 0) city = parts[i - 1];
+            }
+          }
+
+          if (mounted) {
+            setState(() {
+              _buildingName = buildingName;
+              _locationInfo = '$city${direction.isNotEmpty ? ', $direction' : ''}';
+            });
+            debugPrint('✅ Address details loaded: Building=$buildingName, Location=$_locationInfo');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading address details: $e');
+    }
+  }
+
+  Future<void> _loadServices() async {
+    try {
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
+      debugPrint('🔄 Fetching services from: $url');
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+
+      debugPrint('🔄 API Response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true && data['categories'] != null) {
+          // Convert categories to services list for home screen display
+          final List<Map<String, dynamic>> homeServices = [];
+          final List<Map<String, dynamic>> categoriesData = [];
+
+          for (var category in data['categories']) {
+            // Store full category with its services
+            categoriesData.add(Map<String, dynamic>.from(category as Map));
+
+            // Get first service from category to show price & rating
+            final services = category['services'] as List? ?? [];
+            final firstService = services.isNotEmpty ? services[0] : null;
+
+            homeServices.add({
+              'emoji': category['emoji'] ?? '🔧',
+              'name': category['name'] ?? '',
+              'hindi': '',
+              'time': firstService != null ? (firstService['duration'] ?? '') : '',
+              'price': firstService != null ? firstService['price'] ?? 0 : 0,
+              'rating': firstService != null ? (firstService['rating'] ?? 0.0).toString() : '0',
+              'color': _hexToColor(category['color'] ?? '#FFFFFF'),
+            });
+          }
+
+          if (mounted) {
+            setState(() {
+              _services = homeServices;
+              _categoriesWithServices = categoriesData;
+              _loadingServices = false;
+            });
+          }
+          debugPrint('✅ Services loaded from database: ${homeServices.length} categories found');
+        } else {
+          debugPrint('❌ API success=false or no categories');
+        }
+      } else {
+        debugPrint('❌ API error: Status ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading services: $e');
+      if (mounted) {
+        setState(() {
+          _loadingServices = false;
+          _services = [];
+        });
+      }
+    }
+  }
+
+  Color _hexToColor(String hexColor) {
+    hexColor = hexColor.replaceFirst('#', '');
+    if (hexColor.length == 6) {
+      return Color(int.parse('FF$hexColor', radix: 16));
+    } else if (hexColor.length == 8) {
+      return Color(int.parse(hexColor, radix: 16));
+    }
+    return const Color(0xFFFFFFFF);
   }
 
   void _handleScrolling() {
@@ -138,6 +286,8 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _liveRefreshTimer.cancel();
     _searchController.dispose();
     try {
       _pageController.dispose();
@@ -176,14 +326,47 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                 Positioned(
                   bottom: 16,
                   right: 15,
-                  child: FloatingActionButton(
-                    heroTag: 'message_fab',
-                    onPressed: () {
+                  child: GestureDetector(
+                    onTap: () {
                       _openWhatsApp();
                     },
-                    backgroundColor: const Color(0xFF25D366),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    child: Icon(Icons.message, color: Colors.white, size: isSmall ? 22 : 26),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmall ? 12 : 16,
+                        vertical: isSmall ? 10 : 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF25D366),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF25D366).withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.message,
+                            color: Colors.white,
+                            size: isSmall ? 18 : 20,
+                          ),
+                          SizedBox(width: isSmall ? 6 : 8),
+                          Text(
+                            'NEED HELP',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isSmall ? 11 : 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 // Location FAB - Bottom Left (15px from left edge)
@@ -212,6 +395,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 70),
         child: Column(
           children: [
             // Orange Header
@@ -237,50 +421,58 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 12, vertical: isSmall ? 6 : 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: isSmall ? 30 : 36,
-                                height: isSmall ? 30 : 36,
-                                fit: BoxFit.cover,
+                      Flexible(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 12, vertical: isSmall ? 6 : 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  width: isSmall ? 30 : 36,
+                                  height: isSmall ? 30 : 36,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: isSmall ? 6 : 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'WELCOME',
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 7 : 8,
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.3,
+                              SizedBox(width: isSmall ? 6 : 10),
+                              Flexible(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: isSmall ? 120 : 150),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'WELCOME',
+                                        style: TextStyle(
+                                          fontSize: isSmall ? 7 : 8,
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                      Text(
+                                        _userName,
+                                        style: TextStyle(
+                                          fontSize: isSmall ? 11 : 12,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  _userName.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 11 : 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       Row(
@@ -368,7 +560,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Shri Ramdev Park 🏠',
+                        _buildingName.isNotEmpty ? '$_buildingName 🏠' : 'Home 🏠',
                         style: TextStyle(
                           fontSize: isSmall ? 22 : 30,
                           fontWeight: FontWeight.w900,
@@ -386,7 +578,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                             Icon(Icons.location_on, size: 16, color: Colors.white.withOpacity(0.9)),
                             const SizedBox(width: 4),
                             Text(
-                              'CHS, Mira Road',
+                              _locationInfo.isNotEmpty ? _locationInfo : 'Your Location',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.white.withOpacity(0.9),
@@ -395,7 +587,18 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                             ),
                             const SizedBox(width: 10),
                             GestureDetector(
-                              onTap: () {},
+                              onTap: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AddressSettingsScreen(),
+                                  ),
+                                );
+                                if (result != null) {
+                                  // Reload location after address change
+                                  await _loadAddressDetails();
+                                }
+                              },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
@@ -567,28 +770,39 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                     ],
                   ),
                   SizedBox(height: isSmall ? 12 : 14),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: isSmall ? 8 : 12,
-                      mainAxisSpacing: isSmall ? 12 : 14,
-                      childAspectRatio: 0.95,
+                  if (_loadingServices)
+                    SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: CircularProgressIndicator(color: AppTheme.saffron),
+                      ),
+                    )
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: isSmall ? 8 : 12,
+                        mainAxisSpacing: isSmall ? 12 : 14,
+                        childAspectRatio: 0.95,
+                      ),
+                      itemCount: _services.length,
+                      itemBuilder: (context, index) {
+                        final service = _services[index];
+                        return _buildServiceCard(
+                          index: index,
+                          emoji: service['emoji'],
+                          iconPath: getCategoryIcon(service['name']),
+                          name: service['name'],
+                          hindi: service['hindi'] ?? '',
+                          time: service['time'] ?? '',
+                          price: service['price'] ?? 0,
+                          rating: service['rating'] ?? '0',
+                          bgColor: service['color'],
+                        );
+                      },
                     ),
-                    itemCount: personalServices.length,
-                    itemBuilder: (context, index) {
-                      final service = personalServices[index];
-                      return _buildServiceCard(
-                        emoji: service['emoji'],
-                        iconPath: getCategoryIcon(service['name']),
-                        name: service['name'],
-                        hindi: service['hindi'],
-                        time: service['time'],
-                        bgColor: service['color'],
-                      );
-                    },
-                  ),
                   SizedBox(height: isSmall ? 18 : 24),
                 ],
               ),
@@ -778,11 +992,14 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
   }
 
   Widget _buildServiceCard({
+    required int index,
     required String emoji,
     String? iconPath,
     required String name,
     required String hindi,
     required String time,
+    int price = 0,
+    String rating = '0',
     required Color bgColor,
     Color? textColorOverride,
     Color? secondaryColorOverride,
@@ -793,7 +1010,12 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
     final displaySecondaryColor = secondaryColorOverride ?? textSecondaryColor;
     return GestureDetector(
       onTap: () {
-        final categoryServices = getServicesForCategory(name, emoji);
+        // Get full category with all services from DB
+        final fullCategory = _categoriesWithServices[index];
+        final dbServices = ((fullCategory['services'] as List?)?.map((s) =>
+          Map<String, dynamic>.from(s as Map)
+        ).toList() ?? []);
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -802,7 +1024,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
               categoryEmoji: emoji,
               categoryIconPath: iconPath,
               description: getCategoryDescription(name),
-              services: categoryServices,
+              services: dbServices,
             ),
           ),
         );
@@ -874,45 +1096,66 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                         maxLines: 1,
                       ),
                     ),
-                  if (time.isNotEmpty) ...[
-                    const Spacer(),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppTheme.neonGreen.withOpacity(0.2),
-                            AppTheme.neonGreen.withOpacity(0.1),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppTheme.neonGreen.withOpacity(isDarkMode ? 0.5 : 0.3),
-                          width: 1,
+                  const Spacer(),
+                  // Price & Rating Row
+                  if (price > 0)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: isSmall ? 6 : 8),
+                      child: Text(
+                        '₹$price',
+                        style: TextStyle(
+                          fontSize: isSmall ? 10 : 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.saffron,
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+                    ),
+                  // Rating & Time Row
+                  Flexible(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (rating != '0') ...[
+                          Text(
+                            '⭐',
+                            style: TextStyle(fontSize: isSmall ? 9 : 11),
+                          ),
+                          SizedBox(width: isSmall ? 2 : 3),
+                          Flexible(
+                            child: Text(
+                              rating,
+                              style: TextStyle(
+                                fontSize: isSmall ? 8 : 9,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                        if (time.isNotEmpty) ...[
+                          SizedBox(width: isSmall ? 4 : 6),
                           Text(
                             '⚡',
                             style: TextStyle(fontSize: isSmall ? 8 : 10),
                           ),
                           SizedBox(width: isSmall ? 2 : 4),
-                          Text(
-                            time,
-                            style: TextStyle(
-                              fontSize: isSmall ? 8 : 10,
-                              color: AppTheme.neonGreen,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
+                          Flexible(
+                            child: Text(
+                              time,
+                              style: TextStyle(
+                                fontSize: isSmall ? 8 : 10,
+                                color: AppTheme.neonGreen,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ],
                 ),
               ),
@@ -1554,9 +1797,9 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'Shri Ramdev Park Secretary',
-                    style: TextStyle(
+                  Text(
+                    _buildingName.isNotEmpty ? '$_buildingName Secretary' : 'Society Secretary',
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1583,9 +1826,9 @@ class _SearchScreenState extends State<IndividualHomeScreen> {
                     children: [
                       Icon(Icons.email, color: AppTheme.saffron, size: 20),
                       const SizedBox(width: 8),
-                      const Text(
-                        'secretary@ramdevpark.in',
-                        style: TextStyle(
+                      Text(
+                        'support@mahamaintain.in',
+                        style: const TextStyle(
                           fontSize: 13,
                           color: Colors.grey,
                         ),

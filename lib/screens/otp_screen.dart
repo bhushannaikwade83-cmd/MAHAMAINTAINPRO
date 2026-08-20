@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_theme.dart';
 
 import '../main.dart' show authRepositoryProvider;
@@ -82,6 +83,14 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     try {
       final authRepository = ref.read(authRepositoryProvider);
       await authRepository.verifyOtp(phoneNumber, _otpController.text);
+
+      // Save login state to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userPhone', phoneNumber);
+
+      debugPrint('✅ Login saved - Phone: $phoneNumber');
+
       widget.onVerificationSuccess(widget.email);
     } finally {
       setState(() => _isVerifying = false);

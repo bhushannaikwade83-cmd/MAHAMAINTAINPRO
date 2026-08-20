@@ -57,7 +57,7 @@ dependencies:
   url_launcher: ^6.3.0
 
   # Local Storage
-  shared_preferences: ^2.2.0
+  shared_preferences: ^2.5.5
   hive: ^2.2.0
   hive_flutter: ^1.1.0
 
@@ -73,6 +73,10 @@ dependencies:
 
   # Logging
   logger: ^2.0.0
+  geolocator: ^14.0.3
+
+  # Google Maps
+  google_maps_flutter: ^2.5.0
 
 dev_dependencies:
   flutter_test:
