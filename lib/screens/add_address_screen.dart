@@ -1008,18 +1008,16 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
             ),
           ),
           const SizedBox(height: 8),
-          Flexible(
-            child: Text(
-              value.isEmpty ? 'Select location first' : value,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: value.isEmpty ? Colors.grey.shade500 : Colors.black87,
-                height: 1.5,
-              ),
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
+          Text(
+            value.isEmpty ? 'Select location first' : value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: value.isEmpty ? Colors.grey.shade500 : Colors.black87,
+              height: 1.5,
             ),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
