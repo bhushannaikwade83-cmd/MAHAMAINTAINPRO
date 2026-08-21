@@ -81,11 +81,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
   String _userName = '';
   String _userPhone = '';
   String _areaName = '';
-  String _cityName = '';
-  String _taluka = '';
-  String _district = '';
-  String _state = '';
-  String _pincode = '';
 
   @override
   void initState() {
@@ -112,8 +107,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       _latitude = widget.initialLatitude;
       _longitude = widget.initialLongitude;
       if (widget.initialAddress != null) {
+        // Store full address from location picker as-is in area
+        _areaName = widget.initialAddress!;
         _pincodeController.text = widget.initialAddress!;
-        _parseAddressDetails(widget.initialAddress!);
       }
     }
 
@@ -212,15 +208,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
   }
 
   void _parseAddressDetails(String address) {
-    final parts = address.split(',').map((s) => s.trim()).toList();
-    if (parts.isNotEmpty) {
-      _areaName = parts.isNotEmpty ? parts[0] : '';
-      _cityName = parts.length > 1 ? parts[1] : '';
-      _taluka = parts.length > 2 ? parts[2] : '';
-      _district = parts.length > 3 ? parts[3] : '';
-      _state = parts.length > 4 ? parts[4] : '';
-      _pincode = parts.length > 5 ? parts[5] : '';
-    }
+    // Full address is stored in area field
+    _areaName = address;
+    debugPrint('📍 Address details: $_areaName');
   }
 
   Future<void> _openLocationPicker() async {
@@ -250,6 +240,12 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
   }
 
   Future<void> _fetchPincodeDetails() async {
+    // If area already has data from location picker, don't override it
+    if (_areaName.isNotEmpty) {
+      debugPrint('📍 Keeping location picker address: $_areaName');
+      return;
+    }
+
     final pincode = _pincodeController.text.trim();
 
     debugPrint('🔍 Pincode entered: $pincode');
@@ -269,12 +265,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       final response = await http.get(url).timeout(const Duration(seconds: 10));
 
       debugPrint('📊 Response status: ${response.statusCode}');
-      debugPrint('📝 Response: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        debugPrint('📋 API Data: $data');
 
         if (data is List && data.isNotEmpty) {
           final result = data[0];
@@ -284,22 +277,16 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
 
             if (postoffices is List && postoffices.isNotEmpty) {
               final po = postoffices[0];
+              final areaName = po['Name'] ?? '';
 
               if (!mounted) return;
               setState(() {
-                _areaName = po['Name'] ?? '';
-                _cityName = po['District'] ?? '';
-                _taluka = po['Block'] ?? '';
-                _district = po['District'] ?? '';
-                _state = po['State'] ?? '';
-                _pincode = pincode;
+                _areaName = areaName;
               });
 
-              debugPrint('✅ Success! Area=$_areaName, Taluka=$_taluka, State=$_state');
+              debugPrint('✅ Pincode Details: Area=$_areaName');
               return;
             }
-          } else {
-            debugPrint('❌ API Error: ${result['Status']} - ${result['Message']}');
           }
         }
       }
@@ -311,14 +298,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         if (!mounted) return;
         setState(() {
           _areaName = data['name'] ?? '';
-          _cityName = data['city'] ?? '';
-          _taluka = data['taluka'] ?? '';
-          _district = data['district'] ?? '';
-          _state = data['state'] ?? '';
-          _pincode = pincode;
         });
 
-        debugPrint('✅ Local DB Pincode Details: Area=$_areaName, City=$_cityName, State=$_state');
+        debugPrint('✅ Local DB: Area=$_areaName');
       } else {
         debugPrint('❌ Pincode not found: $pincode');
       }
@@ -370,48 +352,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         throw Exception('User data not found');
       }
 
-      // Combine address details - clean and trim each field
-      final addressParts = <String>[];
-
-      // Trim and clean user-entered fields (remove extra commas)
-      final building = _buildingController.text.trim().replaceAll(RegExp(r',+'), '').trim();
-      final buildingName = _buildingNameController.text.trim().replaceAll(RegExp(r',+'), '').trim();
-      final street = _streetController.text.trim().replaceAll(RegExp(r',\s*,+'), ',').trim(); // Replace multiple commas with single
-
-      if (building.isNotEmpty) {
-        addressParts.add(building);
-      }
-      if (buildingName.isNotEmpty && buildingName != building) {
-        addressParts.add(buildingName);
-      }
-      if (street.isNotEmpty && street != building && street != buildingName) {
-        addressParts.add(street);
-      }
-
-      // Add pincode-fetched fields
-      if (_areaName.isNotEmpty) {
-        addressParts.add(_areaName.trim());
-      }
-      if (_cityName.isNotEmpty) {
-        addressParts.add(_cityName.trim());
-      }
-      if (_taluka.isNotEmpty) {
-        addressParts.add(_taluka.trim());
-      }
-      if (_district.isNotEmpty) {
-        addressParts.add(_district.trim());
-      }
-      if (_state.isNotEmpty) {
-        addressParts.add(_state.trim());
-      }
-
-      // Pincode at the end
-      final pincode = _pincodeController.text.trim();
-      if (pincode.isNotEmpty) {
-        addressParts.add(pincode);
-      }
-
-      final fullAddress = addressParts.join(', ');
+      // Use area field (which has full address from location picker) with pincode
+      final fullAddress = _areaName.isNotEmpty
+        ? '${_areaName}, ${_pincodeController.text.trim()}'
+        : _pincodeController.text.trim();
 
       // Determine if this is create or update
       final isUpdate = widget.addressId != null;
@@ -425,11 +369,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         'building_name': _buildingNameController.text,
         'street': _streetController.text,
         'pincode': _pincodeController.text,
-        'area': _areaName,
-        'city': _cityName,
-        'taluka': _taluka,
-        'district': _district,
-        'state': _state,
+        'area': fullAddress,
         'latitude': _latitude != null ? double.tryParse(_latitude!) : 0,
         'longitude': _longitude != null ? double.tryParse(_longitude!) : 0,
         'label': _labelController.text,

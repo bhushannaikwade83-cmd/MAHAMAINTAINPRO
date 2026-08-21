@@ -33,10 +33,6 @@ try {
     $street = $data['street'] ?? '';
     $pincode = $data['pincode'] ?? '';
     $area = $data['area'] ?? '';
-    $city = $data['city'] ?? '';
-    $taluka = $data['taluka'] ?? '';
-    $district = $data['district'] ?? '';
-    $state = $data['state'] ?? '';
     $latitude = $data['latitude'] ?? 0;
     $longitude = $data['longitude'] ?? 0;
     $label = $data['label'] ?? '';
@@ -53,16 +49,15 @@ try {
     $updateStmt = $conn->prepare("
         UPDATE addresses
         SET address_type = ?, building = ?, building_name = ?, street = ?,
-            pincode = ?, area = ?, city = ?, taluka = ?, district = ?, state = ?,
+            pincode = ?, area = ?,
             latitude = ?, longitude = ?, label = ?, delivery_instructions = ?,
             full_address = ?, updated_at = NOW()
         WHERE id = ? AND phone_number = ?
     ");
 
     $updateStmt->bind_param(
-        "ssssssssssddssi",
-        $addressType, $building, $buildingName, $street, $pincode,
-        $area, $city, $taluka, $district, $state,
+        "ssssssddsssi",
+        $addressType, $building, $buildingName, $street, $pincode, $area,
         $latitude, $longitude, $label, $deliveryInstructions, $fullAddress,
         $addressId, $phoneNumber
     );
