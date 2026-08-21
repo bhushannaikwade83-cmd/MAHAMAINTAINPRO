@@ -180,7 +180,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
 
   Future<void> _loadServices() async {
     try {
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services-with-images.php');
       debugPrint('🔄 Fetching services from: $url');
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
@@ -210,6 +210,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
               'price': firstService != null ? firstService['price'] ?? 0 : 0,
               'rating': firstService != null ? (firstService['rating'] ?? 0.0).toString() : '0',
               'color': _hexToColor(category['color'] ?? '#FFFFFF'),
+              'image_path': category['image_path'],
             });
           }
 
@@ -221,6 +222,14 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             });
           }
           debugPrint('✅ Services loaded from database: ${homeServices.length} categories found');
+
+          // Debug: Check image paths for each category
+          for (var category in categoriesData) {
+            final name = category['name'] ?? 'Unknown';
+            final imagePath = category['image_path'];
+            final serviceCount = (category['services'] as List?)?.length ?? 0;
+            debugPrint('📸 [$name] image_path: $imagePath | Services: $serviceCount');
+          }
         } else {
           debugPrint('❌ API success=false or no categories');
         }
@@ -793,7 +802,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                         return _buildServiceCard(
                           index: index,
                           emoji: service['emoji'],
-                          iconPath: getCategoryIcon(service['name']),
+                          imagePath: service['image_path'],
                           name: service['name'],
                           hindi: service['hindi'] ?? '',
                           time: service['time'] ?? '',
@@ -994,7 +1003,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
   Widget _buildServiceCard({
     required int index,
     required String emoji,
-    String? iconPath,
+    String? imagePath,
     required String name,
     required String hindi,
     required String time,
@@ -1016,13 +1025,15 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
           Map<String, dynamic>.from(s as Map)
         ).toList() ?? []);
 
+        // Get image_path from categoriesData
+        final categoryImagePath = fullCategory['image_path'];
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ServiceCategoryScreen(
               categoryName: name,
               categoryEmoji: emoji,
-              categoryIconPath: iconPath,
+              categoryImagePath: categoryImagePath,
               description: getCategoryDescription(name),
               services: dbServices,
             ),
@@ -1042,9 +1053,9 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             ),
           ],
         ),
-        padding: iconPath != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
-        child: iconPath != null
-            ? _buildPhotoServiceCard(iconPath: iconPath, name: name, time: time, isSmall: isSmall)
+        padding: imagePath != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
+        child: imagePath != null
+            ? _buildPhotoServiceCard(imagePath: imagePath, name: name, time: time, isSmall: isSmall)
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -1167,21 +1178,43 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
   /// category name (and time badge) overlaid on a dark scrim at the bottom
   /// so the text stays readable against any photo.
   Widget _buildPhotoServiceCard({
-    required String iconPath,
+    required String imagePath,
     required String name,
     required String time,
     required bool isSmall,
   }) {
+    final imageUrl = 'https://digitrixmedia.com/mahamaintainpro/assets/services/$imagePath';
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Image - crystal clear
-          Image.asset(
-            iconPath,
+          // Image - crystal clear (from server)
+          Image.network(
+            imageUrl,
             fit: BoxFit.cover,
             filterQuality: FilterQuality.high,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                      : null,
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.saffron),
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey.shade200,
+                child: Center(
+                  child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 40),
+                ),
+              );
+            },
           ),
           // Gradient overlay - only at bottom
           DecoratedBox(

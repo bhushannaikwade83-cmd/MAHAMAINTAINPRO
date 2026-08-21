@@ -50,7 +50,7 @@ class _SearchListScreenState extends State<SearchListScreen> {
 
   Future<void> _loadCategories() async {
     try {
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services-with-images.php');
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200 && mounted) {

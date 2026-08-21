@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
+import '../utils/constants.dart';
 import 'service_category_screen.dart';
 
 /// Full list of service categories, reached via "See all" on the home screen.
@@ -25,7 +26,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
 
   Future<void> _loadCategories() async {
     try {
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services-with-images.php');
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
@@ -36,6 +37,16 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
             _isLoading = false;
           });
           debugPrint('✅ Categories loaded: ${_categories.length} found');
+
+          // Debug each category's image
+          for (var category in _categories) {
+            final name = category['name'] ?? 'Unknown';
+            final imagePath = category['image_path'];
+            debugPrint('📸 $name → image_path: $imagePath');
+            if (imagePath == null || imagePath.isEmpty) {
+              debugPrint('   ⚠️ Missing image for $name');
+            }
+          }
         }
       }
     } catch (e) {
@@ -75,7 +86,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
           final name = category['name'] as String? ?? 'Service';
           final colorHex = category['color'] as String? ?? '#FFFFFF';
           final bgColor = _hexToColor(colorHex);
-          final iconPath = getCategoryIcon(name);
+          final imagePath = category['image_path'];
 
           return GestureDetector(
             onTap: () {
@@ -88,7 +99,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                   builder: (context) => ServiceCategoryScreen(
                     categoryName: name,
                     categoryEmoji: emoji,
-                    categoryIconPath: iconPath,
+                    categoryImagePath: imagePath,
                     description: getCategoryDescription(name),
                     services: services,
                   ),
@@ -108,12 +119,23 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                   ),
                 ],
               ),
-              padding: iconPath != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
-              child: iconPath != null
+              padding: imagePath != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 12 : 16),
+              child: imagePath != null
                   ? Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.asset(iconPath, fit: BoxFit.cover),
+                        Image.network(
+                          '${ApiConfig.imagesUrl}/$imagePath',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: Center(
+                                child: Icon(Icons.image_not_supported, color: Colors.grey.shade400),
+                              ),
+                            );
+                          },
+                        ),
                         Positioned(
                           left: 0,
                           right: 0,
