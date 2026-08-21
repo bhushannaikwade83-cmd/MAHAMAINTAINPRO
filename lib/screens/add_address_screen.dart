@@ -99,6 +99,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
     );
     _animationController.forward();
 
+    // Load initial values
     _buildingController = TextEditingController();
     _buildingNameController = TextEditingController();
     _streetController = TextEditingController();
@@ -117,6 +118,55 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
     }
 
     _loadCurrentLocation();
+
+    // Load address details if editing
+    if (widget.addressId != null) {
+      _loadAddressForEditing();
+    }
+  }
+
+  Future<void> _loadAddressForEditing() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('userPhone');
+
+      if (phoneNumber == null) return;
+
+      // Fetch all addresses and find the one to edit
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone_number': phoneNumber}),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['addresses'] != null) {
+          // Find the address to edit
+          final address = (data['addresses'] as List).firstWhere(
+            (a) => a['id'].toString() == widget.addressId,
+            orElse: () => null,
+          );
+
+          if (address != null && mounted) {
+            // Load individual fields (not full_address to avoid duplication)
+            _buildingController.text = address['building']?.toString() ?? '';
+            _buildingNameController.text = address['building_name']?.toString() ?? '';
+            _streetController.text = address['street']?.toString() ?? '';
+            _pincodeController.text = address['pincode']?.toString() ?? '';
+            _labelController.text = address['label']?.toString() ?? '';
+            _instructionsController.text = address['delivery_instructions']?.toString() ?? '';
+            _locationType = address['address_type']?.toString() ?? 'House';
+
+            setState(() {});
+            debugPrint('✅ Address loaded for editing');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading address for editing: $e');
+    }
   }
 
   Future<void> _loadCurrentLocation() async {
