@@ -373,10 +373,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       // Combine address details - clean and trim each field
       final addressParts = <String>[];
 
-      // Trim and add user-entered fields
-      final building = _buildingController.text.trim();
-      final buildingName = _buildingNameController.text.trim();
-      final street = _streetController.text.trim();
+      // Trim and clean user-entered fields (remove extra commas)
+      final building = _buildingController.text.trim().replaceAll(RegExp(r',+'), '').trim();
+      final buildingName = _buildingNameController.text.trim().replaceAll(RegExp(r',+'), '').trim();
+      final street = _streetController.text.trim().replaceAll(RegExp(r',\s*,+'), ',').trim(); // Replace multiple commas with single
 
       if (building.isNotEmpty) {
         addressParts.add(building);
