@@ -300,44 +300,38 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         throw Exception('User data not found');
       }
 
-      // Combine address details - avoid duplicates
-      final parts = <String>[];
+      // Combine address details as-is
+      final addressParts = <String>[];
 
-      // Add building
       if (_buildingController.text.isNotEmpty) {
-        parts.add(_buildingController.text);
+        addressParts.add(_buildingController.text);
       }
-
-      // Add building name only if different from building
-      if (_buildingNameController.text.isNotEmpty &&
-          _buildingNameController.text != _buildingController.text) {
-        parts.add(_buildingNameController.text);
+      if (_buildingNameController.text.isNotEmpty) {
+        addressParts.add(_buildingNameController.text);
       }
-
-      // Add street only if not already in building or building name
-      if (_streetController.text.isNotEmpty &&
-          _streetController.text != _buildingController.text &&
-          _streetController.text != _buildingNameController.text) {
-        parts.add(_streetController.text);
+      if (_streetController.text.isNotEmpty) {
+        addressParts.add(_streetController.text);
       }
-
-      // Add area/city/district/state/pincode - only include if not already mentioned
-      String addressLower = '${_buildingController.text} ${_buildingNameController.text} ${_streetController.text}'.toLowerCase();
-
-      if (_areaName.isNotEmpty && !addressLower.contains(_areaName.toLowerCase())) {
-        parts.add(_areaName);
+      if (_areaName.isNotEmpty) {
+        addressParts.add(_areaName);
       }
-
-      if (_cityName.isNotEmpty && !addressLower.contains(_cityName.toLowerCase())) {
-        parts.add(_cityName);
+      if (_cityName.isNotEmpty) {
+        addressParts.add(_cityName);
       }
-
-      // Add pincode at the end
+      if (_taluka.isNotEmpty) {
+        addressParts.add(_taluka);
+      }
+      if (_district.isNotEmpty) {
+        addressParts.add(_district);
+      }
+      if (_state.isNotEmpty) {
+        addressParts.add(_state);
+      }
       if (_pincodeController.text.isNotEmpty) {
-        parts.add(_pincodeController.text);
+        addressParts.add(_pincodeController.text);
       }
 
-      final fullAddress = parts.where((p) => p.isNotEmpty).join(', ');
+      final fullAddress = addressParts.join(', ');
 
       // Determine if this is create or update
       final isUpdate = widget.addressId != null;
