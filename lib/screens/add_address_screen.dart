@@ -300,35 +300,45 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         throw Exception('User data not found');
       }
 
-      // Combine address details as-is
+      // Combine address details - clean and trim each field
       final addressParts = <String>[];
 
-      if (_buildingController.text.isNotEmpty) {
-        addressParts.add(_buildingController.text);
+      // Trim and add user-entered fields
+      final building = _buildingController.text.trim();
+      final buildingName = _buildingNameController.text.trim();
+      final street = _streetController.text.trim();
+
+      if (building.isNotEmpty) {
+        addressParts.add(building);
       }
-      if (_buildingNameController.text.isNotEmpty) {
-        addressParts.add(_buildingNameController.text);
+      if (buildingName.isNotEmpty && buildingName != building) {
+        addressParts.add(buildingName);
       }
-      if (_streetController.text.isNotEmpty) {
-        addressParts.add(_streetController.text);
+      if (street.isNotEmpty && street != building && street != buildingName) {
+        addressParts.add(street);
       }
+
+      // Add pincode-fetched fields
       if (_areaName.isNotEmpty) {
-        addressParts.add(_areaName);
+        addressParts.add(_areaName.trim());
       }
       if (_cityName.isNotEmpty) {
-        addressParts.add(_cityName);
+        addressParts.add(_cityName.trim());
       }
       if (_taluka.isNotEmpty) {
-        addressParts.add(_taluka);
+        addressParts.add(_taluka.trim());
       }
       if (_district.isNotEmpty) {
-        addressParts.add(_district);
+        addressParts.add(_district.trim());
       }
       if (_state.isNotEmpty) {
-        addressParts.add(_state);
+        addressParts.add(_state.trim());
       }
-      if (_pincodeController.text.isNotEmpty) {
-        addressParts.add(_pincodeController.text);
+
+      // Pincode at the end
+      final pincode = _pincodeController.text.trim();
+      if (pincode.isNotEmpty) {
+        addressParts.add(pincode);
       }
 
       final fullAddress = addressParts.join(', ');
