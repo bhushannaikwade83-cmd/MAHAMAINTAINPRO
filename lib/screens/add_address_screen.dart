@@ -174,42 +174,13 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
   Future<void> _loadCurrentLocation() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _latitude = prefs.getString('userLatitude');
-      _longitude = prefs.getString('userLongitude');
       _userName = prefs.getString('userName') ?? '';
       _userPhone = prefs.getString('userPhone') ?? '';
-      final phoneNumber = prefs.getString('userPhone');
 
-      debugPrint('📍 Current Location - Lat: $_latitude, Long: $_longitude');
-
-      // Fetch address from database
-      if (phoneNumber != null) {
-        final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-user.php');
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'phone_number': phoneNumber}),
-        ).timeout(const Duration(seconds: 10));
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          debugPrint('📡 API Response: $data');
-          if (data['exists'] == true && data['address'] != null) {
-            _headerAddress = data['address'];
-            _parseAddressDetails(data['address']);
-
-            // Fetch lat/long from database
-            _latitude = data['latitude']?.toString() ?? '';
-            _longitude = data['longitude']?.toString() ?? '';
-
-            debugPrint('📍 DB Latitude: $_latitude, Longitude: $_longitude');
-          }
-        }
-      }
-
+      debugPrint('📍 User loaded - Name: $_userName, Phone: $_userPhone');
       setState(() {});
     } catch (e) {
-      debugPrint('❌ Error loading location: $e');
+      debugPrint('❌ Error loading user data: $e');
     }
   }
 
