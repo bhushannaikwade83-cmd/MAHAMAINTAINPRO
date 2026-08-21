@@ -78,6 +78,38 @@ class _AddressSettingsScreenState extends State<AddressSettingsScreen> {
     });
   }
 
+  Future<void> _editAddress(Map<String, String> address) async {
+    try {
+      final locationResult = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(builder: (context) => const LocationPickerScreen()),
+      );
+
+      if (locationResult != null && mounted) {
+        // Navigate to AddAddressScreen with edit mode
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddAddressScreen(
+                initialLatitude: locationResult['latitude'].toString(),
+                initialLongitude: locationResult['longitude'].toString(),
+                initialAddress: locationResult['address'] ?? '',
+                addressId: address['id'], // Pass address ID for update
+              ),
+            ),
+          ).then((_) {
+            if (mounted) {
+              setState(() => _loadAddresses());
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Edit error: $e');
+    }
+  }
+
   Future<void> _deleteAddress(Map<String, String> address) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -337,7 +369,7 @@ class _AddressSettingsScreenState extends State<AddressSettingsScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildActionButtonNew('EDIT', () {}),
+                child: _buildActionButtonNew('EDIT', () => _editAddress(address)),
               ),
               const SizedBox(width: 8),
               Expanded(

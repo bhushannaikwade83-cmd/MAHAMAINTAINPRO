@@ -11,12 +11,14 @@ class AddAddressScreen extends StatefulWidget {
   final String? initialLatitude;
   final String? initialLongitude;
   final String? initialAddress;
+  final String? addressId; // For editing existing address
 
   const AddAddressScreen({
     Key? key,
     this.initialLatitude,
     this.initialLongitude,
     this.initialAddress,
+    this.addressId,
   }) : super(key: key);
 
   @override
@@ -301,30 +303,39 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       // Combine address details
       final fullAddress = '${_buildingController.text}, ${_buildingNameController.text}, ${_streetController.text}, $_areaName, $_cityName, $_taluka, $_district, $_state, ${_pincodeController.text}';
 
-      // Save to database using new save-address API
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/save-address.php');
+      // Determine if this is create or update
+      final isUpdate = widget.addressId != null;
+      final endpoint = isUpdate ? 'update-address.php' : 'save-address.php';
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/$endpoint');
+
+      final requestBody = {
+        'phone_number': phoneNumber,
+        'address_type': _locationType,
+        'building': _buildingController.text,
+        'building_name': _buildingNameController.text,
+        'street': _streetController.text,
+        'pincode': _pincodeController.text,
+        'area': _areaName,
+        'city': _cityName,
+        'taluka': _taluka,
+        'district': _district,
+        'state': _state,
+        'latitude': _latitude != null ? double.tryParse(_latitude!) : 0,
+        'longitude': _longitude != null ? double.tryParse(_longitude!) : 0,
+        'label': _labelController.text,
+        'delivery_instructions': _instructionsController.text,
+        'full_address': fullAddress,
+      };
+
+      // Add address_id if updating
+      if (isUpdate) {
+        requestBody['address_id'] = widget.addressId;
+      }
 
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'phone_number': phoneNumber,
-          'address_type': _locationType,
-          'building': _buildingController.text,
-          'building_name': _buildingNameController.text,
-          'street': _streetController.text,
-          'pincode': _pincodeController.text,
-          'area': _areaName,
-          'city': _cityName,
-          'taluka': _taluka,
-          'district': _district,
-          'state': _state,
-          'latitude': _latitude != null ? double.tryParse(_latitude!) : 0,
-          'longitude': _longitude != null ? double.tryParse(_longitude!) : 0,
-          'label': _labelController.text,
-          'delivery_instructions': _instructionsController.text,
-          'full_address': fullAddress,
-        }),
+        body: jsonEncode(requestBody),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
