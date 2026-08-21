@@ -26,7 +26,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
 
   Future<void> _loadCategories() async {
     try {
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services-with-images.php');
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {

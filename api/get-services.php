@@ -23,8 +23,18 @@ if ($conn->connect_error) {
 }
 
 try {
-    // Fetch all categories
-    $query = "SELECT id, name, emoji, color, description, image_path FROM service_categories WHERE is_active = 1 ORDER BY id ASC";
+    // Check if image_path column exists
+    $columnCheck = "SHOW COLUMNS FROM service_categories LIKE 'image_path'";
+    $columnResult = $conn->query($columnCheck);
+    $hasImagePath = $columnResult && $columnResult->num_rows > 0;
+
+    // Build query based on column availability
+    if ($hasImagePath) {
+        $query = "SELECT id, name, emoji, color, description, image_path FROM service_categories WHERE is_active = 1 ORDER BY id ASC";
+    } else {
+        $query = "SELECT id, name, emoji, color, description, NULL as image_path FROM service_categories WHERE is_active = 1 ORDER BY id ASC";
+    }
+
     $result = $conn->query($query);
 
     if (!$result) {
@@ -65,6 +75,7 @@ try {
         'success' => true,
         'categories' => $categories,
         'total_categories' => count($categories),
+        'has_image_support' => $hasImagePath,
     ]);
 
 } catch (Exception $e) {

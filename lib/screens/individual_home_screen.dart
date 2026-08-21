@@ -180,7 +180,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
 
   Future<void> _loadServices() async {
     try {
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services-with-images.php');
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
       debugPrint('🔄 Fetching services from: $url');
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
