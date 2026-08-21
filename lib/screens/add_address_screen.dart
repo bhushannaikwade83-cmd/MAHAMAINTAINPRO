@@ -632,14 +632,17 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
                     // Building / Floor (Mandatory)
                     _buildTextField('Building / Floor *', _buildingController),
                     const SizedBox(height: 10),
-                    // Building Name
-                    _buildTextField('Building Name', _buildingNameController),
+                    // Building Name (Optional)
+                    _buildTextField('Building Name (Optional)', _buildingNameController),
                     const SizedBox(height: 10),
-                    // Street
-                    _buildTextField('Street (Recommended)', _streetController),
+                    // Street (Optional)
+                    _buildTextField('Street (Optional)', _streetController),
                     const SizedBox(height: 10),
-                    // Save address as
-                    _buildTextField('Save address as', _labelController),
+                    // Pincode (Mandatory)
+                    _buildTextField('Pincode *', _pincodeController),
+                    const SizedBox(height: 10),
+                    // Save address as (Mandatory)
+                    _buildTextField('Save address as *', _labelController),
                   ]),
                   const SizedBox(height: 20),
                   // Delivery Instructions
