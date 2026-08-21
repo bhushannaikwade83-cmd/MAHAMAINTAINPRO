@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Fetch all addresses for this user
     $query = "SELECT id, address_type, full_address, building, building_name, street,
-              pincode, area, city, taluka, district, state, latitude, longitude,
+              pincode, area, latitude, longitude,
               label, delivery_instructions, created_at
               FROM addresses WHERE phone_number = ? ORDER BY created_at DESC";
 
