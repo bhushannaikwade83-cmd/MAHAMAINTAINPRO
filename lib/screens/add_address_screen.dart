@@ -627,33 +627,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
                     // Street
                     _buildTextField('Street (Recommended)', _streetController),
                     const SizedBox(height: 10),
-                    // Area Details Display
-                    if (_areaName.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.saffron.withOpacity(0.08),
-                          border: Border.all(color: AppTheme.saffron.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Location Details',
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 8),
-                            _buildSmallDetailRow('Area', _areaName),
-                            _buildSmallDetailRow('City', _cityName),
-                            _buildSmallDetailRow('Taluka', _taluka),
-                            _buildSmallDetailRow('District', _district),
-                            _buildSmallDetailRow('State', _state),
-                            _buildSmallDetailRow('Pincode', _pincode),
-                          ],
-                        ),
-                      ),
-                    const SizedBox(height: 10),
                     // Save address as
                     _buildTextField('Save address as', _labelController),
                   ]),
