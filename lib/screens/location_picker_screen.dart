@@ -62,10 +62,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           address = address.replaceAll(RegExp(r'^,\s*|,\s*$'), '').trim(); // Remove leading/trailing commas
 
           // Split by comma, filter empty parts, rejoin
-          final parts = address.split(',')
-              .map((p) => p.trim())
-              .where((String p) => p.isNotEmpty)
-              .toList();
+          List<String> parts = [];
+          for (String part in address.split(',')) {
+            String trimmed = part.trim();
+            if (trimmed.isNotEmpty) {
+              parts.add(trimmed);
+            }
+          }
           address = parts.join(', ').trim();
 
           setState(() => _selectedAddress = address);
