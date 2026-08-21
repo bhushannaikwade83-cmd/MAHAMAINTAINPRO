@@ -518,14 +518,14 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  _pincodeController.text,
+                                  _areaName.isEmpty ? 'Select location' : _areaName,
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black87,
                                     height: 1.4,
                                   ),
-                                  maxLines: 2,
+                                  maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ],
