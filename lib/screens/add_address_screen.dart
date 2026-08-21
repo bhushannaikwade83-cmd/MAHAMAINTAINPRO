@@ -989,7 +989,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
 
   Widget _buildReadOnlyField(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
@@ -1001,22 +1001,25 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade600,
+              letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            value.isEmpty ? 'Select location first' : value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: value.isEmpty ? Colors.grey.shade500 : Colors.black87,
-              height: 1.4,
+          const SizedBox(height: 8),
+          Flexible(
+            child: Text(
+              value.isEmpty ? 'Select location first' : value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: value.isEmpty ? Colors.grey.shade500 : Colors.black87,
+                height: 1.5,
+              ),
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
