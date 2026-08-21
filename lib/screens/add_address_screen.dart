@@ -358,9 +358,21 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         throw Exception('User data not found');
       }
 
-      // Use area field (which has full address from location picker including pincode)
-      // Don't duplicate pincode if already in area
-      final fullAddress = _areaName.isNotEmpty ? _areaName : _pincodeController.text.trim();
+      // area = location picker address only (has pincode already)
+      final area = _areaName.isNotEmpty ? _areaName : '';
+
+      // full_address = combination of manually entered fields
+      final addressParts = <String>[];
+      if (_buildingController.text.trim().isNotEmpty) {
+        addressParts.add(_buildingController.text.trim());
+      }
+      if (_buildingNameController.text.trim().isNotEmpty) {
+        addressParts.add(_buildingNameController.text.trim());
+      }
+      if (_streetController.text.trim().isNotEmpty) {
+        addressParts.add(_streetController.text.trim());
+      }
+      final fullAddress = addressParts.join(', ');
 
       // Determine if this is create or update
       final isUpdate = widget.addressId != null;
@@ -373,8 +385,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         'building': _buildingController.text,
         'building_name': _buildingNameController.text,
         'street': _streetController.text,
-        'pincode': _pincodeController.text,
-        'area': fullAddress,
+        'pincode': _pincodeController.text.trim(),
+        'area': area,
         'latitude': _latitude != null ? double.tryParse(_latitude!) : 0,
         'longitude': _longitude != null ? double.tryParse(_longitude!) : 0,
         'label': _labelController.text,
@@ -696,6 +708,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
                     // Pincode (Mandatory)
                     _buildTextField('Pincode *', _pincodeController),
                     const SizedBox(height: 10),
+                    // Area (Non-editable - from location picker)
+                    _buildReadOnlyField('Area', _areaName),
+                    const SizedBox(height: 10),
                     // Save address as (Mandatory)
                     _buildTextField('Save address as *', _labelController),
                   ]),
@@ -968,6 +983,42 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: Colors.red, width: 2),
         ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyField(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300, width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value.isEmpty ? 'Select location first' : value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: value.isEmpty ? Colors.grey.shade500 : Colors.black87,
+              height: 1.4,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
