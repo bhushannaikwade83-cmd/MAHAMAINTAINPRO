@@ -64,7 +64,10 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
 
   void _startLiveRefresh() {
     _liveRefreshTimer = Timer.periodic(Duration(seconds: 15), (_) {
-      if (mounted) _loadServices();
+      if (mounted) {
+        _loadServices();
+        _loadAddressDetails();
+      }
     });
   }
 
@@ -72,6 +75,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _loadServices();
+      _loadAddressDetails();
     }
   }
 
