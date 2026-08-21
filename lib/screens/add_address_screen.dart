@@ -282,8 +282,28 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
   }
 
   Future<void> _saveAddress() async {
-    if (_buildingController.text.isEmpty || _streetController.text.isEmpty || _pincodeController.text.isEmpty || _labelController.text.isEmpty) {
-      debugPrint('❌ Please fill all required fields');
+    // Validate mandatory fields
+    String? errorMessage;
+
+    if (_buildingController.text.trim().isEmpty) {
+      errorMessage = 'Building / Floor is mandatory *';
+    } else if (_pincodeController.text.trim().isEmpty) {
+      errorMessage = 'Pincode is mandatory *';
+    } else if (_labelController.text.trim().isEmpty) {
+      errorMessage = 'Save address as is mandatory *';
+    }
+
+    if (errorMessage != null) {
+      debugPrint('❌ Validation error: $errorMessage');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
       return;
     }
 
