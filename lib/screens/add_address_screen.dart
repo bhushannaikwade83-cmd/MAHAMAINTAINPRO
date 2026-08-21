@@ -109,7 +109,13 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       if (widget.initialAddress != null) {
         // Store full address from location picker as-is in area
         _areaName = widget.initialAddress!;
-        _pincodeController.text = widget.initialAddress!;
+
+        // Extract only 6-digit pincode from address
+        final regex = RegExp(r'\b\d{6}\b');
+        final match = regex.firstMatch(widget.initialAddress!);
+        if (match != null) {
+          _pincodeController.text = match.group(0) ?? '';
+        }
       }
     }
 
@@ -352,10 +358,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
         throw Exception('User data not found');
       }
 
-      // Use area field (which has full address from location picker) with pincode
-      final fullAddress = _areaName.isNotEmpty
-        ? '${_areaName}, ${_pincodeController.text.trim()}'
-        : _pincodeController.text.trim();
+      // Use area field (which has full address from location picker including pincode)
+      // Don't duplicate pincode if already in area
+      final fullAddress = _areaName.isNotEmpty ? _areaName : _pincodeController.text.trim();
 
       // Determine if this is create or update
       final isUpdate = widget.addressId != null;
