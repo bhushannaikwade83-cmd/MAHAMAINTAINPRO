@@ -332,7 +332,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       // area = location picker address only (has pincode already)
       final area = _areaName.isNotEmpty ? _areaName : '';
 
-      // full_address = combination of manually entered fields
+      // full_address = building, building_name, street, area
       final addressParts = <String>[];
       if (_buildingController.text.trim().isNotEmpty) {
         addressParts.add(_buildingController.text.trim());
@@ -342,6 +342,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       }
       if (_streetController.text.trim().isNotEmpty) {
         addressParts.add(_streetController.text.trim());
+      }
+      // Always add area at end
+      if (area.isNotEmpty) {
+        addressParts.add(area);
       }
       final fullAddress = addressParts.join(', ');
 
