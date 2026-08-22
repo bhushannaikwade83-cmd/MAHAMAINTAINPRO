@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
 import 'add_complaint_screen.dart';
@@ -340,7 +341,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             ),
           );
         } else {
-          Navigator.of(context).pop();
+          SystemNavigator.pop();
         }
       },
       child: Scaffold(
