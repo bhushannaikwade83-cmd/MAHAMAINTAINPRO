@@ -325,18 +325,12 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
 
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) {
-        if (didPop) {
-          debugPrint('🔙 Back: Pop already happened');
-          return;
-        }
-
+    return WillPopScope(
+      onWillPop: () async {
         final now = DateTime.now();
         final diff = _lastBackPressTime != null ? now.difference(_lastBackPressTime!) : null;
 
-        debugPrint('🔙 Back pressed: lastTime=$_lastBackPressTime, now=$now, diff=$diff');
+        debugPrint('🔙 Back pressed: lastTime=$_lastBackPressTime, diff=$diff');
 
         if (_lastBackPressTime == null || (diff != null && diff > const Duration(seconds: 2))) {
           _lastBackPressTime = now;
@@ -348,9 +342,11 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
               backgroundColor: AppTheme.saffron,
             ),
           );
+          return false;
         } else {
           debugPrint('🔙 Second press - exiting app');
           SystemNavigator.pop();
+          return true;
         }
       },
       child: Scaffold(
