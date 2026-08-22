@@ -47,6 +47,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
   List<Map<String, dynamic>> _categoriesWithServices = [];
   bool _loadingServices = true;
   late Timer _liveRefreshTimer;
+  DateTime? _lastBackPressTime;
 
   @override
   void initState() {
@@ -323,7 +324,26 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+
+        final now = DateTime.now();
+        if (_lastBackPressTime == null || now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+          _lastBackPressTime = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Press back again to exit'),
+              duration: const Duration(seconds: 2),
+              backgroundColor: AppTheme.saffron,
+            ),
+          );
+        } else {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: bgColor,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: AnimatedOpacity(
@@ -1000,6 +1020,8 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             ),
           ],
         ),
+      ),
+    );
       ),
     );
   }
