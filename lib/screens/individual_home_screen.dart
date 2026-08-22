@@ -328,11 +328,19 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
-        if (didPop) return;
+        if (didPop) {
+          debugPrint('🔙 Back: Pop already happened');
+          return;
+        }
 
         final now = DateTime.now();
-        if (_lastBackPressTime == null || now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+        final diff = _lastBackPressTime != null ? now.difference(_lastBackPressTime!) : null;
+
+        debugPrint('🔙 Back pressed: lastTime=$_lastBackPressTime, now=$now, diff=$diff');
+
+        if (_lastBackPressTime == null || (diff != null && diff > const Duration(seconds: 2))) {
           _lastBackPressTime = now;
+          debugPrint('🔙 First press - showing snackbar');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Press back again to exit'),
@@ -341,6 +349,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             ),
           );
         } else {
+          debugPrint('🔙 Second press - exiting app');
           SystemNavigator.pop();
         }
       },
