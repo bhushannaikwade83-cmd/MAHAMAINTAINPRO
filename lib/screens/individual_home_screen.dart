@@ -1021,8 +1021,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
           ],
         ),
       ),
-    );
-      ),
+    ),
     );
   }
 
