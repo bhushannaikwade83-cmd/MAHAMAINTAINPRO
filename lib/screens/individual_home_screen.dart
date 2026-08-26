@@ -235,6 +235,13 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             final imagePath = category['image_path'];
             final serviceCount = (category['services'] as List?)?.length ?? 0;
             debugPrint('📸 [$name] image_path: $imagePath | Services: $serviceCount');
+
+            if (imagePath == null || imagePath.toString().isEmpty) {
+              debugPrint('⚠️ WARNING: Empty image_path for $name');
+            } else {
+              final url = 'https://digitrixmedia.com/mahamaintainpro/assets/services/$imagePath';
+              debugPrint('🖼️ URL for $name: $url');
+            }
           }
         } else {
           debugPrint('❌ API success=false or no categories');
@@ -1215,6 +1222,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     required bool isSmall,
   }) {
     final imageUrl = 'https://digitrixmedia.com/mahamaintainpro/assets/services/$imagePath';
+    debugPrint('🎨 Building image card for $serviceName: $imageUrl');
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
