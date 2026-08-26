@@ -1222,7 +1222,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     required bool isSmall,
   }) {
     final imageUrl = 'https://digitrixmedia.com/mahamaintainpro/assets/services/$imagePath';
-    debugPrint('🎨 Building image card for $serviceName: $imageUrl');
+    debugPrint('🎨 Building image card for $name: $imageUrl');
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
