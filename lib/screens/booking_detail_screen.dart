@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import 'live_tracking_screen.dart';
 import '../widgets/custom_footer.dart';
+import '../services/cart_service.dart';
 
 class BookingDetailScreen extends StatefulWidget {
   final String serviceName;
@@ -723,7 +724,32 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      final cartService = CartService();
+                      final cartItem = CartItem(
+                        id: '${widget.serviceName}_${DateTime.now().millisecondsSinceEpoch}',
+                        serviceName: widget.serviceName,
+                        price: widget.price,
+                        description: widget.description,
+                        duration: widget.duration,
+                        serviceIcon: widget.serviceIcon,
+                        quantity: _quantity,
+                        selectedDate: _selectedDate,
+                        selectedTimeSlot: _selectedTimeSlot,
+                      );
+
+                      cartService.addItem(cartItem);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('✅ Added to cart!'),
+                          backgroundColor: AppTheme.saffron,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+
+                      Navigator.pop(context);
+                    },
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
