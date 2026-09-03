@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/cart_service.dart';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
 import '../utils/constants.dart';
@@ -249,7 +250,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     final isSelected = service['quantity'] > 0;
 
     return GestureDetector(
-      onTap: () => setState(() => service['quantity']++),
       child: Container(
         margin: EdgeInsets.only(bottom: isSmall ? 8 : 12),
         padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16, vertical: isSmall ? 12 : 14),
@@ -272,6 +272,17 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Builder(builder: (context) {
+                final imagePath = service['image_path'] as String?;
+                if (imagePath != null && imagePath.isNotEmpty) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      'https://digitrixmedia.com/mahamaintainpro/assets/services/$imagePath',
+                      fit: BoxFit.cover,
+                      errorBuilder: (c,e,st) => Center(child: Text(service['emoji'] ?? '🔧', style: const TextStyle(fontSize: 24))),
+                    ),
+                  );
+                }
                 final iconPath = getServiceIcon(widget.categoryName, service['name'] ?? '');
                 if (iconPath != null) {
                   return ClipRRect(
@@ -280,7 +291,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   );
                 }
                 return Center(
-                  child: Text(service['emoji'] ?? '🔧', style: const TextStyle(fontSize: 28)),
+                  child: Text(service['emoji'] ?? '🔧', style: const TextStyle(fontSize: 24)),
                 );
               }),
             ),
@@ -292,7 +303,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   Text(
                     service['name'] ?? 'Service',
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
@@ -310,7 +321,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                             style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                           ),
                         if (service['rating'] != null) ...[
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 10),
                           Text(
                             '⭐ ${service['rating']}',
                             style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
@@ -333,7 +344,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             ),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(6),
@@ -350,24 +361,35 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     child: Text(
                       '−',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 18,
                         color: AppTheme.saffron,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 10),
                   Text(
                     '${service['quantity']}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 10),
                   GestureDetector(
-                    onTap: () => setState(() => service['quantity']++),
+                    onTap: () {
+                    setState(() => service['quantity']++);
+                    CartService().addItem(CartItem(
+                      id: '${service['id']}',
+                      serviceName: service['name'] ?? 'Service',
+                      price: '₹${service['price'] ?? 0}',
+                      description: service['duration'] ?? '',
+                      duration: '30 min',
+                      serviceIcon: 'assets/images/logo.png',
+                      quantity: 1,
+                    ));
+                  },
                     child: Text(
                       '+',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 18,
                         color: AppTheme.saffron,
                         fontWeight: FontWeight.bold,
                       ),

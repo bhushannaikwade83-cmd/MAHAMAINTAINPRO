@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import 'live_tracking_screen.dart';
-import '../widgets/custom_footer.dart';
 import '../services/cart_service.dart';
+import 'checkout_screen.dart';
 
 class BookingDetailScreen extends StatefulWidget {
   final String serviceName;
@@ -31,7 +32,6 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
   int _quantity = 1;
   DateTime? _selectedDate;
   String? _selectedTimeSlot;
-  int _footerSelectedIndex = 4;
 
   final List<String> _timeSlots = ['09:00 AM', '02:00 PM', '05:30 PM'];
   final List<Map<String, String>> _relatedServices = [
@@ -725,7 +725,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      final cartService = CartService();
+                      final cartService = Provider.of<CartService>(context, listen: false);
                       final cartItem = CartItem(
                         id: '${widget.serviceName}_${DateTime.now().millisecondsSinceEpoch}',
                         serviceName: widget.serviceName,
@@ -739,16 +739,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
                       );
 
                       cartService.addItem(cartItem);
+                      debugPrint('✅ [Booking] Item added to cart: ${widget.serviceName} x$_quantity');
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('✅ Added to cart!'),
-                          backgroundColor: AppTheme.saffron,
-                          duration: const Duration(seconds: 2),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CheckoutScreen(),
                         ),
                       );
-
-                      Navigator.pop(context);
                     },
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
@@ -757,7 +755,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
                           Text(
-                            'Add to Cart',
+                            'Confirm Booking',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -779,10 +777,6 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: CustomFooter(
-        selectedIndex: _footerSelectedIndex,
-        onNavItemTap: (index) {},
       ),
     );
   }

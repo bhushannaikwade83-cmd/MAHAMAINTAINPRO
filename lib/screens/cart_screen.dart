@@ -14,9 +14,7 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: CartService(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.grey.shade50,
         appBar: AppBar(
           backgroundColor: Colors.white,
@@ -190,7 +188,6 @@ class _CartScreenState extends State<CartScreen> {
             );
           },
         ),
-      ),
     );
   }
 

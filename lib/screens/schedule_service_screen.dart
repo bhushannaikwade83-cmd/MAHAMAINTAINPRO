@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
+import '../services/cart_service.dart';
 import 'address_settings_screen.dart';
+import 'checkout_screen.dart';
 
 class ScheduleServiceScreen extends StatefulWidget {
   final String categoryName;
@@ -385,11 +388,30 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
               GestureDetector(
                 onTap: selectedTime.isNotEmpty
                     ? () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Service scheduled for $selectedTime on ${selectedDate.day}'),
-                            backgroundColor: Colors.green,
-                            duration: const Duration(seconds: 2),
+                        // Add all selected services to cart
+                        final cartService = Provider.of<CartService>(context, listen: false);
+
+                        for (var service in widget.selectedServices) {
+                          final cartItem = CartItem(
+                            id: '${service['name']}_${DateTime.now().millisecondsSinceEpoch}',
+                            serviceName: service['name'] ?? 'Service',
+                            price: '₹${service['price'] ?? 0}',
+                            description: service['description'] ?? '',
+                            duration: service['duration'] ?? '',
+                            serviceIcon: service['emoji'] ?? '🔧',
+                            quantity: 1,
+                            selectedDate: selectedDate,
+                            selectedTimeSlot: selectedTime,
+                          );
+                          cartService.addItem(cartItem);
+                          debugPrint('✅ [Schedule] Added to cart: ${service['name']}');
+                        }
+
+                        // Navigate to checkout
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CheckoutScreen(),
                           ),
                         );
                       }

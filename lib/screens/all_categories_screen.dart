@@ -27,7 +27,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   Future<void> _loadCategories() async {
     try {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await http.get(url).timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -125,16 +125,9 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          '${ApiConfig.imagesUrl}/$imagePath',
+                          '${'https://digitrixmedia.com/mahamaintainpro/assets/services'}/$imagePath',
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: Center(
-                                child: Icon(Icons.image_not_supported, color: Colors.grey.shade400),
-                              ),
-                            );
-                          },
+                          filterQuality: FilterQuality.high,
                         ),
                         Positioned(
                           left: 0,

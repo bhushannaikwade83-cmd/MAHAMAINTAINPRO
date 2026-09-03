@@ -48,7 +48,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=AIzaSyD9MUDoEMKnUWRSPEOMvmNkNzsFNI3NvnU',
       );
 
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await http.get(url).timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -98,7 +98,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         'https://maps.googleapis.com/maps/api/geocode/json?address=$query&key=AIzaSyD9MUDoEMKnUWRSPEOMvmNkNzsFNI3NvnU',
       );
 
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await http.get(url).timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

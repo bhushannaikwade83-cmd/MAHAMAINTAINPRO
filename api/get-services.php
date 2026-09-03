@@ -47,7 +47,7 @@ try {
         error_log("📊 Category: {$row['name']} | image_path: {$row['image_path']}");
 
         // Fetch services for this category
-        $serviceQuery = "SELECT id, name, emoji, price, duration, rating, notes FROM services WHERE category_id = ? AND is_active = 1 ORDER BY id ASC";
+        $serviceQuery = "SELECT id, name, emoji, price, duration, rating, notes, image_path FROM services WHERE category_id = ? AND is_active = 1 ORDER BY id ASC";
         $stmt = $conn->prepare($serviceQuery);
         $stmt->bind_param("i", $categoryId);
         $stmt->execute();

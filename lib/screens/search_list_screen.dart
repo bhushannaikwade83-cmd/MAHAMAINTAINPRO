@@ -14,6 +14,7 @@ import 'visitor_gate_screen.dart';
 class _SearchEntry {
   final String emoji;
   final String? iconPath;
+  final String? imagePath;
   final String title;
   final String subtitle;
   final WidgetBuilder builder;
@@ -21,6 +22,7 @@ class _SearchEntry {
   _SearchEntry({
     required this.emoji,
     this.iconPath,
+    this.imagePath,
     required this.title,
     required this.subtitle,
     required this.builder,
@@ -51,7 +53,7 @@ class _SearchListScreenState extends State<SearchListScreen> {
   Future<void> _loadCategories() async {
     try {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await http.get(url).timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200 && mounted) {
         final data = jsonDecode(response.body);
@@ -62,6 +64,7 @@ class _SearchListScreenState extends State<SearchListScreen> {
           for (final category in categories) {
             final categoryName = category['name'] as String? ?? '';
             final emoji = category['emoji'] as String? ?? '🔧';
+            final imagePath = category['image_path'] as String?;
             final services = (category['services'] as List<dynamic>?)
                 ?.map((s) => Map<String, dynamic>.from(s as Map))
                 .toList() ?? [];
@@ -69,12 +72,13 @@ class _SearchListScreenState extends State<SearchListScreen> {
             entries.add(
               _SearchEntry(
                 emoji: emoji,
+                imagePath: imagePath,
                 title: categoryName,
                 subtitle: '',
                 builder: (context) => ServiceCategoryScreen(
                   categoryName: categoryName,
                   categoryEmoji: emoji,
-                  categoryIconPath: getCategoryIcon(categoryName),
+                  categoryImagePath: imagePath,
                   description: getCategoryDescription(categoryName),
                   services: services,
                 ),
@@ -167,7 +171,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
           : SafeArea(
               child: Column(
                 children: [
-                  // Orange Header
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -201,7 +204,7 @@ class _SearchListScreenState extends State<SearchListScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Text(
                           'Find services, society features & more',
                           style: TextStyle(
@@ -241,7 +244,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
                     ),
                   ),
 
-                  // Results Header
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -256,7 +258,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
                     ),
                   ),
 
-                  // Results List
                   Expanded(
                     child: results.isEmpty
                         ? Center(
@@ -316,12 +317,24 @@ class _SearchListScreenState extends State<SearchListScreen> {
         ),
         child: Row(
           children: [
-            entry.iconPath != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(entry.iconPath!, width: 36, height: 36, fit: BoxFit.cover),
-                  )
-                : Text(entry.emoji, style: const TextStyle(fontSize: 28)),
+            if (entry.imagePath != null && entry.imagePath!.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  'https://digitrixmedia.com/mahamaintainpro/assets/services/${entry.imagePath}',
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Text(entry.emoji, style: const TextStyle(fontSize: 28)),
+                ),
+              )
+            else if (entry.iconPath != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(entry.iconPath!, width: 48, height: 48, fit: BoxFit.cover),
+              )
+            else
+              Text(entry.emoji, style: const TextStyle(fontSize: 28)),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

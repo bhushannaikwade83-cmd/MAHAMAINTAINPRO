@@ -15,19 +15,53 @@ import 'category_photos_screen.dart';
 
 /// Society Tab Screen - shown to society members when they click the Society tab
 /// Displays the Society Dashboard with Dashboard, Photos, and Notices tabs
-class SocietyTabScreen extends StatefulWidget {
+class SocietyDashboardScreen extends StatefulWidget {
   final bool isCommittee;
 
-  const SocietyTabScreen({this.isCommittee = false, Key? key}) : super(key: key);
+  const SocietyDashboardScreen({this.isCommittee = false, Key? key}) : super(key: key);
 
   @override
-  State<SocietyTabScreen> createState() => _SocietyTabScreenState();
+  State<SocietyDashboardScreen> createState() => _SocietyDashboardScreenState();
 }
 
-class _SocietyTabScreenState extends State<SocietyTabScreen> {
+class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with WidgetsBindingObserver {
   int _selectedTab = 0;
+  DateTime? _lastRefreshTime;
 
-  final List<String> tabs = ['Dashboard', 'Photos', 'Notices'];
+  late final List<String> tabs;
+
+  @override
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Add Committee tab only if user is committee member
+    tabs = widget.isCommittee
+      ? ['Dashboard', 'Photos', 'Notices', 'Committee']
+      : ['Dashboard', 'Photos', 'Notices'];
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      print('🔄 SocietyDashboardScreen: App resumed - refreshing data');
+      _refreshData();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _refreshData() {
+    print('🔄 Refreshing society dashboard data');
+    // Reload custom categories and other data
+    setState(() {
+      _lastRefreshTime = DateTime.now();
+    });
+  }
 
   static const List<Map<String, dynamic>> _builtInPhotoCategories = [
     {'name': 'Ganesh Festival', 'emoji': '🎉', 'color': Color(0xFFE8F5E9)},
@@ -310,6 +344,14 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Auto-refresh every 10 seconds when tab is visible
+    final now = DateTime.now();
+    if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 10) {
+      _lastRefreshTime = now;
+      print('🔄 Auto-refresh (SocietyDashboardScreen - 10s elapsed)');
+      Future.microtask(_refreshData);
+    }
+
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 380;
 
@@ -854,54 +896,57 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
               const SizedBox(height: 30),
             ] else if (_selectedTab == 2) ...[
               // Notices Tab Content
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6C4A9E),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
+              // Show Post Notice button only if committee member
+              if (widget.isCommittee) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6C4A9E),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text('📌', style: TextStyle(fontSize: 20)),
                         ),
-                        child: const Text('📌', style: TextStyle(fontSize: 20)),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Post a Notice',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Post a Notice',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Committee only • Attach image or PDF',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.white70,
+                              SizedBox(height: 2),
+                              Text(
+                                'Attach image or PDF',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white70,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.arrow_forward, color: Colors.white),
-                    ],
+                        const Icon(Icons.arrow_forward, color: Colors.white),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
               // Notices List with categories
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -917,6 +962,33 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
                 ),
               ),
               const SizedBox(height: 30),
+            ] else if (widget.isCommittee && _selectedTab == 3) ...[
+              // Committee Management Tab
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      '🏛️ Committee Management',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Coming Soon Sections
+                    _buildCommitteeSection('👥', 'Members', 'Manage society members', Colors.blue),
+                    const SizedBox(height: 12),
+                    _buildCommitteeSection('✅', 'Approvals', 'Pending member & bill approvals', Colors.green),
+                    const SizedBox(height: 12),
+                    _buildCommitteeSection('📊', 'Statistics', 'Society stats & analytics', Colors.orange),
+                    const SizedBox(height: 12),
+                    _buildCommitteeSection('📈', 'Reports', 'Generate & export reports', Colors.purple),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
             ],
           ],
         ),
@@ -1272,6 +1344,54 @@ class _SocietyTabScreenState extends State<SocietyTabScreen> {
           Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 22),
         ],
       ),
+      ),
+    );
+  }
+
+  Widget _buildCommitteeSection(String emoji, String title, String subtitle, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 20)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.arrow_forward, color: color, size: 20),
+        ],
       ),
     );
   }

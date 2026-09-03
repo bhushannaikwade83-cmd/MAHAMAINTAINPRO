@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart' as provider_pkg;
 import 'config/app_theme.dart';
 import 'config/app_router.dart';
 import 'config/supabase_config.dart';
 import 'repositories/auth_repository.dart';
 import 'screens/splash_screen.dart';
+import 'services/cart_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,18 +46,23 @@ class _MahaMaintainAppState extends ConsumerState<MahaMaintainApp> {
   @override
   Widget build(BuildContext context) {
     if (_showSplash) {
-      return MaterialApp(
-        title: 'MahaMaintain Pro',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light,
-        debugShowCheckedModeBanner: false,
-        home: SplashScreen(
-          onSplashComplete: () {
-            if (mounted) {
-              setState(() => _showSplash = false);
-            }
-          },
+      return provider_pkg.MultiProvider(
+        providers: [
+          provider_pkg.ChangeNotifierProvider(create: (_) => CartService()),
+        ],
+        child: MaterialApp(
+          title: 'MahaMaintain Pro',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          debugShowCheckedModeBanner: false,
+          home: SplashScreen(
+            onSplashComplete: () {
+              if (mounted) {
+                setState(() => _showSplash = false);
+              }
+            },
+          ),
         ),
       );
     }
@@ -63,13 +70,18 @@ class _MahaMaintainAppState extends ConsumerState<MahaMaintainApp> {
     final authRepository = ref.watch(authRepositoryProvider);
     final router = AppRouter.createRouter(authRepository);
 
-    return MaterialApp.router(
-      title: 'MahaMaintain Pro',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
-      debugShowCheckedModeBanner: false,
-      routerConfig: router,
+    return provider_pkg.MultiProvider(
+      providers: [
+        provider_pkg.ChangeNotifierProvider(create: (_) => CartService()),
+      ],
+      child: MaterialApp.router(
+        title: 'MahaMaintain Pro',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.light,
+        debugShowCheckedModeBanner: false,
+        routerConfig: router,
+      ),
     );
   }
 }
