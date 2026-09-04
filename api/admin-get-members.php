@@ -21,15 +21,14 @@ try {
     $query = "SELECT
         sci.id,
         sci.user_id,
+        sci.society_id,
+        sci.secretary_name,
+        sci.phone,
         sci.is_committee,
         sci.is_enabled,
-        sci.created_at,
-        ss.name as secretary_name,
-        ss.phone,
-        ss.status as secretary_status,
-        ss.approval_status
+        sci.designation,
+        sci.created_at
     FROM society_customers_individual sci
-    LEFT JOIN society_secretaries ss ON sci.user_id = ss.user_id
     ORDER BY sci.created_at DESC";
 
     $result = $conn->query($query);
@@ -45,12 +44,12 @@ try {
         $members[] = [
             'id' => $row['id'],
             'user_id' => $row['user_id'],
-            'secretary_name' => $row['secretary_name'] ?? 'N/A',
-            'phone' => $row['phone'] ?? 'N/A',
+            'society_id' => $row['society_id'],
+            'secretary_name' => $row['secretary_name'],
+            'phone' => $row['phone'],
             'is_committee' => (int)$row['is_committee'],
             'is_enabled' => (int)$row['is_enabled'],
-            'secretary_status' => $row['secretary_status'] ?? 'N/A',
-            'approval_status' => $row['approval_status'] ?? 'N/A',
+            'designation' => $row['designation'],
             'created_at' => $row['created_at']
         ];
     }
