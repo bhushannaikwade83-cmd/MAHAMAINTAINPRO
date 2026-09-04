@@ -31,16 +31,17 @@ try {
     $secretary_name = $data['secretary_name'];
     $phone = $data['phone'];
     $is_committee = isset($data['is_committee']) ? (int)$data['is_committee'] : 0;
+    $designation = isset($data['designation']) ? $data['designation'] : 'MEMBER';
 
-    $query = "INSERT INTO society_customers_individual (society_id, secretary_name, phone, is_committee, is_enabled, approval_status, created_at, updated_at)
-              VALUES (?, ?, ?, ?, 1, 'pending', NOW(), NOW())";
+    $query = "INSERT INTO society_customers_individual (society_id, secretary_name, phone, is_committee, designation, is_enabled, approval_status, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, 1, 'pending', NOW(), NOW())";
 
     $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $stmt->bind_param("issi", $society_id, $secretary_name, $phone, $is_committee);
+    $stmt->bind_param("issis", $society_id, $secretary_name, $phone, $is_committee, $designation);
 
     if (!$stmt->execute()) {
         throw new Exception("Execute failed: " . $stmt->error);
