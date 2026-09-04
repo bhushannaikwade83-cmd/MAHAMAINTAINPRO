@@ -33,6 +33,21 @@ try {
     $is_committee = isset($data['is_committee']) ? (int)$data['is_committee'] : 0;
     $designation = isset($data['designation']) ? $data['designation'] : 'MEMBER';
 
+    // Check if phone number already exists
+    $checkQuery = "SELECT id FROM society_customers_individual WHERE phone = ?";
+    $checkStmt = $conn->prepare($checkQuery);
+    if (!$checkStmt) {
+        throw new Exception("Check prepare failed: " . $conn->error);
+    }
+    $checkStmt->bind_param("s", $phone);
+    $checkStmt->execute();
+    $result = $checkStmt->get_result();
+
+    if ($result->num_rows > 0) {
+        throw new Exception("Phone number already exists");
+    }
+    $checkStmt->close();
+
     $query = "INSERT INTO society_customers_individual (society_id, secretary_name, phone, is_committee, designation, is_enabled, approval_status, created_at, updated_at)
               VALUES (?, ?, ?, ?, ?, 1, 'pending', NOW(), NOW())";
 
