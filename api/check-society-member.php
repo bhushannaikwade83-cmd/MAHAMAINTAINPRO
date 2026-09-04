@@ -29,7 +29,7 @@ try {
         throw new Exception('User ID is required');
     }
 
-    $stmt = $conn->prepare("SELECT id, user_id, is_committee, is_enabled, created_at FROM society_customers_individual WHERE user_id = ?");
+    $stmt = $conn->prepare("SELECT id, user_id, society_id, secretary_name, phone, is_committee, is_enabled, designation, created_at FROM society_customers_individual WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
