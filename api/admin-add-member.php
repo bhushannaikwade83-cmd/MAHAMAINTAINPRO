@@ -48,8 +48,8 @@ try {
     }
     $checkStmt->close();
 
-    $query = "INSERT INTO society_customers_individual (society_id, secretary_name, phone, is_committee, designation, is_enabled, approval_status, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, 1, 'pending', NOW(), NOW())";
+    $query = "INSERT INTO society_customers_individual (society_id, secretary_name, phone, is_committee, designation, is_enabled, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW())";
 
     $stmt = $conn->prepare($query);
     if (!$stmt) {
