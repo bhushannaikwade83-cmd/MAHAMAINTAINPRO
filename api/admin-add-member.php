@@ -10,16 +10,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 try {
-    $servername = "localhost";
-    $db_username = "digitrix_maha_user";
-    $db_password = "maha_user@70";
-    $database = "digitrix_maha_maintain_pro";
-
-    $conn = new mysqli($servername, $db_username, $db_password, $database);
-
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
+    $pdo = new PDO(
+        "mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
+        "digitrix_maha_user",
+        "maha_user@70",
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
 
     $data = json_decode(file_get_contents('php://input'), true);
 
@@ -33,45 +29,41 @@ try {
     $is_committee = isset($data['is_committee']) ? (int)$data['is_committee'] : 0;
     $designation = isset($data['designation']) ? $data['designation'] : 'MEMBER';
 
-    // Check if phone number already exists
-    $checkQuery = "SELECT id FROM society_customers_individual WHERE phone = ?";
-    $checkStmt = $conn->prepare($checkQuery);
-    if (!$checkStmt) {
-        throw new Exception("Check prepare failed: " . $conn->error);
-    }
-    $checkStmt->bind_param("s", $phone);
-    $checkStmt->execute();
-    $result = $checkStmt->get_result();
-
-    if ($result->num_rows > 0) {
-        throw new Exception("Phone number already exists");
-    }
-    $checkStmt->close();
-
-    $query = "INSERT INTO society_customers_individual (society_id, secretary_name, phone, is_committee, designation, is_enabled, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW())";
-
-    $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
+    if (!preg_match('/^[0-9]{10}$/', $phone)) {
+        throw new Exception("Phone must be 10 digits");
     }
 
-    $stmt->bind_param("issis", $society_id, $secretary_name, $phone, $is_committee, $designation);
-
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
+    // Check if phone already exists in society_customers_individual
+    $stmt = $pdo->prepare("SELECT id FROM society_customers_individual WHERE phone = ?");
+    $stmt->execute([$phone]);
+    if ($stmt->fetch()) {
+        throw new Exception("Phone number already registered");
     }
 
-    $member_id = $conn->insert_id;
+    // Get user_id from individuals table using phone number
+    $stmt = $pdo->prepare("SELECT id FROM individuals WHERE phone = ?");
+    $stmt->execute([$phone]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $user_id = $user ? $user['id'] : null;
+
+    // Insert into society_customers_individual with user_id (can be null for offline members)
+    $stmt = $pdo->prepare("
+        INSERT INTO society_customers_individual
+        (society_id, user_id, secretary_name, phone, is_committee, designation, is_enabled, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
+    ");
+    $stmt->execute([$society_id, $user_id, $secretary_name, $phone, $is_committee, $designation]);
+
+    $member_id = $pdo->lastInsertId();
 
     echo json_encode([
         'success' => true,
         'message' => 'Member added successfully',
-        'member_id' => $member_id
+        'member_id' => $member_id,
+        'user_id' => $user_id,
+        'note' => $user_id ? 'User found and linked' : 'Phone not in individuals table (offline member)'
     ]);
-
-    $stmt->close();
-    $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([

@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
+
+class Society {
+  final int id;
+  final String name;
+  final String address;
+  final String city;
+
+  Society({
+    required this.id,
+    required this.name,
+    required this.address,
+    required this.city,
+  });
+
+  factory Society.fromJson(Map<String, dynamic> json) {
+    return Society(
+      id: json['id'],
+      name: json['name'],
+      address: json['address'],
+      city: json['city'],
+    );
+  }
+}
 
 class IndividualSignUpScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
@@ -22,15 +42,13 @@ class IndividualSignUpScreen extends ConsumerStatefulWidget {
 
 class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
     with SingleTickerProviderStateMixin {
-  final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+  late TextEditingController _phoneController;
 
-  String? _currentLatitude;
-  String? _currentLongitude;
+  List<Society>? societies;
+  Society? selectedSociety;
   bool _isLoading = false;
-  bool _locationFetching = false;
-  bool _locationFetched = false;
+  bool _loadingCities = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -38,8 +56,7 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
   @override
   void initState() {
     super.initState();
-    _mobileController.text = widget.phoneNumber;
-
+    _phoneController = TextEditingController(text: widget.phoneNumber);
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -48,162 +65,38 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    _fetchSocieties();
   }
 
   @override
   void dispose() {
-    _mobileController.dispose();
     _nameController.dispose();
-    _emailController.dispose();
+    _phoneController.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
-  bool _isFormValid() {
-    return _mobileController.text.trim().isNotEmpty &&
-        _nameController.text.trim().isNotEmpty &&
-        _locationFetched;
-  }
-
-  void _showLocationDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.saffron.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.location_on_rounded,
-                  size: 48,
-                  color: AppTheme.saffron,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Enable Location Access',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.black87,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'We need your location to provide personalized services',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                  height: 1.6,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _fetchCurrentLocation();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.saffron,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.gps_fixed,
-                          color: Colors.white, size: 20),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Use Current Location',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _fetchCurrentLocation() async {
-    setState(() => _locationFetching = true);
+  void _fetchSocieties() async {
+    setState(() => _loadingCities = true);
     try {
-      LocationPermission permission = await Geolocator.checkPermission();
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/admin-get-societies.php');
+      final response = await http.get(url).timeout(const Duration(seconds: 15));
 
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Requesting location permission...'),
-            backgroundColor: Colors.blue,
-          ),
-        );
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always) {
-        Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        );
-
-        setState(() {
-          _currentLatitude = position.latitude.toString();
-          _currentLongitude = position.longitude.toString();
-          _locationFetched = true;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location fetched successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location permission denied'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final societiesList = (data['societies'] as List)
+              .map((s) => Society.fromJson(s))
+              .toList();
+          setState(() => societies = societiesList);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Failed to load societies'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,15 +106,19 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
         ),
       );
     } finally {
-      setState(() => _locationFetching = false);
+      setState(() => _loadingCities = false);
     }
   }
 
-  void _completeSignUp() async {
+  bool _isFormValid() {
+    return _nameController.text.trim().isNotEmpty && selectedSociety != null;
+  }
+
+  void _submitRegistration() async {
     if (!_isFormValid()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill all required fields and select location'),
+          content: Text('Please fill all required fields'),
           backgroundColor: Colors.red,
         ),
       );
@@ -231,38 +128,36 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
     setState(() => _isLoading = true);
 
     try {
-      final response = await _saveProfileToDatabase(
-        phoneNumber: _mobileController.text.trim(),
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        latitude: _currentLatitude ?? '0',
-        longitude: _currentLongitude ?? '0',
-      );
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/register-secretary.php');
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'name': _nameController.text.trim(),
+              'phone': widget.phoneNumber,
+              'society_id': selectedSociety!.id,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
-      if (response['success'] == true) {
-        // Save login session
-        await _saveLoginSession(
-          _mobileController.text.trim(),
-          _nameController.text.trim(),
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sign up successful!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        Future.delayed(const Duration(seconds: 1), () {
-          context.go('/dashboard');
-        });
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration submitted! Awaiting admin approval.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Future.delayed(const Duration(milliseconds: 500), () {
+            Navigator.pop(context);
+          });
+        } else {
+          throw Exception(data['message'] ?? 'Registration failed');
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Failed to complete sign up'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -276,515 +171,270 @@ class _IndividualSignUpScreenState extends ConsumerState<IndividualSignUpScreen>
     }
   }
 
-  Future<void> _saveLoginSession(String phoneNumber, String name) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('userPhone', phoneNumber);
-      await prefs.setString('userName', name);
-      await prefs.setString('userType', 'individual');
-      await prefs.setString('loginTime', DateTime.now().toIso8601String());
-      debugPrint('✅ Login session saved for $phoneNumber');
-    } catch (e) {
-      debugPrint('❌ Error saving login session: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>> _saveProfileToDatabase({
-    required String phoneNumber,
-    required String name,
-    required String email,
-    required String latitude,
-    required String longitude,
-  }) async {
-    try {
-      final url =
-          Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/save-profile.php');
-
-      final response = await http
-          .post(
-            url,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'phone_number': phoneNumber,
-              'full_name': name,
-              'email': email,
-              'latitude': latitude,
-              'longitude': longitude,
-            }),
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        return {
-          'success': false,
-          'message': 'Server error: ${response.statusCode}'
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}'
-      };
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     final isSmall = screenWidth < 380;
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: AppTheme.saffron,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Register for a Society',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+      ),
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: screenHeight),
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Stack(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Padding(
+            padding: EdgeInsets.all(isSmall ? 16 : 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: double.infinity,
-                  height: screenHeight,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppTheme.saffron,
-                        AppTheme.saffron.withOpacity(0.85),
-                        const Color(0xFFF25C05),
-                      ],
-                    ),
+                Text(
+                  'Select Society',
+                  style: TextStyle(
+                    fontSize: isSmall ? 16 : 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
                   ),
                 ),
-                Positioned(
-                  top: -80,
-                  right: -60,
-                  child: Container(
-                    width: 280,
-                    height: 280,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.08),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -60,
-                  left: -80,
-                  child: Container(
-                    width: 300,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppTheme.saffron.withOpacity(0.15),
-                    ),
-                  ),
-                ),
-                Column(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top +
-                            (isSmall ? 16 : 24),
-                        bottom: isSmall ? 20 : 32,
-                        left: isSmall ? 12 : 16,
-                        right: isSmall ? 12 : 16,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(36),
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              width: isSmall ? 100 : 120,
-                              height: isSmall ? 100 : 120,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          SizedBox(height: isSmall ? 14 : 18),
-                          Text(
-                            'Create Account',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isSmall ? 26 : 32,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.8,
-                            ),
-                          ),
-                          SizedBox(height: isSmall ? 6 : 8),
-                          Text(
-                            'Join MahaMaintain Pro',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: isSmall ? 12 : 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                SizedBox(height: isSmall ? 12 : 16),
+                if (_loadingCities)
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 32),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(AppTheme.saffron),
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.fromLTRB(
-                        isSmall ? 12 : 16,
-                        isSmall ? 16 : 20,
-                        isSmall ? 12 : 16,
-                        isSmall ? 16 : 24,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.98),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 40,
-                            offset: const Offset(0, 20),
-                          ),
-                        ],
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isSmall ? 18 : 24,
-                        vertical: isSmall ? 20 : 28,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildTextField(
-                            controller: _mobileController,
-                            label: 'Mobile Number',
-                            hint: 'Enter your mobile number',
-                            icon: Icons.phone_outlined,
-                            isSmall: isSmall,
-                            readOnly: false,
-                          ),
-                          SizedBox(height: isSmall ? 14 : 16),
-                          _buildTextField(
-                            controller: _nameController,
-                            label: 'Full Name',
-                            hint: 'Enter your full name',
-                            icon: Icons.person_outline,
-                            isSmall: isSmall,
-                          ),
-                          SizedBox(height: isSmall ? 14 : 16),
-                          _buildTextField(
-                            controller: _emailController,
-                            label: 'Email Address (Optional)',
-                            hint: 'Enter your email',
-                            icon: Icons.email_outlined,
-                            isSmall: isSmall,
-                          ),
-                          SizedBox(height: isSmall ? 16 : 20),
-                          if (_locationFetched)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Location',
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 12 : 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(height: isSmall ? 8 : 10),
-                                Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: isSmall ? 14 : 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        AppTheme.saffron.withOpacity(0.08),
-                                        AppTheme.saffron.withOpacity(0.04),
-                                      ],
-                                    ),
-                                    border: Border.all(
-                                      color: AppTheme.saffron.withOpacity(0.3),
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_rounded,
-                                        color: AppTheme.saffron,
-                                        size: isSmall ? 20 : 22,
-                                      ),
-                                      SizedBox(width: isSmall ? 12 : 14),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Latitude',
-                                              style: TextStyle(
-                                                fontSize: isSmall ? 11 : 12,
-                                                color: Colors.grey.shade600,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            SizedBox(height: 2),
-                                            Text(
-                                              _currentLatitude ?? '0',
-                                              style: TextStyle(
-                                                fontSize: isSmall ? 12 : 13,
-                                                color: Colors.black87,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            SizedBox(height: 6),
-                                            Text(
-                                              'Longitude',
-                                              style: TextStyle(
-                                                fontSize: isSmall ? 11 : 12,
-                                                color: Colors.grey.shade600,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            SizedBox(height: 2),
-                                            Text(
-                                              _currentLongitude ?? '0',
-                                              style: TextStyle(
-                                                fontSize: isSmall ? 12 : 13,
-                                                color: Colors.black87,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: _fetchCurrentLocation,
-                                        child: Icon(
-                                          Icons.refresh_rounded,
-                                          color: AppTheme.saffron,
-                                          size: isSmall ? 20 : 22,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: isSmall ? 16 : 20),
-                              ],
-                            )
-                          else
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: isSmall ? 50 : 56,
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: _showLocationDialog,
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.blue.shade50,
-                                              Colors.blue.shade50
-                                                  .withOpacity(0.7),
-                                            ],
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(14),
-                                          border: Border.all(
-                                            color: Colors.blue.shade200,
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.location_on_rounded,
-                                              color: Colors.blue.shade700,
-                                              size: isSmall ? 20 : 22,
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'Add Location',
-                                              style: TextStyle(
-                                                fontSize: isSmall ? 14 : 15,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.blue.shade700,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: isSmall ? 16 : 20),
-                              ],
+                  )
+                else if (societies == null || societies!.isEmpty)
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 32),
+                    child: const Center(
+                      child: Text('No societies available'),
+                    ),
+                  )
+                else
+                  Column(
+                    children: societies!.map((society) {
+                      final isSelected = selectedSociety?.id == society.id;
+                      return GestureDetector(
+                        onTap: () => setState(() => selectedSociety = society),
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: isSmall ? 12 : 16),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.saffron
+                                  : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
                             ),
-                          SizedBox(
-                            width: double.infinity,
-                            height: isSmall ? 50 : 56,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: _isFormValid() && !_isLoading
-                                    ? _completeSignUp
-                                    : null,
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        AppTheme.saffron,
-                                        AppTheme.saffron.withOpacity(0.85),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.saffron.withOpacity(0.35),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 8),
+                            borderRadius: BorderRadius.circular(12),
+                            color: isSelected
+                                ? AppTheme.saffron.withOpacity(0.05)
+                                : Colors.white,
+                          ),
+                          padding: EdgeInsets.all(isSmall ? 12 : 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      society.name,
+                                      style: TextStyle(
+                                        fontSize: isSmall ? 14 : 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                  child: Center(
-                                    child: _isLoading
-                                        ? SizedBox(
-                                            height: 22,
-                                            width: 22,
-                                            child: CircularProgressIndicator(
-                                              valueColor:
-                                                  AlwaysStoppedAnimation(
-                                                Colors.white,
-                                              ),
-                                              strokeWidth: 2.5,
-                                            ),
-                                          )
-                                        : Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                'Sign Up',
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      isSmall ? 15 : 16,
-                                                  fontWeight:
-                                                      FontWeight.w800,
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.3,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Icon(
-                                                Icons.arrow_forward,
-                                                color: Colors.white,
-                                                size: isSmall ? 18 : 20,
-                                              ),
-                                            ],
-                                          ),
-                                  ),
+                                  if (isSelected)
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: AppTheme.saffron,
+                                      size: isSmall ? 20 : 24,
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: isSmall ? 6 : 8),
+                              Text(
+                                society.address,
+                                style: TextStyle(
+                                  fontSize: isSmall ? 12 : 13,
+                                  color: Colors.grey.shade600,
                                 ),
                               ),
-                            ),
+                              SizedBox(height: isSmall ? 4 : 6),
+                              Text(
+                                society.city,
+                                style: TextStyle(
+                                  fontSize: isSmall ? 12 : 13,
+                                  color: Colors.grey.shade500,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                SizedBox(height: isSmall ? 24 : 32),
+                Text(
+                  'Your Details',
+                  style: TextStyle(
+                    fontSize: isSmall ? 16 : 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                SizedBox(height: isSmall ? 12 : 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Full Name *',
+                      style: TextStyle(
+                        fontSize: isSmall ? 12 : 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 6 : 8),
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter your full name',
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: AppTheme.saffron,
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: isSmall ? 12 : 14,
+                          horizontal: 14,
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: isSmall ? 14 : 15,
+                        color: Colors.black87,
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ],
+                ),
+                SizedBox(height: isSmall ? 12 : 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Phone Number *',
+                      style: TextStyle(
+                        fontSize: isSmall ? 12 : 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: isSmall ? 6 : 8),
+                    TextField(
+                      controller: _phoneController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: isSmall ? 12 : 14,
+                          horizontal: 14,
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: isSmall ? 14 : 15,
+                        color: Colors.black87,
                       ),
                     ),
                   ],
+                ),
+                SizedBox(height: isSmall ? 24 : 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: isSmall ? 50 : 56,
+                  child: ElevatedButton(
+                    onPressed: _isFormValid() && !_isLoading
+                        ? _submitRegistration
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.saffron,
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: _isLoading
+                        ? SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation(
+                                Colors.white,
+                              ),
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Text(
+                            'Submit Registration',
+                            style: TextStyle(
+                              fontSize: isSmall ? 15 : 16,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    required bool isSmall,
-    bool readOnly = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isSmall ? 12 : 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: isSmall ? 6 : 8),
-        TextField(
-          controller: controller,
-          readOnly: readOnly,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              fontSize: isSmall ? 12 : 13,
-              color: Colors.grey.shade500,
-            ),
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: Colors.grey.shade300,
-                width: 1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppTheme.saffron,
-                width: 2,
-              ),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              vertical: isSmall ? 12 : 14,
-              horizontal: 14,
-            ),
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 12, right: 8),
-              child: Icon(
-                icon,
-                color: Colors.grey.shade600,
-                size: isSmall ? 18 : 20,
-              ),
-            ),
-            prefixIconConstraints: const BoxConstraints(),
-          ),
-          style: TextStyle(
-            fontSize: isSmall ? 14 : 15,
-            color: Colors.black87,
-          ),
-          onChanged: (_) => setState(() {}),
-        ),
-      ],
     );
   }
 }

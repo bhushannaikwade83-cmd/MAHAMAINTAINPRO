@@ -9,17 +9,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$servername = "localhost";
-$db_username = "digitrix_maha_user";
-$db_password = "maha_user@70";
-$database = "digitrix_maha_maintain_pro";
-
-$conn = new mysqli($servername, $db_username, $db_password, $database);
-
-if ($conn->connect_error) {
+try {
+    $pdo = new PDO(
+        "mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
+        "digitrix_maha_user",
+        "maha_user@70",
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+} catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);
-    exit();
+    exit;
 }
 
 try {
@@ -27,7 +27,7 @@ try {
 
     $name = trim($input['name'] ?? '');
     $phone = trim($input['phone'] ?? '');
-    $user_id = intval($input['user_id'] ?? 0);
+    $society_id = intval($input['society_id'] ?? 0);
 
     if (empty($name) || empty($phone)) {
         throw new Exception('Name and phone are required');
@@ -37,22 +37,32 @@ try {
         throw new Exception('Phone must be 10 digits');
     }
 
-    if ($user_id <= 0) {
-        throw new Exception('User ID is required');
+    if ($society_id <= 0) {
+        throw new Exception('Society ID is required');
     }
 
-    $secretary_id = 'SEC' . time();
+    // Check if phone already exists in society_customers_individual or society_secretaries
+    $stmt = $pdo->prepare("SELECT id FROM society_customers_individual WHERE phone = ?");
+    $stmt->execute([$phone]);
+    if ($stmt->fetch()) {
+        throw new Exception('Phone number already registered');
+    }
 
-    $stmt = $conn->prepare("INSERT INTO society_secretaries (secretary_id, user_id, name, phone, status, approval_status)
-                            VALUES (?, ?, ?, ?, 'not_active', 'pending')");
-    $stmt->bind_param("siss", $secretary_id, $user_id, $name, $phone);
-    $stmt->execute();
+    $stmt = $pdo->prepare("SELECT id FROM society_secretaries WHERE phone = ?");
+    $stmt->execute([$phone]);
+    if ($stmt->fetch()) {
+        throw new Exception('Phone number already has a pending registration');
+    }
+
+    // Insert into society_secretaries
+    $stmt = $pdo->prepare("INSERT INTO society_secretaries (society_id, name, phone, status, created_at, updated_at)
+                           VALUES (?, ?, ?, 'pending', NOW(), NOW())");
+    $stmt->execute([$society_id, $name, $phone]);
 
     http_response_code(201);
     echo json_encode([
         'success' => true,
         'message' => 'Registration submitted. Awaiting admin approval.',
-        'secretary_id' => $secretary_id,
         'status' => 'pending'
     ]);
 
@@ -61,6 +71,4 @@ try {
     error_log("Registration error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-
-$conn->close();
 ?>

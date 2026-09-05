@@ -154,32 +154,18 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
           ),
         );
 
-        // Check if user already exists
-        final userExists = await _checkUserExists(widget.phoneNumber);
+        // Save phone and go to dashboard
+        await _saveLoginSession(widget.phoneNumber);
 
-        if (userExists) {
-          // Existing user - save session and go to dashboard
-          await _saveLoginSession(widget.phoneNumber);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Welcome back!'),
-              backgroundColor: Colors.blue,
-            ),
-          );
-          Future.delayed(const Duration(milliseconds: 500), () {
-            context.go('/dashboard');
-          });
-        } else {
-          // New user - go to signup
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => IndividualSignUpScreen(
-                phoneNumber: widget.phoneNumber,
-              ),
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Welcome!'),
+            backgroundColor: Colors.blue,
+          ),
+        );
+        Future.delayed(const Duration(milliseconds: 500), () {
+          context.go('/dashboard');
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -203,7 +189,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
     }
   }
 
-  Future<Map<String, dynamic>> _sendOtpApi(String phoneNumber) async {
+Future<Map<String, dynamic>> _sendOtpApi(String phoneNumber) async {
     try {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/send-otp.php');
       final response = await http.post(
@@ -222,28 +208,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
     }
   }
 
-  Future<bool> _checkUserExists(String phoneNumber) async {
-    try {
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-user.php');
-
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'phone_number': phoneNumber}),
-      ).timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['exists'] == true;
-      }
-      return false;
-    } catch (e) {
-      debugPrint('Error checking user: $e');
-      return false;
-    }
-  }
-
-  Future<void> _saveLoginSession(String phoneNumber) async {
+Future<void> _saveLoginSession(String phoneNumber) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);

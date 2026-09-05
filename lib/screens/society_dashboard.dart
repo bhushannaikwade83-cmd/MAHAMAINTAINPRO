@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'add_complaint_screen.dart';
@@ -17,8 +18,13 @@ import 'category_photos_screen.dart';
 /// Displays the Society Dashboard with Dashboard, Photos, and Notices tabs
 class SocietyDashboardScreen extends StatefulWidget {
   final bool isCommittee;
+  final VoidCallback? onRefresh;
 
-  const SocietyDashboardScreen({this.isCommittee = false, Key? key}) : super(key: key);
+  const SocietyDashboardScreen({
+    this.isCommittee = false,
+    this.onRefresh,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<SocietyDashboardScreen> createState() => _SocietyDashboardScreenState();
@@ -28,9 +34,16 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
   int _selectedTab = 0;
   DateTime? _lastRefreshTime;
 
+  // Member info from database
+  String? _memberName;
+  String? _societyName;
+  String? _designation;
+  int? _userId;
+  int? _societyId;
+  bool _loadingMemberInfo = true;
+
   late final List<String> tabs;
 
-  @override
   @override
   void initState() {
     super.initState();
@@ -39,6 +52,82 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
     tabs = widget.isCommittee
       ? ['Dashboard', 'Photos', 'Notices', 'Committee']
       : ['Dashboard', 'Photos', 'Notices'];
+
+    _fetchMemberInfo();
+  }
+
+  Future<void> _fetchMemberInfo() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+
+      if (userId == null || userId <= 0) {
+        print('⚠️ No userId found');
+        setState(() => _loadingMemberInfo = false);
+        return;
+      }
+
+      _userId = userId;
+
+      // Fetch member details
+      final response = await http.get(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-society-member.php?user_id=$userId'),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['exists'] == true) {
+          final member = data['member'];
+          setState(() {
+            _memberName = member['secretary_name'] ?? 'Member';
+            _societyId = member['society_id'];
+            _designation = member['designation'] ?? 'Member';
+          });
+
+          // Fetch society name
+          if (_societyId != null) {
+            await _fetchSocietyName(_societyId!);
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching member info: $e');
+    } finally {
+      setState(() => _loadingMemberInfo = false);
+    }
+  }
+
+  Future<void> _fetchSocietyName(int societyId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/admin-get-societies.php'),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final societies = data['societies'] as List;
+
+          Map<String, dynamic>? society;
+          for (var s in societies) {
+            if (s['id'].toString() == societyId.toString()) {
+              society = s;
+              break;
+            }
+          }
+
+          if (society != null) {
+            final name = society['name'] ?? 'Unknown';
+            final city = society['city'] ?? 'Unknown';
+            setState(() {
+              _societyName = '$name • $city';
+            });
+          }
+        }
+      }
+    } catch (e) {
+      // Silent fail - will show "Loading..." if error
+    }
   }
 
   @override
@@ -379,22 +468,36 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back icon - only shown when this screen was pushed on
-                  // top of something (not when it's the Society tab root)
-                  if (Navigator.canPop(context)) ...[
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 24,
+                  // Back icon & Refresh button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (Navigator.canPop(context))
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        )
+                      else
+                        const SizedBox(width: 24),
+                      // Refresh button - triggers parent refresh
+                      GestureDetector(
+                        onTap: widget.onRefresh ?? _fetchMemberInfo,
+                        child: const Icon(
+                          Icons.refresh_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   // Title
                   Text(
-                    'Society Dashboard',
+                    _memberName ?? 'Society Member',
                     style: TextStyle(
                       fontSize: isSmall ? 24 : 28,
                       fontWeight: FontWeight.w900,
@@ -407,14 +510,14 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
                   const SizedBox(height: 8),
                   // Society info
                   Text(
-                    'Shri Ramdev Park CHS • Mira Road',
+                    _societyName ?? 'Loading...',
                     style: TextStyle(
                       fontSize: isSmall ? 12 : 13,
                       color: Colors.white.withOpacity(0.9),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  // ID Card
+                  // Designation Badge
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -426,9 +529,11 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'ID: MRP-2847',
-                          style: TextStyle(
+                        const Icon(Icons.badge, color: Colors.white, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          _designation ?? 'Member',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,

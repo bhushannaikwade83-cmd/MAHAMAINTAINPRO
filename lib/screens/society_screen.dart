@@ -27,30 +27,29 @@ class _SocietyScreenState extends State<SocietyScreen> {
   final _secretaryPhoneController = TextEditingController();
   bool _loaded = true;
   bool _submitting = false;
+  int? _societyId;
 
   @override
   void initState() {
     super.initState();
+    _initializeSociety();
+  }
+
+  Future<void> _initializeSociety() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Get default society or the one user belongs to
+    // For now, using society_id 1 as default, admin can configure this
+    _societyId = prefs.getInt('societyId') ?? 1;
   }
 
   Future<void> _submit() async {
     final name = _secretaryNameController.text.trim();
     final phone = _secretaryPhoneController.text.trim();
 
-    if (name.isEmpty || phone.isEmpty) {
+    if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in both fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (phone.length != 10 || !RegExp(r'^[0-9]{10}$').hasMatch(phone)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid 10-digit phone number'),
+          content: Text('Please enter your name'),
           backgroundColor: Colors.red,
         ),
       );
@@ -60,32 +59,13 @@ class _SocietyScreenState extends State<SocietyScreen> {
     setState(() => _submitting = true);
 
     try {
-      // Get user_id from SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final userPhone = prefs.getString('userPhone') ?? '';
-
-      // Query database to get user_id from phone
-      final userResponse = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-user-id.php?phone=$userPhone'),
-      ).timeout(const Duration(seconds: 10));
-
-      if (userResponse.statusCode != 200) {
-        throw Exception('Could not find your account. Please try again.');
-      }
-
-      final userData = jsonDecode(userResponse.body);
-      final userId = userData['user_id'];
-
-      // Save userId to SharedPreferences for future status checks
-      await prefs.setInt('userId', userId);
-
       final response = await http.post(
         Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/register-secretary.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': name,
           'phone': phone,
-          'user_id': userId,
+          'society_id': _societyId ?? 1,
         }),
       ).timeout(const Duration(seconds: 15));
 
@@ -94,135 +74,27 @@ class _SocietyScreenState extends State<SocietyScreen> {
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          print('✅ Secretary registration successful, now adding to society_customers_individual...');
-
-          // Add user to society_customers_individual with pending access
-          try {
-            final memberResponse = await http.post(
-              Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/add-society-member.php'),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                'user_id': userId,
-                'is_committee': 0,
-                'is_enabled': 0,
-              }),
-            ).timeout(const Duration(seconds: 10));
-
-            print('📊 Member add response: statusCode=${memberResponse.statusCode}, body=${memberResponse.body}');
-
-            if (memberResponse.statusCode == 409) {
-              // Duplicate registration
-              print('⚠️ User already registered (duplicate attempt)');
-              if (!mounted) return;
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) => AlertDialog(
-                  title: const Row(
-                    children: [
-                      Text('⚠️', style: TextStyle(fontSize: 22)),
-                      SizedBox(width: 8),
-                      Expanded(child: Text('Already Registered')),
-                    ],
-                  ),
-                  content: const Text(
-                    'You have already submitted a registration for this society. '
-                    'Please wait for admin approval.',
-                  ),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        if (widget.onRegistrationSuccess != null) {
-                          widget.onRegistrationSuccess!();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                      child: const Text('OK', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
-              );
-              return;
-            } else if (memberResponse.statusCode == 201 || memberResponse.statusCode == 200) {
-              final memberData = jsonDecode(memberResponse.body);
-              if (memberData['success'] == true) {
-                print('🎉 User added to society_customers_individual with pending access');
-              }
-            }
-          } catch (e) {
-            print('⚠️ Warning: Could not add to society_customers_individual: $e');
-            // Don't fail registration if member table add fails
-          }
-
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('secretary_name', name);
-          await prefs.setString('secretary_phone', phone);
-          await prefs.setString('society_registration_status', 'pending');
-
-          if (!mounted) return;
-          // Show success and wait for auto-refresh
-          if (!mounted) return;
-
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Row(
-                children: [
-                  Text('✅', style: TextStyle(fontSize: 22)),
-                  SizedBox(width: 8),
-                  Expanded(child: Text('Registration Submitted')),
-                ],
-              ),
-              content: const Text(
-                'Your details have been saved. '
-                'The approval pending screen will appear shortly.',
-              ),
-              actions: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Trigger parent refresh to show pending screen
-                    if (widget.onRegistrationSuccess != null) {
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        widget.onRegistrationSuccess!();
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  child: const Text('OK', style: TextStyle(color: Colors.white)),
-                ),
-              ],
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Registration submitted! Awaiting admin approval.'),
+              backgroundColor: Colors.green,
             ),
           );
+          if (widget.onRegistrationSuccess != null) {
+            widget.onRegistrationSuccess!();
+          }
           return;
         }
       }
 
       final errorData = jsonDecode(response.body);
       final errorMsg = errorData['message'] ?? 'Failed to submit registration';
-
-      // Check for duplicate registration
-      if (errorMsg.contains('Duplicate') || errorMsg.contains('already') || errorMsg.contains('exists')) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You have already registered! Please refresh to see your status.'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 3),
-          ),
-        );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMsg),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: Colors.red,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -235,53 +107,6 @@ class _SocietyScreenState extends State<SocietyScreen> {
       if (mounted) {
         setState(() => _submitting = false);
       }
-    }
-  }
-
-  Future<void> _checkStatusAgain() async {
-    final prefs = await SharedPreferences.getInstance();
-    final phone = prefs.getString('secretary_phone');
-
-    if (phone == null) return;
-
-    try {
-      final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-secretary-status.php?phone=$phone'),
-      ).timeout(const Duration(seconds: 10));
-
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true && data['exists'] == true) {
-          if (data['status'] == 'active') {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('✅ Approval granted! Refreshing...'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            Future.delayed(const Duration(seconds: 1), () {
-              if (mounted) setState(() {});
-            });
-            return;
-          }
-        }
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Still pending. Check back later!'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error checking status: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
