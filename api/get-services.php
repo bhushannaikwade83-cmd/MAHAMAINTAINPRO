@@ -23,17 +23,32 @@ if ($conn->connect_error) {
 }
 
 try {
-    // Check if image_path column exists
-    $columnCheck = "SHOW COLUMNS FROM service_categories LIKE 'image_path'";
-    $columnResult = $conn->query($columnCheck);
-    $hasImagePath = $columnResult && $columnResult->num_rows > 0;
+    // Column layout has drifted from what this file originally assumed
+    // (e.g. drop-emoji-column.php removed `emoji` from both tables on the
+    // live DB after this query was written) - probe for each optional
+    // column instead of assuming it's there, so a schema change doesn't
+    // turn into a fatal 500 for the whole endpoint again.
+    // $table/$column here are always our own hardcoded constants below,
+    // never request input - safe to interpolate directly. (Deliberately
+    // NOT a prepared statement: many MySQL/MariaDB versions reject
+    // preparing SHOW statements, which fails $conn->prepare() silently
+    // returning false and crashes on ->bind_param() with an uncaught
+    // Error that a catch(Exception) can't see.)
+    $hasColumn = function (string $table, string $column) use ($conn): bool {
+        $escapedColumn = $conn->real_escape_string($column);
+        $result = $conn->query("SHOW COLUMNS FROM `$table` LIKE '$escapedColumn'");
+        return $result !== false && $result->num_rows > 0;
+    };
 
-    // Build query based on column availability
-    if ($hasImagePath) {
-        $query = "SELECT id, name, emoji, color, description, image_path FROM service_categories WHERE is_active = 1 ORDER BY id ASC";
-    } else {
-        $query = "SELECT id, name, emoji, color, description, NULL as image_path FROM service_categories WHERE is_active = 1 ORDER BY id ASC";
-    }
+    $categoryHasEmoji = $hasColumn('service_categories', 'emoji');
+    $categoryHasImagePath = $hasColumn('service_categories', 'image_path');
+    $serviceHasEmoji = $hasColumn('services', 'emoji');
+    $serviceHasImagePath = $hasColumn('services', 'image_path');
+
+    $categoryEmojiSelect = $categoryHasEmoji ? 'emoji' : 'NULL as emoji';
+    $categoryImageSelect = $categoryHasImagePath ? 'image_path' : 'NULL as image_path';
+    $query = "SELECT id, name, $categoryEmojiSelect, color, description, $categoryImageSelect
+              FROM service_categories WHERE is_active = 1 ORDER BY id ASC";
 
     $result = $conn->query($query);
 
@@ -41,13 +56,17 @@ try {
         throw new Exception("Error fetching categories: " . $conn->error);
     }
 
+    $serviceEmojiSelect = $serviceHasEmoji ? 'emoji' : 'NULL as emoji';
+    $serviceImageSelect = $serviceHasImagePath ? 'image_path' : 'NULL as image_path';
+
     $categories = [];
     while ($row = $result->fetch_assoc()) {
         $categoryId = $row['id'];
         error_log("📊 Category: {$row['name']} | image_path: {$row['image_path']}");
 
         // Fetch services for this category
-        $serviceQuery = "SELECT id, name, emoji, price, duration, rating, notes, image_path FROM services WHERE category_id = ? AND is_active = 1 ORDER BY id ASC";
+        $serviceQuery = "SELECT id, name, $serviceEmojiSelect, price, duration, rating, notes, $serviceImageSelect
+                          FROM services WHERE category_id = ? AND is_active = 1 ORDER BY id ASC";
         $stmt = $conn->prepare($serviceQuery);
         $stmt->bind_param("i", $categoryId);
         $stmt->execute();
@@ -76,7 +95,7 @@ try {
         'success' => true,
         'categories' => $categories,
         'total_categories' => count($categories),
-        'has_image_support' => $hasImagePath,
+        'has_image_support' => $categoryHasImagePath,
     ]);
 
 } catch (Exception $e) {

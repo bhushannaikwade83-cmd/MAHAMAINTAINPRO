@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
+import '../services/dashboard_tab_controller.dart';
 
 class OrderConfirmationScreen extends StatefulWidget {
   final String orderId;
@@ -239,7 +240,8 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () {
-                            // Navigate to bookings list
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                            DashboardTabController.switchTo(4);
                           },
                           borderRadius: BorderRadius.circular(12),
                           child: Center(

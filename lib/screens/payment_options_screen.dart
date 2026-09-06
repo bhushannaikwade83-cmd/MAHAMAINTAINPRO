@@ -51,18 +51,23 @@ class _PaymentOptionsScreenState extends State<PaymentOptionsScreen> {
     super.dispose();
   }
 
-  void _onPaymentSuccess(PaymentSuccessResponse response) {
+  void _onPaymentSuccess(PaymentSuccessResponse response) async {
+    await _saveOrderToDatabase('CARD');
+    if (!mounted) return;
     Navigator.pop(context, {
       'success': true,
       'paymentId': response.paymentId,
       'method': _selectedPayment,
+      'amount': widget.totalAmount,
     });
   }
 
   void _onPaymentError(PaymentFailureResponse response) {
-    if (mounted) {
-      setState(() => _processing = false);
-    }
+    if (!mounted) return;
+    setState(() => _processing = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Payment failed: ${response.message ?? 'Please try again'}')),
+    );
   }
 
   void _processPayment() {
@@ -77,33 +82,54 @@ class _PaymentOptionsScreenState extends State<PaymentOptionsScreen> {
     } else if (_selectedPayment == 'bhim') {
       _launchUPI('bhim');
     } else if (_selectedPayment == 'card') {
-      try {
-        print('🔴 Razorpay: Opening payment...');
-        print('💰 Amount: ${widget.totalAmount}');
-        print('📝 Order ID: ${widget.orderId}');
-
-        var options = {
-          'key': 'rzp_live_TUUuGaHfai8zhj',
-          'amount': (widget.totalAmount * 100).toInt(),
-          'name': 'MahaMaintain Pro',
-          'description': 'Home Service Booking',
-          'order_id': widget.orderId,
-          'prefill': {'contact': '', 'email': ''},
-          'theme': {'color': '#F2762B'},
-        };
-
-        print('✅ Razorpay options: $options');
-        _razorpay.open(options);
-      } catch (e) {
-        print('❌ Razorpay Error: $e');
-        setState(() => _processing = false);
-      }
+      _payWithRazorpay();
     } else if (_selectedPayment == 'cod') {
-      Navigator.pop(context, {
-        'success': true,
-        'paymentId': widget.orderId,
-        'method': 'COD',
+      _saveOrderToDatabase('COD').then((_) {
+        if (!mounted) return;
+        Navigator.pop(context, {
+          'success': true,
+          'paymentId': widget.orderId,
+          'method': 'COD',
+          'amount': widget.totalAmount,
+        });
       });
+    }
+  }
+
+  Future<void> _payWithRazorpay() async {
+    try {
+      // Razorpay checkout rejects any order_id the client makes up (like
+      // widget.orderId, which is just a local timestamp string) - it has
+      // to be a real order minted server-side via Razorpay's Orders API.
+      // That's why "card" payments were silently failing before.
+      final response = await http.post(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/create-razorpay-order.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'amount': widget.totalAmount, 'receipt': widget.orderId}),
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Could not start payment');
+      }
+
+      final options = {
+        'key': 'rzp_live_TUUuGaHfai8zhj',
+        'amount': data['amount'],
+        'currency': data['currency'] ?? 'INR',
+        'name': 'MahaMaintain Pro',
+        'description': 'Home Service Booking',
+        'order_id': data['order_id'],
+        'prefill': {'contact': '', 'email': ''},
+        'theme': {'color': '#F2762B'},
+      };
+      _razorpay.open(options);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not start payment: $e')),
+      );
     }
   }
 

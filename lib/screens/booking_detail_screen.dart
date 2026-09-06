@@ -727,7 +727,10 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
                     onTap: () {
                       final cartService = Provider.of<CartService>(context, listen: false);
                       final cartItem = CartItem(
-                        id: '${widget.serviceName}_${DateTime.now().millisecondsSinceEpoch}',
+                        // Stable id (no timestamp) so tapping this twice
+                        // merges quantity into one cart row instead of
+                        // adding a duplicate line each time.
+                        id: widget.serviceName,
                         serviceName: widget.serviceName,
                         price: widget.price,
                         description: widget.description,

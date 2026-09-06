@@ -20,12 +20,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
   void initState() {
     super.initState();
     _load();
-    // Refresh periodically so the live status (Confirmed -> Provider
-    // Assigned -> On the Way -> Arrived) actually visibly ticks forward
-    // while this screen is open.
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (mounted) setState(() {});
-    });
+    // This screen is kept alive in an IndexedStack alongside the other
+    // bottom-nav tabs, so initState only ever runs once at app start -
+    // switching to this tab later does NOT rerun it. Re-reading from
+    // storage periodically is what actually picks up a booking made after
+    // that first load, as well as ticking the live status forward
+    // (Confirmed -> Provider Assigned -> On the Way -> Arrived).
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) => _load());
   }
 
   Future<void> _load() async {

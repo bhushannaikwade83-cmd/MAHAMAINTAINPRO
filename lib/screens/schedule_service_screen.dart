@@ -4,7 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
+import '../data/service_catalog.dart';
 import '../services/cart_service.dart';
+import '../utils/constants.dart';
 import 'address_settings_screen.dart';
 import 'checkout_screen.dart';
 
@@ -71,6 +73,35 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
       debugPrint('❌ Error loading address: $e');
       setState(() => isLoadingAddress = false);
     }
+  }
+
+  /// Minutes-since-midnight for a "8:00 AM" / "12:00 PM" style slot label,
+  /// or null if it doesn't match the expected format.
+  int? _slotMinutes(String slot) {
+    final match = RegExp(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$', caseSensitive: false).firstMatch(slot.trim());
+    if (match == null) return null;
+    var hour = int.parse(match.group(1)!);
+    final minute = int.parse(match.group(2)!);
+    final period = match.group(3)!.toUpperCase();
+    if (period == 'PM' && hour != 12) hour += 12;
+    if (period == 'AM' && hour == 12) hour = 0;
+    return hour * 60 + minute;
+  }
+
+  bool get _isSelectedDateToday {
+    final now = DateTime.now();
+    return selectedDate.year == now.year && selectedDate.month == now.month && selectedDate.day == now.day;
+  }
+
+  /// A slot is only blocked when the chosen date is today AND the slot's
+  /// start time has already passed - future dates, and today's still-ahead
+  /// slots, stay selectable.
+  bool _isSlotPast(String slot) {
+    if (!_isSelectedDateToday) return false;
+    final slotMinutes = _slotMinutes(slot);
+    if (slotMinutes == null) return false;
+    final now = DateTime.now();
+    return slotMinutes < (now.hour * 60 + now.minute);
   }
 
   Future<void> _changeAddress() async {
@@ -187,7 +218,14 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
                         selectedDate.year == date.year;
 
                     return GestureDetector(
-                      onTap: () => setState(() => selectedDate = date),
+                      onTap: () => setState(() {
+                        selectedDate = date;
+                        // Dropping back to today can invalidate a slot that
+                        // was fine for a later date.
+                        if (selectedTime.isNotEmpty && _isSlotPast(selectedTime)) {
+                          selectedTime = '';
+                        }
+                      }),
                       child: Container(
                         width: 80,
                         margin: const EdgeInsets.only(right: 12),
@@ -269,18 +307,23 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
                 itemBuilder: (context, index) {
                   final time = timeSlots[index];
                   final isSelected = selectedTime == time;
+                  final isPast = _isSlotPast(time);
 
                   return GestureDetector(
-                    onTap: () => setState(() => selectedTime = time),
+                    onTap: isPast ? null : () => setState(() => selectedTime = time),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.saffron : Colors.white,
+                        color: isPast
+                            ? Colors.grey.shade100
+                            : (isSelected ? AppTheme.saffron : Colors.white),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: isSelected ? AppTheme.saffron : Colors.grey.shade200,
+                          color: isPast
+                              ? Colors.grey.shade200
+                              : (isSelected ? AppTheme.saffron : Colors.grey.shade200),
                           width: 1.5,
                         ),
-                        boxShadow: isSelected
+                        boxShadow: isSelected && !isPast
                             ? [
                                 BoxShadow(
                                   color: AppTheme.saffron.withOpacity(0.3),
@@ -296,7 +339,10 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: isSelected ? Colors.white : Colors.black87,
+                            color: isPast
+                                ? Colors.grey.shade400
+                                : (isSelected ? Colors.white : Colors.black87),
+                            decoration: isPast ? TextDecoration.lineThrough : TextDecoration.none,
                           ),
                         ),
                       ),
@@ -386,20 +432,31 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
 
               // Confirm Button
               GestureDetector(
-                onTap: selectedTime.isNotEmpty
+                onTap: (selectedTime.isNotEmpty && !_isSlotPast(selectedTime))
                     ? () {
                         // Add all selected services to cart
                         final cartService = Provider.of<CartService>(context, listen: false);
 
                         for (var service in widget.selectedServices) {
+                          final imagePath = service['image_path']?.toString();
+                          final imageUrl = (imagePath != null && imagePath.isNotEmpty)
+                              ? '${ApiConfig.imagesUrl}/$imagePath'
+                              : getServiceIcon(widget.categoryName, service['name'] ?? '');
+
                           final cartItem = CartItem(
-                            id: '${service['name']}_${DateTime.now().millisecondsSinceEpoch}',
+                            // Stable per-service id (matches the id used by
+                            // the category page's +/- stepper) so
+                            // re-confirming the same service merges its
+                            // quantity into the existing cart row instead of
+                            // adding a duplicate line.
+                            id: '${service['id'] ?? service['name']}',
                             serviceName: service['name'] ?? 'Service',
                             price: '₹${service['price'] ?? 0}',
                             description: service['description'] ?? '',
                             duration: service['duration'] ?? '',
                             serviceIcon: service['emoji'] ?? '🔧',
-                            quantity: 1,
+                            imageUrl: imageUrl,
+                            quantity: (service['quantity'] as int?) ?? 1,
                             selectedDate: selectedDate,
                             selectedTimeSlot: selectedTime,
                           );

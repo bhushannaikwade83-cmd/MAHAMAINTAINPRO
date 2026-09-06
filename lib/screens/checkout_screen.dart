@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../data/booking_store.dart';
 import '../services/cart_service.dart';
 import 'order_confirmation_screen.dart';
 import 'payment_options_screen.dart';
@@ -121,6 +122,32 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
     final finalAmount = result['amount'] ?? ((cartService.totalPrice + 50) - _discountAmount);
 
+    // Payment succeeded server-side, but nothing was persisting the order
+    // anywhere the app itself reads bookings from - "My Bookings" loads
+    // from this local store, not the orders table create-order.php writes
+    // to, so a completed payment never actually showed up there.
+    await createBooking(
+      categoryName: cartService.items.length == 1 ? cartService.items.first.serviceName : '${cartService.items.length} Services',
+      services: cartService.items
+          .map((item) => {
+                'name': item.serviceName,
+                'quantity': item.quantity,
+                'price': int.tryParse(item.price.replaceAll('₹', '').replaceAll(',', '')) ?? 0,
+              })
+          .toList(),
+      totalPrice: finalAmount is num ? finalAmount.round() : (cartService.totalPrice + 50 - _discountAmount).round(),
+      address: {
+        'flat': selectedAddr['building']?.toString() ?? '',
+        'building': selectedAddr['building_name']?.toString() ?? '',
+        'area': selectedAddr['area']?.toString() ?? '',
+        'landmark': selectedAddr['delivery_instructions']?.toString() ?? '',
+        'city': '',
+        'pincode': selectedAddr['pincode']?.toString() ?? '',
+        'type': selectedAddr['label']?.toString() ?? selectedAddr['address_type']?.toString() ?? 'Home',
+      },
+    );
+
+    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -354,12 +381,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         width: 46,
         height: 46,
         alignment: Alignment.center,
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: _AppColors.brandSoft,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _AppColors.line),
         ),
-        child: Text(item.serviceIcon, style: const TextStyle(fontSize: 20)),
+        child: _serviceThumbnail(item),
       ),
       const SizedBox(width: 12),
       Expanded(
@@ -389,6 +417,33 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         ),
       ),
     ]);
+  }
+
+  /// Real photo when available (network URL from the DB, or a bundled
+  /// asset), falling back to the emoji if there's no image or it fails to
+  /// load - so a service is never shown as e.g. a generic wrench icon when
+  /// its actual photo exists.
+  Widget _serviceThumbnail(CartItem item) {
+    final url = item.imageUrl;
+    if (url == null || url.isEmpty) {
+      return Text(item.serviceIcon, style: const TextStyle(fontSize: 20));
+    }
+    final fallback = Text(item.serviceIcon, style: const TextStyle(fontSize: 20));
+    return url.startsWith('http')
+        ? Image.network(
+            url,
+            width: 46,
+            height: 46,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => fallback,
+          )
+        : Image.asset(
+            url,
+            width: 46,
+            height: 46,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => fallback,
+          );
   }
 
   Widget _couponCard(double cartTotal) {

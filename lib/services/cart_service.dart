@@ -7,6 +7,9 @@ class CartItem {
   final String description;
   final String duration;
   final String serviceIcon;
+  // Real photo for this service/category - a network URL (from the DB's
+  // image_path) or a local asset path. Null falls back to serviceIcon.
+  final String? imageUrl;
   int quantity;
   DateTime? selectedDate;
   String? selectedTimeSlot;
@@ -19,6 +22,7 @@ class CartItem {
     required this.description,
     required this.duration,
     required this.serviceIcon,
+    this.imageUrl,
     this.quantity = 1,
     this.selectedDate,
     this.selectedTimeSlot,

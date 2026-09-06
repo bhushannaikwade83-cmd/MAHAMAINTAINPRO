@@ -376,13 +376,18 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   GestureDetector(
                     onTap: () {
                     setState(() => service['quantity']++);
+                    final imagePath = service['image_path']?.toString();
+                    final imageUrl = (imagePath != null && imagePath.isNotEmpty)
+                        ? '${ApiConfig.imagesUrl}/$imagePath'
+                        : getServiceIcon(widget.categoryName, service['name'] ?? '');
                     CartService().addItem(CartItem(
-                      id: '${service['id']}',
+                      id: '${service['id'] ?? service['name']}',
                       serviceName: service['name'] ?? 'Service',
                       price: '₹${service['price'] ?? 0}',
                       description: service['duration'] ?? '',
                       duration: '30 min',
-                      serviceIcon: 'assets/images/logo.png',
+                      serviceIcon: service['emoji'] ?? '🔧',
+                      imageUrl: imageUrl,
                       quantity: 1,
                     ));
                   },
