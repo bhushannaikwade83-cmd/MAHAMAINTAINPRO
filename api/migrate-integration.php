@@ -24,9 +24,9 @@ try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS service_requests (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            customer_id INT NOT NULL,
-            service_id INT NOT NULL,
-            service_category_id INT NOT NULL,
+            customer_id INT,
+            service_id INT,
+            service_category_id INT,
             pincode VARCHAR(10) NOT NULL,
             location_address TEXT NOT NULL,
             latitude DECIMAL(10, 8),
@@ -61,10 +61,7 @@ try {
             INDEX idx_category (service_category_id),
             INDEX idx_booking_type (booking_type),
             INDEX idx_created (created_at),
-            INDEX idx_scheduled_date (scheduled_date),
-            FOREIGN KEY (customer_id) REFERENCES individuals(id) ON DELETE CASCADE,
-            FOREIGN KEY (service_category_id) REFERENCES service_categories(id) ON DELETE RESTRICT,
-            FOREIGN KEY (assigned_vendor_id) REFERENCES users(id) ON DELETE SET NULL
+            INDEX idx_scheduled_date (scheduled_date)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
     $results['service_requests'] = '✅ CREATED';
@@ -74,7 +71,7 @@ try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS service_time_slots (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            service_category_id INT NOT NULL,
+            service_category_id INT,
             availability_date DATE NOT NULL,
             slot_start_time TIME NOT NULL,
             slot_end_time TIME NOT NULL,
@@ -89,8 +86,7 @@ try {
             INDEX idx_category (service_category_id),
             INDEX idx_date (availability_date),
             INDEX idx_available (is_available),
-            UNIQUE KEY unique_slot (service_category_id, availability_date, slot_start_time),
-            FOREIGN KEY (service_category_id) REFERENCES service_categories(id) ON DELETE CASCADE
+            UNIQUE KEY unique_slot (service_category_id, availability_date, slot_start_time)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
     $results['service_time_slots'] = '✅ CREATED';
@@ -100,8 +96,8 @@ try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS vendor_live_locations (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            request_id INT NOT NULL,
-            vendor_id INT NOT NULL,
+            request_id INT,
+            vendor_id INT,
             latitude DECIMAL(10, 8) NOT NULL,
             longitude DECIMAL(11, 8) NOT NULL,
             speed DECIMAL(5, 2),
@@ -113,9 +109,7 @@ try {
             INDEX idx_request (request_id),
             INDEX idx_vendor (vendor_id),
             INDEX idx_created (created_at),
-            INDEX idx_request_created (request_id, created_at DESC),
-            FOREIGN KEY (request_id) REFERENCES service_requests(id) ON DELETE CASCADE,
-            FOREIGN KEY (vendor_id) REFERENCES users(id) ON DELETE CASCADE
+            INDEX idx_request_created (request_id, created_at DESC)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
     $results['vendor_live_locations'] = '✅ CREATED';
@@ -125,8 +119,8 @@ try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS vendor_service_categories (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            vendor_id INT NOT NULL,
-            service_category_id INT NOT NULL,
+            vendor_id INT,
+            service_category_id INT,
             is_active TINYINT DEFAULT 1,
             base_price DECIMAL(10, 2),
             average_duration VARCHAR(50),
@@ -137,9 +131,7 @@ try {
             INDEX idx_vendor (vendor_id),
             INDEX idx_category (service_category_id),
             INDEX idx_active (is_active),
-            UNIQUE KEY unique_vendor_category (vendor_id, service_category_id),
-            FOREIGN KEY (vendor_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (service_category_id) REFERENCES service_categories(id) ON DELETE CASCADE
+            UNIQUE KEY unique_vendor_category (vendor_id, service_category_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
     $results['vendor_service_categories'] = '✅ CREATED';
