@@ -1,292 +1,496 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import '../data/booking_store.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
+import '../models/service_request_model.dart';
 
-/// Shows the assigned provider + live status for a booking. If no specific
-/// booking is passed (e.g. opened from the home screen's location button),
-/// it shows the most recently placed booking instead.
+class _AppColors {
+  static const brand = Color(0xFFFF9A4D);
+  static const brandDeep = Color(0xFFF2762B);
+  static const brandSoft = Color(0xFFFFF1E4);
+  static const canvas = Color(0xFFFFF9F4);
+  static const card = Color(0xFFFFFFFF);
+  static const line = Color(0xFFF0DFD0);
+  static const ink = Color(0xFF2B1B10);
+  static const inkSoft = Color(0xFF8A7361);
+  static const success = Color(0xFF10B981);
+  static const warning = Color(0xFFF59E0B);
+}
+
 class LiveTrackingScreen extends StatefulWidget {
+  final int requestId;
+  final BookingType bookingType;
+  final String serviceName;
   final Map<String, dynamic>? booking;
 
-  const LiveTrackingScreen({this.booking, Key? key}) : super(key: key);
+  const LiveTrackingScreen({
+    this.requestId = 0,
+    this.bookingType = BookingType.instant,
+    this.serviceName = 'Service',
+    this.booking,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<LiveTrackingScreen> createState() => _LiveTrackingScreenState();
 }
 
 class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
-  Map<String, dynamic>? _booking;
-  bool _loaded = false;
-  Timer? _refreshTimer;
+  late Timer _locationTimer;
+  late Timer _statusTimer;
+
+  ServiceRequest? _request;
+  Map<String, dynamic>? _liveLocation;
+  bool _loading = true;
+  String _statusMessage = 'Finding vendors...';
+  int _etaMinutes = 0;
+  double _distanceKm = 0;
 
   @override
   void initState() {
     super.initState();
-    if (widget.booking != null) {
-      _booking = widget.booking;
-      _loaded = true;
-    } else {
-      _loadLatest();
-    }
-    // Live status is time-based, so tick the UI forward while this screen
-    // is open (Confirmed -> Provider Assigned -> On the Way -> Arrived).
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (mounted) setState(() {});
-    });
+    _fetchRequest();
+    _locationTimer = Timer.periodic(const Duration(seconds: 5), (_) => _fetchLiveLocation());
+    _statusTimer = Timer.periodic(const Duration(seconds: 10), (_) => _fetchRequestStatus());
   }
 
-  Future<void> _loadLatest() async {
-    final latest = await loadLatestBooking();
-    if (!mounted) return;
-    setState(() {
-      _booking = latest;
-      _loaded = true;
-    });
+  Future<void> _fetchRequest() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/vendor-get-requests.php?request_id=${widget.requestId}'),
+      ).timeout(const Duration(seconds: 10));
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['requests'] != null && data['requests'].isNotEmpty) {
+          setState(() {
+            _request = ServiceRequest.fromJson(data['requests'][0]);
+            _loading = false;
+            _updateStatusMessage();
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _fetchLiveLocation() async {
+    if (_request?.assignedVendorId == null) return;
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/customer-get-live-location.php?request_id=${widget.requestId}'),
+      ).timeout(const Duration(seconds: 10));
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['has_location'] == true) {
+          setState(() {
+            _liveLocation = data['vendor_location'];
+            _etaMinutes = data['eta_minutes'] ?? 0;
+            _distanceKm = data['distance_km'] ?? 0;
+          });
+        }
+      }
+    } catch (e) {
+      // Silent fail for polling
+    }
+  }
+
+  Future<void> _fetchRequestStatus() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/vendor-get-requests.php?request_id=${widget.requestId}'),
+      ).timeout(const Duration(seconds: 10));
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['requests'] != null && data['requests'].isNotEmpty) {
+          setState(() {
+            _request = ServiceRequest.fromJson(data['requests'][0]);
+            _updateStatusMessage();
+          });
+        }
+      }
+    } catch (e) {
+      // Silent fail for polling
+    }
+  }
+
+  void _updateStatusMessage() {
+    switch (_request?.status) {
+      case RequestStatus.pending:
+        _statusMessage = 'Finding nearby vendors...';
+        break;
+      case RequestStatus.assigned:
+        _statusMessage = 'Vendor assigned - heading to you';
+        break;
+      case RequestStatus.enRoute:
+        _statusMessage = 'Vendor on the way';
+        break;
+      case RequestStatus.arrived:
+        _statusMessage = 'Vendor arrived';
+        break;
+      case RequestStatus.inProgress:
+        _statusMessage = 'Service in progress';
+        break;
+      case RequestStatus.completed:
+        _statusMessage = 'Service completed';
+        break;
+      default:
+        _statusMessage = 'Processing your request...';
+    }
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
+    _locationTimer.cancel();
+    _statusTimer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_loaded) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (_booking == null) {
+    if (_loading) {
       return Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF1B9B8E),
-          title: const Text('Live Tracking'),
-        ),
+        backgroundColor: _AppColors.canvas,
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.location_off_outlined, size: 48, color: Colors.grey.shade400),
-                const SizedBox(height: 16),
-                Text('No active bookings to track yet', style: TextStyle(color: Colors.grey.shade600)),
-              ],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              const Text('Finding vendors nearby...'),
+            ],
           ),
         ),
       );
     }
 
-    final booking = _booking!;
-    final bookedAt = DateTime.tryParse(booking['timestamp'] ?? '') ?? DateTime.now();
-    final statusInfo = getBookingStatus(bookedAt);
-    final providerName = booking['providerName'] ?? 'Provider';
-    final providerEmoji = booking['providerEmoji'] ?? '🧑‍🔧';
-    final providerRating = booking['providerRating'] ?? '4.8';
-    final address = booking['address'] as Map<String, dynamic>? ?? {};
-    final addressLine = [address['flat'], address['building'], address['area']]
-        .where((e) => e != null && e.toString().isNotEmpty)
-        .join(', ');
+    if (_request == null) {
+      return Scaffold(
+        backgroundColor: _AppColors.canvas,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline_rounded, size: 48, color: _AppColors.line),
+              const SizedBox(height: 16),
+              const Text('Request not found'),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Teal Header
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(color: Color(0xFF1B9B8E)),
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 12,
-                left: 16,
-                right: 16,
-                bottom: 24,
+      backgroundColor: _AppColors.canvas,
+      appBar: AppBar(
+        backgroundColor: _AppColors.canvas,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leadingWidth: 62,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              decoration: BoxDecoration(
+                color: _AppColors.card,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: _AppColors.line),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Live Tracking',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 40),
-                    child: Text(
-                      booking['categoryName'] ?? 'Service',
-                      style: const TextStyle(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
+              child: const Icon(Icons.arrow_back_rounded, size: 18, color: _AppColors.ink),
             ),
-
-            // Service Provider Card
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F5F3),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF1B9B8E), width: 2),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF1B9B8E), width: 2),
-                      ),
-                      child: Text(providerEmoji, style: const TextStyle(fontSize: 32)),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      providerName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '⭐ $providerRating',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
-                    ),
-                    if (addressLine.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        '📍 $addressLine',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                      child: Text(
-                        statusInfo.label,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: statusInfo.color),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Booking Progress
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Booking Progress',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildProgressItem(
-                    number: '1',
-                    title: 'Booking Confirmed',
-                    subtitle: _formatTime(bookedAt),
-                    isCompleted: statusInfo.step >= 1,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildProgressItem(
-                    number: '2',
-                    title: 'Provider Assigned',
-                    subtitle: '$providerName • ⭐ $providerRating',
-                    isCompleted: statusInfo.step >= 2,
-                    isInProgress: statusInfo.step == 2,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildProgressItem(
-                    number: '3',
-                    title: 'On the Way',
-                    subtitle: statusInfo.step >= 3 ? 'Heading to your address' : 'Waiting',
-                    isCompleted: statusInfo.step >= 3,
-                    isInProgress: statusInfo.step == 3,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildProgressItem(
-                    number: '4',
-                    title: 'Arrived / Service in Progress',
-                    subtitle: statusInfo.step >= 4 ? 'Provider has arrived' : 'Waiting for completion',
-                    isCompleted: statusInfo.step >= 4,
-                    isInProgress: statusInfo.step == 4,
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
+        title: const Text('Live Tracking',
+            style: TextStyle(
+                color: _AppColors.ink,
+                fontSize: 19,
+                fontWeight: FontWeight.w800)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _statusCard(),
+          const SizedBox(height: 14),
+          if (_request!.assignedVendorId != null) ...[
+            _vendorCard(),
+            const SizedBox(height: 14),
+            if (_liveLocation != null) _trackingCard(),
+          ],
+          const SizedBox(height: 14),
+          _detailsCard(),
+        ],
       ),
     );
   }
 
-  String _formatTime(DateTime dt) {
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    return 'Today • $h:$m';
-  }
+  Widget _statusCard() {
+    final statusColor = _getStatusColor();
+    final statusIcon = _getStatusIcon();
 
-  static Widget _buildProgressItem({
-    required String number,
-    required String title,
-    required String subtitle,
-    required bool isCompleted,
-    bool isInProgress = false,
-  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: statusColor),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isCompleted ? const Color(0xFF1B9B8E) : Colors.grey.shade300,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: isCompleted
-                  ? const Text('✓', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))
-                  : Text(number, style: TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: statusColor,
+                ),
+                child: Icon(statusIcon, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Status',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor)),
+                    Text(_statusMessage,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: _AppColors.ink)),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
-                const SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-              ],
+          if (_request!.status == RequestStatus.inProgress ||
+              _request!.status == RequestStatus.completed)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: LinearProgressIndicator(
+                value: _request!.status == RequestStatus.completed ? 1.0 : 0.75,
+                backgroundColor: _AppColors.line,
+                valueColor: AlwaysStoppedAnimation(statusColor),
+                minHeight: 4,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _vendorCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Vendor Details',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _AppColors.inkSoft)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _AppColors.brandSoft,
+                ),
+                child: const Icon(Icons.person_rounded, color: _AppColors.brand),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_request!.vendorName ?? 'Vendor',
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: _AppColors.ink)),
+                    Text(_request!.vendorPhone ?? '',
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: _AppColors.inkSoft)),
+                  ],
+                ),
+              ),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _AppColors.brandSoft,
+                ),
+                child: const Icon(Icons.call_rounded, color: _AppColors.brand, size: 18),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Widget _trackingCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Distance & ETA',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _AppColors.inkSoft)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Text('${_distanceKm.toStringAsFixed(1)} km',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: _AppColors.ink)),
+                    const Text('Distance',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: _AppColors.inkSoft)),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 40, color: _AppColors.line),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text('$_etaMinutes min',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: _AppColors.ink)),
+                    const Text('ETA',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: _AppColors.inkSoft)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailsCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Booking Details',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _AppColors.inkSoft)),
+          const SizedBox(height: 12),
+          _detailRow('Service', widget.serviceName),
+          _detailRow('Booking Type', widget.bookingType == BookingType.instant ? 'Instant' : 'Slot'),
+          _detailRow('Request ID', 'REQ#${widget.requestId}'),
+          if (_request!.scheduledDate != null)
+            _detailRow('Scheduled', _request!.scheduledDate.toString().split(' ')[0]),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: _AppColors.inkSoft)),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: _AppColors.ink)),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor() {
+    switch (_request!.status) {
+      case RequestStatus.pending:
+        return _AppColors.warning;
+      case RequestStatus.assigned:
+      case RequestStatus.enRoute:
+        return _AppColors.brand;
+      case RequestStatus.arrived:
+      case RequestStatus.inProgress:
+        return _AppColors.success;
+      case RequestStatus.completed:
+        return _AppColors.success;
+      default:
+        return _AppColors.inkSoft;
+    }
+  }
+
+  IconData _getStatusIcon() {
+    switch (_request!.status) {
+      case RequestStatus.pending:
+        return Icons.hourglass_top_rounded;
+      case RequestStatus.assigned:
+        return Icons.check_circle_rounded;
+      case RequestStatus.enRoute:
+        return Icons.directions_car_rounded;
+      case RequestStatus.arrived:
+        return Icons.location_on_rounded;
+      case RequestStatus.inProgress:
+        return Icons.construction_rounded;
+      case RequestStatus.completed:
+        return Icons.task_alt_rounded;
+      default:
+        return Icons.info_rounded;
+    }
   }
 }
