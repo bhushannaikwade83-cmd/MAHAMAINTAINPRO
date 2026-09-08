@@ -395,6 +395,8 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
                           final cartItem = CartItem(
                             id: '${service['name']}_${DateTime.now().millisecondsSinceEpoch}',
                             serviceName: service['name'] ?? 'Service',
+                            serviceId: '${service['id'] ?? 1}',
+                            categoryId: '${service['category_id'] ?? 1}',
                             price: '₹${service['price'] ?? 0}',
                             description: service['description'] ?? '',
                             duration: service['duration'] ?? '',

@@ -729,6 +729,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen>
                       final cartItem = CartItem(
                         id: '${widget.serviceName}_${DateTime.now().millisecondsSinceEpoch}',
                         serviceName: widget.serviceName,
+                        serviceId: widget.id ?? '1',
+                        categoryId: '1',
                         price: widget.price,
                         description: widget.description,
                         duration: widget.duration,

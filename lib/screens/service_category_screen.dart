@@ -379,6 +379,8 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     CartService().addItem(CartItem(
                       id: '${service['id']}',
                       serviceName: service['name'] ?? 'Service',
+                      serviceId: '${service['id']}',
+                      categoryId: '${service['category_id'] ?? 1}',
                       price: '₹${service['price'] ?? 0}',
                       description: service['duration'] ?? '',
                       duration: '30 min',
