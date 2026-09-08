@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 class CartItem {
   final String id;
   final String serviceName;
+  final String serviceId;
+  final String categoryId;
   final String price;
   final String description;
   final String duration;
@@ -15,6 +17,8 @@ class CartItem {
   CartItem({
     required this.id,
     required this.serviceName,
+    required this.serviceId,
+    required this.categoryId,
     required this.price,
     required this.description,
     required this.duration,
@@ -51,6 +55,14 @@ class CartService with ChangeNotifier {
     return _items.fold(0, (sum, item) => sum + item.totalPrice);
   }
 
+  String? get firstServiceCategory {
+    return _items.isNotEmpty ? _items.first.categoryId : null;
+  }
+
+  bool hasDifferentCategory(String categoryId) {
+    return _items.isNotEmpty && _items.first.categoryId != categoryId;
+  }
+
   void addItem(CartItem item) {
     final existingIndex = _items.indexWhere((i) => i.id == item.id);
 
@@ -59,6 +71,12 @@ class CartService with ChangeNotifier {
     } else {
       _items.add(item);
     }
+    notifyListeners();
+  }
+
+  void replaceCart(CartItem item) {
+    _items.clear();
+    _items.add(item);
     notifyListeners();
   }
 
