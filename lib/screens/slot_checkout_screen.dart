@@ -97,7 +97,7 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
     try {
       final response = await http.get(
         Uri.parse(
-            'https://digitrixmedia.com/mahamaintainpro/api/vendor/get-service-time-slots.php?category_id=${widget.serviceCategoryId}&date=${_selectedDate!.toIso8601String().split('T')[0]}'),
+            'https://digitrixmedia.com/mahamaintainpro/api/get-service-time-slots.php?category_id=${widget.serviceCategoryId}&date=${_selectedDate!.toIso8601String().split('T')[0]}'),
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
@@ -155,7 +155,7 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
       );
 
       final response = await http.post(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/create-slot-request.php'),
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/create-slot-request.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'customer_id': customerId,

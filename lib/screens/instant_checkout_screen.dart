@@ -140,7 +140,7 @@ class _InstantCheckoutScreenState extends State<InstantCheckoutScreen> with Sing
       );
 
       final response = await http.post(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/create-instant-request.php'),
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/create-instant-request.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'customer_id': customerId,

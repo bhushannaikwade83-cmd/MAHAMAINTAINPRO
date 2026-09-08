@@ -57,7 +57,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   Future<void> _fetchRequest() async {
     try {
       final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/vendor-get-requests.php?request_id=${widget.requestId}'),
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor-get-requests.php?request_id=${widget.requestId}'),
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
@@ -82,7 +82,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/customer-get-live-location.php?request_id=${widget.requestId}'),
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/customer-get-live-location.php?request_id=${widget.requestId}'),
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
@@ -105,7 +105,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   Future<void> _fetchRequestStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/vendor-get-requests.php?request_id=${widget.requestId}'),
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor-get-requests.php?request_id=${widget.requestId}'),
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
