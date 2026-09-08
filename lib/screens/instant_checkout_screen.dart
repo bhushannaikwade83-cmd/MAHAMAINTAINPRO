@@ -92,7 +92,27 @@ class _InstantCheckoutScreenState extends State<InstantCheckoutScreen> with Sing
     }
   }
 
-  void _handlePaymentSuccess() async {
+  void _startPayment() {
+    final cartService = Provider.of<CartService>(context, listen: false);
+    final total = (cartService.totalPrice + 50).toStringAsFixed(0);
+    final orderId = 'ORD${DateTime.now().millisecondsSinceEpoch}';
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentOptionsScreen(
+          totalAmount: double.parse(total),
+          orderId: orderId,
+        ),
+      ),
+    ).then((result) async {
+      if (result != null && result['success'] == true) {
+        await _createInstantRequest(result);
+      }
+    });
+  }
+
+  Future<void> _createInstantRequest(Map<String, dynamic> paymentResult) async {
     final prefs = await SharedPreferences.getInstance();
     final customerId = prefs.getInt('userId');
     final cartService = Provider.of<CartService>(context, listen: false);
@@ -114,6 +134,11 @@ class _InstantCheckoutScreenState extends State<InstantCheckoutScreen> with Sing
     setState(() => _paying = true);
 
     try {
+      final selectedAddr = _addresses.firstWhere(
+        (a) => a['id'].toString() == _selectedAddressId,
+        orElse: () => <String, dynamic>{},
+      );
+
       final response = await http.post(
         Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/create-instant-request.php'),
         headers: {'Content-Type': 'application/json'},
@@ -122,7 +147,8 @@ class _InstantCheckoutScreenState extends State<InstantCheckoutScreen> with Sing
           'service_id': widget.serviceId,
           'service_category_id': 1,
           'pincode': _selectedPincode,
-          'location_address': '${_addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => {})['building_name'] ?? ''}, ${_addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => {})['area'] ?? ''}',
+          'location_address':
+              '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['area'] ?? ''}',
           'latitude': _selectedLat,
           'longitude': _selectedLng,
           'description': _descriptionCtrl.text,
@@ -361,7 +387,7 @@ class _InstantCheckoutScreenState extends State<InstantCheckoutScreen> with Sing
                   );
                   return;
                 }
-                _handlePaymentSuccess();
+                _startPayment();
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: _AppColors.brandDeep,

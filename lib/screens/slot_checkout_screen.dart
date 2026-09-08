@@ -149,6 +149,11 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
     setState(() => _confirming = true);
 
     try {
+      final selectedAddr = _addresses.firstWhere(
+        (a) => a['id'].toString() == _selectedAddressId,
+        orElse: () => <String, dynamic>{},
+      );
+
       final response = await http.post(
         Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/create-slot-request.php'),
         headers: {'Content-Type': 'application/json'},
@@ -156,8 +161,8 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
           'customer_id': customerId,
           'service_id': widget.serviceId,
           'time_slot_id': _selectedSlot!.id,
-          'pincode': _addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => {})['pincode'] ?? '',
-          'location_address': '${_addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => {})['building_name'] ?? ''}, ${_addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => {})['area'] ?? ''}',
+          'pincode': selectedAddr['pincode'] ?? '',
+          'location_address': '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['area'] ?? ''}',
           'description': _descriptionCtrl.text,
         }),
       ).timeout(const Duration(seconds: 15));
@@ -178,7 +183,8 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
                   orderId: 'SLOT${data['request_id']}',
                   totalAmount: data['price'] ?? _selectedSlot!.basePrice,
                   addressLabel: 'Scheduled Service',
-                  addressText: '${_selectedDate?.toLocal().toString().split(' ')[0]} at ${_selectedSlot!.label}',
+                  addressText:
+                      '${_selectedDate?.toLocal().toString().split(' ')[0]} at ${_selectedSlot!.label}',
                   itemCount: 1,
                 ),
               ),
