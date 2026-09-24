@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Server-side mirror of lib/features/role_access/services/permission_service.dart.
+// Client-side permission checks are for UX only — these rules are the real
+// enforcement layer. Keep the two in sync whenever a role's access changes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function currentRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function hasAnyRole(roles) {
+      return isSignedIn() && currentRole() in roles;
+    }
+
+    function isAdminTier() {
+      return hasAnyRole(['superAdmin', 'admin']);
+    }
+
+    function isSalesTier() {
+      return hasAnyRole(['superAdmin', 'admin', 'salesManager', 'salesExecutive']);
+    }
+
+    // users/{uid}
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdminTier());
+      allow create: if isSignedIn() && request.auth.uid == uid; // self-registration
+      allow update: if isSignedIn() && (request.auth.uid == uid || isAdminTier());
+      allow delete: if isAdminTier();
+    }
+
+    // leads/{leadId}
+    match /leads/{leadId} {
+      allow read: if isSalesTier();
+      allow create: if isSalesTier();
+      allow update: if isSalesTier();
+      allow delete: if isAdminTier();
+    }
+
+    // customers/{customerId}
+    match /customers/{customerId} {
+      allow read: if isSalesTier() || hasAnyRole(['technician']);
+      allow write: if isSalesTier();
+    }
+
+    // societies/{societyId}
+    match /societies/{societyId} {
+      allow read: if isSignedIn();
+      allow write: if hasAnyRole(['superAdmin', 'admin', 'salesManager']);
+    }
+
+    // service_requests/{requestId}
+    match /service_requests/{requestId} {
+      allow read: if isSignedIn();
+      allow create: if isAdminTier() || hasAnyRole(['salesManager']);
+      allow update: if isAdminTier() || hasAnyRole(['technician']);
+      allow delete: if isAdminTier();
+    }
+
+    // activity_logs/{logId} — append-only audit trail
+    match /activity_logs/{logId} {
+      allow read: if isAdminTier();
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+  }
+}
