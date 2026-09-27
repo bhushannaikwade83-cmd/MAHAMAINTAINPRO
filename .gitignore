@@ -1,0 +1,57 @@
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.g.dart
+*.freezed.dart
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Platform build artifacts (regenerate with `flutter create .`)
+android/
+ios/
+web/
+macos/
+linux/
+windows/
+
+# Firebase — never commit real keys
+lib/firebase_options.dart
+lib/services/firebase_options.dart
+google-services.json
+GoogleService-Info.plist
+
+.DS_Store
+.jwt-secret.local
+
+# Build/cache artifacts from the admin panel sub-project
+maha-admin-panel-working-main/.output/
+maha-admin-panel-working-main/.vite/
+maha-admin-panel-working-main/.wrangler/
+maha-admin-panel-working-main/node_modules/
+
+# Unrelated stray data files (not part of this app - leftover from a
+# different exam/photo-organizing scratch project in this same folder)
+seat_numbers_data.json
+students_table.csv
+students_table.html
+admin.html
+analyze_b2_entries.py
+batch_files.csv
+download_and_rename_entries.py
+fetch_all_students.py
+fetch_selected_students.py
+fetch_students.py
+generate_batch_csv.py
+match_and_rename.py
+match_photos.py
+organize_by_batch.py
+photo_matches.csv
+rename_photos.py
+4ef573e8-d1e3-4f7a-b467-641b5e9652f9/
