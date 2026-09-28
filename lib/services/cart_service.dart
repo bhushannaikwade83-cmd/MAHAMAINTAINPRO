@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class CartItem {
   final String id;
@@ -34,10 +36,47 @@ class CartItem {
     final priceValue = double.tryParse(cleanPrice) ?? 0;
     return priceValue * quantity;
   }
+
+  // Convert CartItem to JSON for storage
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'serviceName': serviceName,
+      'serviceId': serviceId,
+      'categoryId': categoryId,
+      'price': price,
+      'description': description,
+      'duration': duration,
+      'serviceIcon': serviceIcon,
+      'quantity': quantity,
+      'selectedDate': selectedDate?.toIso8601String(),
+      'selectedTimeSlot': selectedTimeSlot,
+      'specialRequests': specialRequests,
+    };
+  }
+
+  // Create CartItem from JSON
+  factory CartItem.fromJson(Map<String, dynamic> json) {
+    return CartItem(
+      id: json['id'] ?? '',
+      serviceName: json['serviceName'] ?? '',
+      serviceId: json['serviceId'] ?? '',
+      categoryId: json['categoryId'] ?? '',
+      price: json['price'] ?? '',
+      description: json['description'] ?? '',
+      duration: json['duration'] ?? '',
+      serviceIcon: json['serviceIcon'] ?? '',
+      quantity: json['quantity'] ?? 1,
+      selectedDate: json['selectedDate'] != null ? DateTime.parse(json['selectedDate']) : null,
+      selectedTimeSlot: json['selectedTimeSlot'],
+      specialRequests: json['specialRequests'],
+    );
+  }
 }
 
 class CartService with ChangeNotifier {
   static final CartService _instance = CartService._internal();
+  static const String _cartStorageKey = 'maha_cart_items';
 
   factory CartService() {
     return _instance;
@@ -46,6 +85,7 @@ class CartService with ChangeNotifier {
   CartService._internal();
 
   final List<CartItem> _items = [];
+  bool _isInitialized = false;
 
   List<CartItem> get items => _items;
 
@@ -59,35 +99,86 @@ class CartService with ChangeNotifier {
     return _items.isNotEmpty ? _items.first.categoryId : null;
   }
 
-  bool hasDifferentCategory(String categoryId) {
-    return _items.isNotEmpty && _items.first.categoryId != categoryId;
+  bool hasDifferentService(String serviceId) {
+    return _items.isNotEmpty && _items.first.serviceId != serviceId;
   }
 
-  void addItem(CartItem item) {
-    final existingIndex = _items.indexWhere((i) => i.id == item.id);
+  // Initialize cart from persistent storage
+  Future<void> loadCart() async {
+    if (_isInitialized) return;
 
-    if (existingIndex >= 0) {
-      _items[existingIndex].quantity += item.quantity;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cartJson = prefs.getString(_cartStorageKey);
+
+      if (cartJson != null) {
+        final List<dynamic> decoded = jsonDecode(cartJson);
+        _items.clear();
+        for (var item in decoded) {
+          _items.add(CartItem.fromJson(item));
+        }
+      }
+      _isInitialized = true;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading cart: $e');
+      _isInitialized = true;
+    }
+  }
+
+  // Save cart to persistent storage
+  Future<void> _saveCart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cartJson = jsonEncode(_items.map((item) => item.toJson()).toList());
+      await prefs.setString(_cartStorageKey, cartJson);
+    } catch (e) {
+      debugPrint('Error saving cart: $e');
+    }
+  }
+
+  // Add item - ENFORCES SINGLE SERVICE ONLY
+  // If a different service is added, it replaces the entire cart
+  void addItem(CartItem item) {
+    // If cart is empty or same service, add it
+    if (_items.isEmpty || _items.first.serviceId == item.serviceId) {
+      final existingIndex = _items.indexWhere((i) => i.id == item.id);
+
+      if (existingIndex >= 0) {
+        // Same item, increase quantity
+        _items[existingIndex].quantity += item.quantity;
+      } else {
+        // New item, but same service - this shouldn't happen in single service mode
+        // But if it does, add it
+        _items.add(item);
+      }
     } else {
+      // Different service - replace entire cart
+      _items.clear();
       _items.add(item);
     }
+    _saveCart();
     notifyListeners();
   }
 
+  // Replace cart with single item (explicit single service mode)
   void replaceCart(CartItem item) {
     _items.clear();
     _items.add(item);
+    _saveCart();
     notifyListeners();
   }
 
   void removeItem(String itemId) {
     _items.removeWhere((item) => item.id == itemId);
+    _saveCart();
     notifyListeners();
   }
 
   void updateQuantity(String itemId, int quantity) {
     final item = _items.firstWhere((i) => i.id == itemId);
     item.quantity = quantity.clamp(1, 10);
+    _saveCart();
     notifyListeners();
   }
 
@@ -96,11 +187,13 @@ class CartService with ChangeNotifier {
     if (date != null) item.selectedDate = date;
     if (timeSlot != null) item.selectedTimeSlot = timeSlot;
     if (requests != null) item.specialRequests = requests;
+    _saveCart();
     notifyListeners();
   }
 
   void clearCart() {
     _items.clear();
+    _saveCart();
     notifyListeners();
   }
 }

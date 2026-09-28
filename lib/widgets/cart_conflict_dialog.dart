@@ -108,7 +108,8 @@ void handleAddToCart(
   required CartItem newItem,
   required String newServiceName,
 }) async {
-  if (cartService.hasDifferentCategory(newItem.categoryId)) {
+  // Check if cart has a different service (enforces single service per cart)
+  if (cartService.hasDifferentService(newItem.serviceId)) {
     final shouldClearAndAdd = await showCartConflictDialog(
       context,
       newServiceName: newServiceName,
@@ -126,6 +127,7 @@ void handleAddToCart(
       );
     }
   } else {
+    // Same service or cart is empty - add item (or replace if different service)
     cartService.addItem(newItem);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
