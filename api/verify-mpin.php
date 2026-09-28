@@ -12,26 +12,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Rate limiting (this is a login endpoint - protect against 4-digit PIN brute force)
 require_once 'rate-limiter.php';
 
-// JWT issuance (mirrors verify-otp.php)
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your-super-secret-jwt-key-change-in-production');
+// Issue tokens through the shared jwt-auth.php secret/signer - see
+// verify-otp.php for why a locally-hardcoded secret here breaks every
+// later authenticated request.
+require_once 'jwt-auth.php';
 
 function generateJWTTokenForMpin($phoneNumber) {
-    $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
-    $payload = json_encode([
+    return generateJWT([
         'phone_number' => $phoneNumber,
-        'iat' => time(),
-        'exp' => time() + 86400,
         'type' => 'user_auth',
-        'role' => 'resident'
-    ]);
-
-    $base64Header = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
-    $base64Payload = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
-
-    $signature = hash_hmac('sha256', "$base64Header.$base64Payload", JWT_SECRET, true);
-    $base64Signature = rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
-
-    return "$base64Header.$base64Payload.$base64Signature";
+        'role' => 'resident',
+    ], 86400);
 }
 
 try {

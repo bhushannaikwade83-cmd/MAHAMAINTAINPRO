@@ -112,7 +112,8 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Get orders error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    // TEMP DEBUG: revert to the generic message once the cause is found.
+    echo json_encode(['success' => false, 'message' => 'DEBUG: ' . $e->getMessage()]);
 }
 
 $conn->close();

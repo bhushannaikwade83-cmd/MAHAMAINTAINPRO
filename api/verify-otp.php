@@ -28,26 +28,19 @@ if ($conn->connect_error) {
 
 $conn->set_charset("utf8");
 
-// JWT Secret
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your-super-secret-jwt-key-change-in-production');
+// Issue tokens through the shared jwt-auth.php secret/signer - a token
+// signed with a different, locally-hardcoded secret here would never
+// verify against verifyJWTToken() in the endpoints that check it later
+// (create-order.php, etc.), failing every authenticated request with
+// "Invalid token signature" regardless of how many times the user logs in.
+require_once 'jwt-auth.php';
 
 function generateJWTToken($phoneNumber) {
-    $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
-    $payload = json_encode([
+    return generateJWT([
         'phone_number' => $phoneNumber,
-        'iat' => time(),
-        'exp' => time() + 86400, // 24 hours
         'type' => 'user_auth',
-        'role' => 'resident'
-    ]);
-
-    $base64Header = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
-    $base64Payload = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
-
-    $signature = hash_hmac('sha256', "$base64Header.$base64Payload", JWT_SECRET, true);
-    $base64Signature = rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
-
-    return "$base64Header.$base64Payload.$base64Signature";
+        'role' => 'resident',
+    ], 86400);
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

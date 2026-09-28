@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'auth_repository.dart';
@@ -44,10 +45,16 @@ class OrderRepository {
   }) async {
     try {
       final orderId = 'ORD${DateTime.now().millisecondsSinceEpoch}';
+      final headers = SupabaseAuthRepository.staticAuthHeaders;
+
+      debugPrint('🟠 [createOrder] token present: ${SupabaseAuthRepository.currentToken != null}');
+      debugPrint('🟠 [createOrder] token value (first 20 chars): ${SupabaseAuthRepository.currentToken?.substring(0, SupabaseAuthRepository.currentToken!.length > 20 ? 20 : SupabaseAuthRepository.currentToken!.length)}...');
+      debugPrint('🟠 [createOrder] headers being sent: $headers');
+      debugPrint('🟠 [createOrder] request body: order_id=$orderId, address_id=$addressId, total=$totalAmount');
 
       final response = await http.post(
         Uri.parse('$API_BASE_URL/create-order.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: headers,
         body: jsonEncode({
           'order_id': orderId,
           'user_id': userId,
@@ -60,6 +67,9 @@ class OrderRepository {
           if (couponCode != null) 'coupon_code': couponCode,
         }),
       ).timeout(const Duration(seconds: 10));
+
+      debugPrint('🟠 [createOrder] response status: ${response.statusCode}');
+      debugPrint('🟠 [createOrder] response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -77,10 +87,11 @@ class OrderRepository {
       } else {
         return OrderResult(
           success: false,
-          error: 'Server error: ${response.statusCode}',
+          error: 'Server error: ${response.statusCode} - ${response.body}',
         );
       }
     } catch (e) {
+      debugPrint('🔴 [createOrder] exception: $e');
       return OrderResult(
         success: false,
         error: 'Error creating order: $e',
