@@ -1,13 +1,29 @@
 <?php
-declare(strict_types=1);
-
-require __DIR__ . '/vendor_config.php';
-set_cors_headers();
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-require_once __DIR__ . '/jwt-auth.php';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once 'jwt-auth.php';
 $vendorToken = requireVendorRole();
 $vendorId = (string) $vendorToken['vendor_id'];
+
+$servername = "localhost";
+$db_username = "digitrix_maha_user";
+$db_password = "maha_user@70";
+$database = "digitrix_maha_maintain_pro";
+
+$conn = new mysqli($servername, $db_username, $db_password, $database);
+if ($conn->connect_error) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    exit();
+}
 
 try {
     $data = json_decode(file_get_contents('php://input'), true);
@@ -15,27 +31,34 @@ try {
 
     if ($pincodeId <= 0) {
         http_response_code(400);
-        json_response(['success' => false, 'message' => 'Invalid pincode ID']);
-        return;
+        echo json_encode(['success' => false, 'message' => 'Invalid pincode ID']);
+        exit();
     }
 
     // Verify ownership
-    $check = db()->prepare('SELECT vendor_id FROM vendor_pincodes WHERE id = :id');
-    $check->execute(['id' => $pincodeId]);
-    $row = $check->fetch();
-    
+    $check = $conn->prepare('SELECT vendor_id FROM vendor_pincodes WHERE id = ?');
+    $check->bind_param('i', $pincodeId);
+    $check->execute();
+    $row = $check->get_result()->fetch_assoc();
+    $check->close();
+
     if (!$row || $row['vendor_id'] !== $vendorId) {
         http_response_code(403);
-        json_response(['success' => false, 'message' => 'Not authorized']);
-        return;
+        echo json_encode(['success' => false, 'message' => 'Not authorized']);
+        exit();
     }
 
     // Delete
-    $stmt = db()->prepare('DELETE FROM vendor_pincodes WHERE id = :id');
-    $stmt->execute(['id' => $pincodeId]);
+    $stmt = $conn->prepare('DELETE FROM vendor_pincodes WHERE id = ?');
+    $stmt->bind_param('i', $pincodeId);
+    $stmt->execute();
+    $stmt->close();
 
-    json_response(['success' => true, 'message' => 'Pincode removed']);
+    http_response_code(200);
+    echo json_encode(['success' => true, 'message' => 'Pincode removed']);
 } catch (Exception $e) {
     http_response_code(500);
-    json_response(['success' => false, 'message' => 'Failed to delete pincode']);
+    echo json_encode(['success' => false, 'message' => 'Failed to delete pincode']);
 }
+
+$conn->close();

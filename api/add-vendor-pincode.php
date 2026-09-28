@@ -1,13 +1,29 @@
 <?php
-declare(strict_types=1);
-
-require __DIR__ . '/vendor_config.php';
-set_cors_headers();
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-require_once __DIR__ . '/jwt-auth.php';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once 'jwt-auth.php';
 $vendorToken = requireVendorRole();
 $vendorId = (string) $vendorToken['vendor_id'];
+
+$servername = "localhost";
+$db_username = "digitrix_maha_user";
+$db_password = "maha_user@70";
+$database = "digitrix_maha_maintain_pro";
+
+$conn = new mysqli($servername, $db_username, $db_password, $database);
+if ($conn->connect_error) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    exit();
+}
 
 try {
     $data = json_decode(file_get_contents('php://input'), true);
@@ -15,33 +31,44 @@ try {
 
     if (!preg_match('/^\d{5,6}$/', $pincode)) {
         http_response_code(400);
-        json_response(['success' => false, 'message' => 'Invalid pincode format']);
-        return;
+        echo json_encode(['success' => false, 'message' => 'Invalid pincode format']);
+        exit();
     }
 
     // Check if already exists
-    $check = db()->prepare('SELECT id FROM vendor_pincodes WHERE vendor_id = :vendor_id AND pincode = :pincode');
-    $check->execute(['vendor_id' => $vendorId, 'pincode' => $pincode]);
-    if ($check->fetch()) {
+    $check = $conn->prepare('SELECT id FROM vendor_pincodes WHERE vendor_id = ? AND pincode = ?');
+    $check->bind_param('ss', $vendorId, $pincode);
+    $check->execute();
+    if ($check->get_result()->fetch_assoc()) {
         http_response_code(400);
-        json_response(['success' => false, 'message' => 'This pincode is already registered']);
-        return;
+        echo json_encode(['success' => false, 'message' => 'This pincode is already registered']);
+        exit();
     }
+    $check->close();
 
     // Insert
-    $stmt = db()->prepare('INSERT INTO vendor_pincodes (vendor_id, pincode) VALUES (:vendor_id, :pincode)');
-    $stmt->execute(['vendor_id' => $vendorId, 'pincode' => $pincode]);
+    $stmt = $conn->prepare('INSERT INTO vendor_pincodes (vendor_id, pincode) VALUES (?, ?)');
+    $stmt->bind_param('ss', $vendorId, $pincode);
+    if (!$stmt->execute()) {
+        throw new Exception('Insert failed: ' . $stmt->error);
+    }
+    $insertId = $conn->insert_id;
+    $stmt->close();
 
-    json_response([
+    http_response_code(200);
+    echo json_encode([
         'success' => true,
         'message' => 'Pincode added successfully',
         'pincode' => [
-            'id' => db()->lastInsertId(),
+            'id' => $insertId,
             'pincode' => $pincode,
             'created_at' => date('Y-m-d H:i:s'),
         ],
     ]);
 } catch (Exception $e) {
     http_response_code(500);
-    json_response(['success' => false, 'message' => 'Failed to add pincode: ' . $e->getMessage()]);
+    error_log('Add pincode error: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Failed to add pincode']);
 }
+
+$conn->close();

@@ -1,28 +1,53 @@
 <?php
-declare(strict_types=1);
-
-require __DIR__ . '/vendor_config.php';
-set_cors_headers();
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-require_once __DIR__ . '/jwt-auth.php';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once 'jwt-auth.php';
 $vendorToken = requireVendorRole();
 $vendorId = (string) $vendorToken['vendor_id'];
 
-try {
-    $stmt = db()->prepare('SELECT id, pincode, created_at FROM vendor_pincodes WHERE vendor_id = :vendor_id ORDER BY pincode');
-    $stmt->execute(['vendor_id' => $vendorId]);
-    $pincodes = $stmt->fetchAll();
+$servername = "localhost";
+$db_username = "digitrix_maha_user";
+$db_password = "maha_user@70";
+$database = "digitrix_maha_maintain_pro";
 
-    json_response([
-        'success' => true,
-        'pincodes' => array_map(fn($row) => [
+$conn = new mysqli($servername, $db_username, $db_password, $database);
+if ($conn->connect_error) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    exit();
+}
+
+try {
+    $stmt = $conn->prepare('SELECT id, pincode, created_at FROM vendor_pincodes WHERE vendor_id = ? ORDER BY pincode');
+    $stmt->bind_param('s', $vendorId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $pincodes = [];
+    while ($row = $result->fetch_assoc()) {
+        $pincodes[] = [
             'id' => (int)$row['id'],
             'pincode' => $row['pincode'],
             'created_at' => $row['created_at'],
-        ], $pincodes),
+        ];
+    }
+    $stmt->close();
+
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'pincodes' => $pincodes,
     ]);
 } catch (Exception $e) {
     http_response_code(500);
-    json_response(['success' => false, 'message' => 'Failed to fetch pincodes']);
+    echo json_encode(['success' => false, 'message' => 'Failed to fetch pincodes']);
 }
+
+$conn->close();
