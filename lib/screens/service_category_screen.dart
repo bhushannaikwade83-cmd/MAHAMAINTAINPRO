@@ -49,10 +49,21 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     setState(() {
       _services = widget.services.map((s) {
         final serviceId = '${s['id']}';
-        final isInCart = cartService.items.any((item) => item.serviceId == serviceId);
+        final cartItem = cartService.items.firstWhere(
+          (item) => item.serviceId == serviceId,
+          orElse: () => CartItem(
+            id: '', serviceName: '', serviceId: '', categoryId: '',
+            price: '', description: '', duration: '', serviceIcon: '',
+            quantity: 0,
+          ),
+        );
+
+        final quantityInCart = cartItem.quantity;
+        final isInCart = quantityInCart > 0;
+
         return <String, dynamic>{
           ...s,
-          'quantity': isInCart ? 1 : 0,  // Mark as 1 if in cart (visual indicator)
+          'quantity': quantityInCart,  // Show actual quantity from cart
           'isInCart': isInCart,
         };
       }).toList();
