@@ -7,6 +7,7 @@ class OrderConfirmationScreen extends StatefulWidget {
   final String addressLabel;
   final String addressText;
   final int itemCount;
+  final List<String> items;
 
   const OrderConfirmationScreen({
     Key? key,
@@ -15,6 +16,7 @@ class OrderConfirmationScreen extends StatefulWidget {
     required this.addressLabel,
     required this.addressText,
     required this.itemCount,
+    this.items = const [],
   }) : super(key: key);
 
   @override
@@ -89,9 +91,43 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
                       isBold: true,
                     ),
                     const Divider(height: 16),
-                    _buildDetailRow(
-                      'Items',
-                      '${widget.itemCount} service${widget.itemCount > 1 ? 's' : ''}',
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Items',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        if (widget.items.isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: widget.items
+                                .map((item) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Text(
+                                        '• $item',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                          )
+                        else
+                          Text(
+                            '${widget.itemCount} service${widget.itemCount > 1 ? 's' : ''}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
                     ),
                     const Divider(height: 16),
                     _buildDetailRow(

@@ -266,8 +266,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           orderId: orderId,
           totalAmount: finalAmount,
           addressLabel: selectedAddr['label'] ?? 'Home',
-          addressText: '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['area'] ?? ''}, ${selectedAddr['pincode'] ?? ''}',
+          addressText: selectedAddr['full_address'] ?? '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['area'] ?? ''}, ${selectedAddr['pincode'] ?? ''}',
           itemCount: cartService.items.length,
+          items: cartService.items.map((item) => item.serviceName).toList(),
         ),
       ),
     );
