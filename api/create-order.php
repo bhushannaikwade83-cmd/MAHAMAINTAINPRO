@@ -89,6 +89,26 @@ try {
         $conn->query("ALTER TABLE orders ADD COLUMN coupon_code VARCHAR(50) NULL");
         $conn->query("ALTER TABLE orders ADD COLUMN discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0");
     }
+    $checkCol = $conn->query("SHOW COLUMNS FROM orders LIKE 'pincode'");
+    if ($checkCol->num_rows === 0) {
+        $conn->query("ALTER TABLE orders ADD COLUMN pincode VARCHAR(10) NULL AFTER address_id");
+    }
+
+    // Fetch pincode from address
+    $pincode = null;
+    if ($addressId) {
+        $addrQuery = "SELECT pincode FROM addresses WHERE id = ?";
+        $addrStmt = $conn->prepare($addrQuery);
+        if ($addrStmt) {
+            $addrStmt->bind_param("i", $addressId);
+            $addrStmt->execute();
+            $addrResult = $addrStmt->get_result();
+            if ($addrRow = $addrResult->fetch_assoc()) {
+                $pincode = $addrRow['pincode'];
+            }
+            $addrStmt->close();
+        }
+    }
 
     // total_amount here is a client-supplied estimate only, shown before
     // payment - it is NOT what the customer is actually charged. The real,
@@ -98,15 +118,15 @@ try {
     $couponCode = isset($input['coupon_code']) ? trim(strtoupper($input['coupon_code'])) : null;
 
     // Insert order
-    $query = "INSERT INTO orders (order_id, user_id, phone_number, address_id, total_amount, service_count, scheduled_at, coupon_code, payment_status, order_status)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending')";
+    $query = "INSERT INTO orders (order_id, user_id, phone_number, address_id, pincode, total_amount, service_count, scheduled_at, coupon_code, payment_status, order_status)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending')";
 
     $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $stmt->bind_param("sssidiss", $orderId, $userId, $phoneNumber, $addressId, $totalAmount, $serviceCount, $scheduledAt, $couponCode);
+    $stmt->bind_param("sssisidiss", $orderId, $userId, $phoneNumber, $addressId, $pincode, $totalAmount, $serviceCount, $scheduledAt, $couponCode);
 
     if (!$stmt->execute()) {
         throw new Exception("Execute failed: " . $stmt->error);
