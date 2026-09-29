@@ -11,6 +11,7 @@ class CartItem {
   final String description;
   final String duration;
   final String serviceIcon;
+  final String? imagePath;
   int quantity;
   DateTime? selectedDate;
   String? selectedTimeSlot;
@@ -25,6 +26,7 @@ class CartItem {
     required this.description,
     required this.duration,
     required this.serviceIcon,
+    this.imagePath,
     this.quantity = 1,
     this.selectedDate,
     this.selectedTimeSlot,
@@ -47,6 +49,7 @@ class CartItem {
       'description': description,
       'duration': duration,
       'serviceIcon': serviceIcon,
+      'imagePath': imagePath,
       'quantity': quantity,
       'selectedDate': selectedDate?.toIso8601String(),
       'selectedTimeSlot': selectedTimeSlot,
@@ -64,6 +67,7 @@ class CartItem {
       description: json['description'] ?? '',
       duration: json['duration'] ?? '',
       serviceIcon: json['serviceIcon'] ?? '',
+      imagePath: json['imagePath'],
       quantity: json['quantity'] ?? 1,
       selectedDate: json['selectedDate'] != null ? DateTime.parse(json['selectedDate']) : null,
       selectedTimeSlot: json['selectedTimeSlot'],

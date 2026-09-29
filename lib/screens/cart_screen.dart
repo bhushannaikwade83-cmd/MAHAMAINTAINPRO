@@ -431,9 +431,37 @@ class _CartScreenState extends State<CartScreen> with SingleTickerProviderStateM
                     colors: [AppTheme.saffron.withOpacity(0.15), AppTheme.saffron.withOpacity(0.05)],
                   ),
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.saffron.withOpacity(0.2)),
                 ),
-                child: Center(
-                  child: Text(item.serviceIcon, style: const TextStyle(fontSize: 28)),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: item.imagePath != null && item.imagePath!.isNotEmpty
+                      ? Image.network(
+                          item.imagePath!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Text(item.serviceIcon, style: const TextStyle(fontSize: 24)),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                    : null,
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(AppTheme.saffron.withOpacity(0.6)),
+                              ),
+                            );
+                          },
+                          cacheWidth: 112,
+                          cacheHeight: 112,
+                        )
+                      : Center(
+                          child: Text(item.serviceIcon, style: const TextStyle(fontSize: 28)),
+                        ),
                 ),
               ),
               const SizedBox(width: 14),

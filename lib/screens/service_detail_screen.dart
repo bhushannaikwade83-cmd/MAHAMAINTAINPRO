@@ -61,6 +61,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       description: service['description'] ?? '',
       duration: service['duration'] ?? '',
       serviceIcon: widget.categoryEmoji,
+      imagePath: service['image_path'],
       quantity: _quantity,
     );
 
