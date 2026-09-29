@@ -111,23 +111,26 @@ class CartService with ChangeNotifier {
   }
 
   Future<void> loadCart() async {
-    if (_isInitialized) return;
-
     try {
       final prefs = await SharedPreferences.getInstance();
       final cartJson = prefs.getString(_cartStorageKey);
 
+      // Always clear and reload - don't use _isInitialized flag
+      _items.clear();
+
       if (cartJson != null) {
         final List<dynamic> decoded = jsonDecode(cartJson);
-        _items.clear();
         for (var item in decoded) {
           _items.add(CartItem.fromJson(item));
         }
+        debugPrint('✅ Cart loaded: ${_items.length} items');
+      } else {
+        debugPrint('✅ Cart empty: no saved items');
       }
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
-      debugPrint('Error loading cart: $e');
+      debugPrint('❌ Error loading cart: $e');
       _isInitialized = true;
     }
   }
