@@ -50,12 +50,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     // ✅ CRITICAL: Load cart from storage first before checking category
     await cartService.loadCart();
 
+    final serviceId = '${service['id']}';
     final serviceCategoryId = '${service['category_id'] ?? ''}';
 
     final cartItem = CartItem(
-      id: '${service['id']}',
+      id: serviceId,
       serviceName: service['name'] ?? 'Service',
-      serviceId: '${service['id']}',
+      serviceId: serviceId,
       categoryId: serviceCategoryId,
       price: '₹${service['price'] ?? 0}',
       description: service['description'] ?? '',
@@ -65,8 +66,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       quantity: _quantity,
     );
 
-    // Check if service is from different category
-    if (cartService.hasDifferentCategory(serviceCategoryId)) {
+    // Check if trying to add DIFFERENT SERVICE
+    if (cartService.hasDifferentService(serviceId)) {
       // Show conflict dialog
       showDialog(
         context: context,

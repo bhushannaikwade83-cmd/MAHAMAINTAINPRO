@@ -446,16 +446,16 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     onTap: () async {
                       final cartService = CartService();
 
-                      // ✅ CRITICAL: Load cart from storage first before checking category
+                      // ✅ CRITICAL: Load cart from storage first before checking service
                       await cartService.loadCart();
                       debugPrint('📦 SERVICE CATEGORY SCREEN - Adding service');
                       debugPrint('   Service: ${service['name']}');
 
-                      final serviceCategoryId = widget.categoryId;
-                      debugPrint('   Service category ID: $serviceCategoryId');
+                      final serviceId = '${service['id']}';
+                      debugPrint('   Service ID: $serviceId');
 
-                      // Check if service is from different category
-                      if (cartService.hasDifferentCategory(serviceCategoryId)) {
+                      // Check if trying to add DIFFERENT SERVICE (not just different category)
+                      if (cartService.hasDifferentService(serviceId)) {
                         // Show conflict dialog
                         showDialog(
                           context: context,
