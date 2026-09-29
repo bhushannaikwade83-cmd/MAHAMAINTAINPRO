@@ -44,6 +44,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   bool _loadingAddresses = true;
   double _discountAmount = 0;
   late OrderRepository _orderRepository;
+  DateTime? _selectedDate;
+  String? _selectedSlot;
 
   @override
   void initState() {
@@ -143,6 +145,18 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     if (_selectedAddressId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an address')),
+      );
+      return;
+    }
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a date')),
+      );
+      return;
+    }
+    if (_selectedSlot == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a time slot')),
       );
       return;
     }
@@ -278,6 +292,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     _Reveal(_stagger, 0.08, child: _addressCard()),
                     const SizedBox(height: 14),
                     _Reveal(_stagger, 0.16, child: _servicesCard(cartService)),
+                    const SizedBox(height: 14),
+                    _Reveal(_stagger, 0.24, child: _dateTimeCard()),
                     const SizedBox(height: 14),
                     _Reveal(_stagger, 0.30, child: _couponCard(itemTotal + visitFee)),
                     const SizedBox(height: 14),
@@ -558,6 +574,130 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     ]);
   }
 
+  Widget _dateTimeCard() {
+    final now = DateTime.now();
+    final isToday = _selectedDate != null &&
+        _selectedDate!.year == now.year &&
+        _selectedDate!.month == now.month &&
+        _selectedDate!.day == now.day;
+
+    return _Card(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const _SectionTitle(icon: Icons.calendar_today_rounded, text: 'Schedule'),
+        const SizedBox(height: 14),
+        // Date selector
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(30, (index) {
+              final date = DateTime.now().add(Duration(days: index));
+              final isSelected = _selectedDate != null &&
+                  _selectedDate!.year == date.year &&
+                  _selectedDate!.month == date.month &&
+                  _selectedDate!.day == date.day;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedDate = date),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? _AppColors.brandDeep : _AppColors.muted,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? _AppColors.brandDeep : _AppColors.line,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          index == 0 ? 'Today' : '${date.day}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : _AppColors.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1],
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isSelected ? Colors.white : _AppColors.inkSoft,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        if (_selectedDate != null) ...[
+          const SizedBox(height: 14),
+          const Divider(color: _AppColors.line, height: 1),
+          const SizedBox(height: 14),
+          // Time slots
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _getTimeSlots(isToday).map((slot) {
+                final isSelected = _selectedSlot == slot;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedSlot = slot),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? _AppColors.brandDeep : _AppColors.muted,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? _AppColors.brandDeep : _AppColors.line,
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        slot,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : _AppColors.ink,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  List<String> _getTimeSlots(bool isToday) {
+    final slots = <String>[];
+    final now = DateTime.now();
+    final startHour = isToday ? (now.hour + 1).clamp(8, 20) : 8;
+    final endHour = 20;
+
+    for (int hour = startHour; hour < endHour; hour++) {
+      final displayHour = hour > 12 ? (hour - 12).toString() : (hour == 0 ? '12' : hour.toString());
+      final period = hour >= 12 ? 'PM' : 'AM';
+      final nextHour = hour + 1 > 12 ? ((hour + 1) - 12).toString() : ((hour + 1) == 0 ? '12' : (hour + 1).toString());
+      final nextPeriod = (hour + 1) >= 12 ? 'PM' : 'AM';
+      slots.add('$displayHour:00 $period - $nextHour:00 $nextPeriod');
+    }
+
+    return slots;
+  }
+
   Widget _couponCard(double cartTotal) {
     return _Card(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -681,6 +821,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   }
 
   Widget _payBar(double total) {
+    final canProceed = _selectedAddressId != null && _selectedDate != null && _selectedSlot != null;
+
     return Container(
       decoration: const BoxDecoration(
         color: _AppColors.card,
@@ -693,21 +835,91 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       child: SafeArea(
         top: false,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
+          // Validation warnings
+          if (!canProceed)
+            Column(
+              children: [
+                if (_selectedAddressId == null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info, size: 14, color: Colors.orange),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Please select delivery location',
+                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (_selectedDate == null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info, size: 14, color: Colors.orange),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Please select a date',
+                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (_selectedSlot == null && _selectedDate != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info, size: 14, color: Colors.orange),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Please select time slot',
+                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
           _Breathe(
             child: SizedBox(
               width: double.infinity,
               height: 56,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [_AppColors.brand, _AppColors.brandDeep],
-                  ),
+                  gradient: canProceed
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [_AppColors.brand, _AppColors.brandDeep],
+                        )
+                      : LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Colors.grey.shade300, Colors.grey.shade400],
+                        ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                        color: _AppColors.brandDeep.withOpacity(0.35),
+                        color: (canProceed ? _AppColors.brandDeep : Colors.grey.shade400).withOpacity(0.35),
                         blurRadius: 22,
                         offset: const Offset(0, 10)),
                   ],
@@ -716,7 +928,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(18),
-                    onTap: _paying ? null : () => _startPayment(total),
+                    onTap: (_paying || !canProceed) ? null : () => _startPayment(total),
                     child: Center(
                       child: _paying
                           ? const SizedBox(
