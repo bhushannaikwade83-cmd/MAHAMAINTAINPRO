@@ -253,7 +253,13 @@ class _CartScreenState extends State<CartScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        onTap: () => cartService.updateQuantity(item.id, item.quantity - 1),
+                        onTap: () {
+                          if (item.quantity == 1) {
+                            cartService.removeItem(item.id);
+                          } else {
+                            cartService.updateQuantity(item.id, item.quantity - 1);
+                          }
+                        },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                           child: Text('−', style: TextStyle(color: AppTheme.saffron, fontSize: 14)),

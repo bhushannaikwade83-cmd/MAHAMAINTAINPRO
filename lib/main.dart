@@ -38,6 +38,16 @@ class MahaMaintainApp extends ConsumerStatefulWidget {
 }
 
 class _MahaMaintainAppState extends ConsumerState<MahaMaintainApp> {
+  late CartService _cartService;
+
+  @override
+  void initState() {
+    super.initState();
+    _cartService = CartService();
+    // Load persisted cart from SharedPreferences
+    _cartService.loadCart();
+  }
+
   @override
   Widget build(BuildContext context) {
     final authRepository = ref.watch(authRepositoryProvider);
@@ -45,7 +55,7 @@ class _MahaMaintainAppState extends ConsumerState<MahaMaintainApp> {
 
     return provider_pkg.MultiProvider(
       providers: [
-        provider_pkg.ChangeNotifierProvider(create: (_) => CartService()),
+        provider_pkg.ChangeNotifierProvider.value(value: _cartService),
       ],
       child: MaterialApp.router(
         title: 'MahaMaintain Pro',

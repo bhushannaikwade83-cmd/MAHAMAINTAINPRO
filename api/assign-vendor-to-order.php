@@ -62,7 +62,6 @@ function ensureColumn(mysqli $conn, string $table, string $column, string $defin
     }
 }
 ensureColumn($conn, 'bookings', 'order_id', 'VARCHAR(50) NULL, ADD INDEX idx_order_id (order_id)');
-ensureColumn($conn, 'bookings', 'pincode', 'VARCHAR(10) NULL');
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);
@@ -149,8 +148,8 @@ try {
 
     $bookingIds = [];
     $insertStmt = $conn->prepare(
-        "INSERT INTO bookings (customer_name, customer_phone, category_id, service_type, address, latitude, longitude, amount, payment_mode, scheduled_at, status, order_id, pincode)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'REQUESTED', ?, ?)"
+        "INSERT INTO bookings (customer_name, customer_phone, category_id, service_type, address, latitude, longitude, amount, payment_mode, scheduled_at, status, order_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'REQUESTED', ?)"
     );
     if (!$insertStmt) {
         throw new Exception('Prepare failed: ' . $conn->error);
@@ -167,7 +166,7 @@ try {
         $amount = (float) $item['subtotal'];
 
         $insertStmt->bind_param(
-            'ssissddddsss',
+            'ssissdddsss',
             $customerName,
             $phoneNumber,
             $categoryId,
@@ -178,8 +177,7 @@ try {
             $amount,
             $paymentMethod,
             $scheduledAt,
-            $orderId,
-            $pincode
+            $orderId
         );
         if ($insertStmt->execute()) {
             $bookingIds[] = $conn->insert_id;

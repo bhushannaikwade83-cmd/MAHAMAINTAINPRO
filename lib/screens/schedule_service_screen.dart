@@ -389,25 +389,16 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
               GestureDetector(
                 onTap: selectedTime.isNotEmpty
                     ? () {
-                        // Add all selected services to cart
+                        // Update selected date and time for all cart items
                         final cartService = Provider.of<CartService>(context, listen: false);
 
                         for (var service in widget.selectedServices) {
-                          final cartItem = CartItem(
-                            id: '${service['name']}_${DateTime.now().millisecondsSinceEpoch}',
-                            serviceName: service['name'] ?? 'Service',
-                            serviceId: '${service['id'] ?? 1}',
-                            categoryId: '${service['category_id'] ?? 1}',
-                            price: '₹${service['price'] ?? 0}',
-                            description: service['description'] ?? '',
-                            duration: service['duration'] ?? '',
-                            serviceIcon: service['emoji'] ?? '🔧',
-                            quantity: 1,
-                            selectedDate: selectedDate,
-                            selectedTimeSlot: selectedTime,
+                          cartService.updateItemDetails(
+                            '${service['id'] ?? 1}',
+                            date: selectedDate,
+                            timeSlot: selectedTime,
                           );
-                          cartService.addItem(cartItem);
-                          debugPrint('✅ [Schedule] Added to cart: ${service['name']}');
+                          debugPrint('✅ [Schedule] Updated date/time for: ${service['name']}');
                         }
 
                         // Navigate to checkout

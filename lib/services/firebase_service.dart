@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:convert';
-import 'firebase_options.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
@@ -32,9 +32,15 @@ class FirebaseService {
   }
 
   Future<void> initialize() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    if (!kIsWeb) {
+      // Firebase initialization for native platforms
+      // This would normally use firebase_options.dart
+      try {
+        await Firebase.initializeApp();
+      } catch (e) {
+        print('Firebase initialization error: $e');
+      }
+    }
 
     await _localNotifications.initialize(
       const InitializationSettings(

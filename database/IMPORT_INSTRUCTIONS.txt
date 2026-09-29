@@ -1,0 +1,219 @@
+================================================================================
+                    DATABASE IMPORT INSTRUCTIONS
+           MahaMaintain Pro - Swiggy-Style Cart System
+================================================================================
+
+IMPORTANT: Read this first!
+
+Location of SQL Files:
+  database/migrations/001_create_cart_tables.sql
+  database/migrations/002_modify_existing_tables.sql
+  database/migrations/003_sample_data.sql
+  database/migrations/README.md (Detailed instructions)
+
+================================================================================
+QUICK START (3 Steps)
+================================================================================
+
+Step 1: BACKUP YOUR DATABASE
+   Command:
+   mysqldump -u digitrix_maha_user -p digitrix_maha_maintain_pro > backup_$(date +%Y%m%d_%H%M%S).sql
+
+   When prompted for password, enter: maha_user@70
+
+Step 2: IMPORT MIGRATION FILES (In This Order)
+
+   Using MySQL Command Line:
+   ─────────────────────────
+   mysql -u digitrix_maha_user -p digitrix_maha_maintain_pro < migrations/001_create_cart_tables.sql
+   mysql -u digitrix_maha_user -p digitrix_maha_maintain_pro < migrations/002_modify_existing_tables.sql
+   mysql -u digitrix_maha_user -p digitrix_maha_maintain_pro < migrations/003_sample_data.sql
+
+   OR Using phpMyAdmin:
+   ───────────────────
+   1. Go to http://localhost/phpmyadmin
+   2. Select database "digitrix_maha_maintain_pro"
+   3. Click "Import" tab
+   4. Choose "001_create_cart_tables.sql" → Click "Go"
+   5. Repeat for "002_modify_existing_tables.sql"
+   6. Repeat for "003_sample_data.sql"
+
+   OR Using MySQL Workbench:
+   ────────────────────────
+   1. Open MySQL Workbench
+   2. Connect to your database server
+   3. File → Open SQL Script → Select first file
+   4. Click Execute (Ctrl+Enter)
+   5. Repeat for other files
+
+Step 3: VERIFY IMPORT WAS SUCCESSFUL
+
+   Run this query to check:
+   ────────────────────────
+   mysql -u digitrix_maha_user -p digitrix_maha_maintain_pro -e "
+     SHOW TABLES LIKE 'cart%';
+     SHOW TABLES LIKE 'service_package%';
+     SHOW TABLES LIKE 'checkout%';
+   "
+
+   Expected output: 10+ tables should be listed
+
+================================================================================
+FILE DESCRIPTIONS
+================================================================================
+
+1. 001_create_cart_tables.sql (20 KB)
+   ─────────────────────────────────
+   Creates these NEW tables:
+   ✓ carts
+   ✓ cart_items
+   ✓ cart_item_addons
+   ✓ service_packages
+   ✓ service_addons
+   ✓ checkout_sessions
+   ✓ cart_pricing
+   ✓ cart_discounts
+   ✓ service_location_config
+   ✓ time_slot_availability
+
+   Status: SAFE - Uses CREATE TABLE IF NOT EXISTS
+   Run Time: < 5 seconds
+
+2. 002_modify_existing_tables.sql (15 KB)
+   ─────────────────────────────
+   Modifies these EXISTING tables:
+   ✓ orders (adds cart tracking)
+   ✓ order_items (adds package/addon tracking)
+   ✓ bookings (adds provider tracking)
+   ✓ service_time_slots (adds capacity)
+   ✓ addresses (fixes schema)
+   ✓ coupons (adds filtering)
+   ✓ users (adds new fields)
+   ✓ services (adds config)
+   ✓ vendors (adds availability)
+
+   Creates 20+ indexes for performance
+
+   Status: SAFE - ALTER statements are non-destructive
+   Run Time: < 10 seconds
+
+3. 003_sample_data.sql (5 KB)
+   ────────────────────────
+   Inserts test data:
+   ✓ Service packages for AC Service
+   ✓ Add-ons (Gas Refill, Deep Cleaning, Filter)
+   ✓ Sample coupons (SAVE200, FIRST10, SAVE50)
+   ✓ Service location config (Powai, Dombivli)
+
+   Status: OPTIONAL - Only needed for testing
+   Run Time: < 2 seconds
+
+================================================================================
+DATABASE CREDENTIALS
+================================================================================
+
+Username: digitrix_maha_user
+Password: maha_user@70
+Database: digitrix_maha_maintain_pro
+Host:     localhost
+Port:     3306
+
+⚠️  IMPORTANT: These credentials are in config.php - do NOT commit to git!
+
+================================================================================
+WHAT GETS CREATED
+================================================================================
+
+10 NEW TABLES:
+  • carts                      (Server-side cart storage)
+  • cart_items                 (Items in cart)
+  • cart_item_addons           (Add-ons per item)
+  • service_packages           (Service variants)
+  • service_addons             (Add-on options)
+  • checkout_sessions          (Checkout state)
+  • cart_pricing               (Price snapshots)
+  • cart_discounts             (Coupon tracking)
+  • service_location_config    (Travel fees, taxes)
+  • time_slot_availability     (Slot booking status)
+
+9 MODIFIED TABLES:
+  • orders                     (+ cart tracking)
+  • order_items                (+ package/addon fields)
+  • bookings                   (+ provider tracking)
+  • service_time_slots         (+ capacity)
+  • addresses                  (+ schema fixes)
+  • coupons                    (+ filtering)
+  • users                      (+ new fields)
+  • services                   (+ config)
+  • vendors                    (+ availability)
+
+20+ NEW INDEXES:
+  For performance optimization on common queries
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: "Table already exists" error
+Solution: This is OK! File has been run before. Safe to ignore.
+
+Problem: "Foreign key error" or "Unknown column"
+Solution: Did you run migration #1 before #2? They MUST run in order.
+
+Problem: "Access denied" or "Unknown database"
+Solution: Check username, password, database name are correct.
+          Credentials: digitrix_maha_user / maha_user@70 / digitrix_maha_maintain_pro
+
+Problem: Want to rollback/undo?
+Solution: Restore from backup created in Step 1:
+          mysql -u digitrix_maha_user -p digitrix_maha_maintain_pro < backup_YYYYMMDD_HHMMSS.sql
+
+================================================================================
+NEXT STEPS (After Database Setup)
+================================================================================
+
+Phase 2: Backend API Development (PHP)
+   • Create cart_service.php
+   • Create pricing_service.php
+   • Build 22 API endpoints
+
+Phase 3: Checkout Flow
+   • Payment processing
+   • Booking creation
+   • Slot management
+
+Phase 4: Advanced Features
+   • Coupons validation
+   • Serviceability checks
+   • Cancellations & refunds
+
+Phase 5: Frontend (Flutter)
+   • Cart screen redesign
+   • Checkout UI
+   • Payment integration
+
+================================================================================
+SUPPORT
+================================================================================
+
+If you encounter issues:
+1. Check database credentials are correct
+2. Verify MySQL is running: mysql -u root -p -e "SELECT 1;"
+3. Check error message - SQL syntax errors will be shown
+4. Restore backup if needed and try again
+5. Review README.md for detailed troubleshooting
+
+================================================================================
+                            READY TO IMPORT?
+================================================================================
+
+Yes? Follow the 3 Quick Start steps above!
+
+Files are located at:
+  ./database/migrations/001_create_cart_tables.sql
+  ./database/migrations/002_modify_existing_tables.sql
+  ./database/migrations/003_sample_data.sql
+
+Run them in order and you're done!
+
+================================================================================
