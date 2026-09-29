@@ -26,6 +26,12 @@ class OrderConfirmationScreen extends StatefulWidget {
 class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
   @override
   Widget build(BuildContext context) {
+    debugPrint('📋 ORDER CONFIRMATION SCREEN BUILT');
+    debugPrint('   Order ID: ${widget.orderId}');
+    debugPrint('   Items count: ${widget.items.length}');
+    debugPrint('   Items: ${widget.items}');
+    debugPrint('   Item count param: ${widget.itemCount}');
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
