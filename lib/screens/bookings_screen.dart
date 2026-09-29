@@ -303,10 +303,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
     final statusLabel = _statusLabels[status] ?? status;
     final statusColor = _statusColors[status] ?? Colors.grey;
 
+    // Build service names with prices
     final items = (order['items'] as List<dynamic>? ?? [])
-        .map((i) => (i as Map)['service_name']?.toString() ?? '')
+        .map((i) {
+          final itemMap = i as Map;
+          final name = itemMap['service_name']?.toString() ?? '';
+          final price = itemMap['price']?.toString() ?? '0';
+          return name.isNotEmpty ? '$name - ₹$price' : '';
+        })
         .where((n) => n.isNotEmpty)
-        .join(', ');
+        .join('\n');
 
     final orderId = order['id'] is int ? order['id'] as int : int.tryParse('${order['id']}') ?? 0;
     final scheduledAt = order['scheduled_at']?.toString();
@@ -356,7 +362,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                           if (items.isNotEmpty)
                             Text(items,
                                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                maxLines: 1,
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis)
                           else if (order['service_count'] != null)
                             Text(
