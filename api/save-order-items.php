@@ -71,14 +71,14 @@ try {
 
     $itemCount = 0;
     foreach ($items as $item) {
-        $serviceId = $item['service_id'] ?? null;
+        $serviceId = intval($item['service_id'] ?? 0);
         $serviceName = $item['service_name'] ?? 'Unknown Service';
         $category = $item['category'] ?? 'General';
         $price = floatval($item['price'] ?? 0);
         $quantity = intval($item['quantity'] ?? 1);
         $subtotal = $price * $quantity;
 
-        $stmt->bind_param("ssissdd", $orderId, $serviceId, $serviceName, $category, $price, $quantity, $subtotal);
+        $stmt->bind_param("isisdid", $orderId, $serviceId, $serviceName, $category, $price, $quantity, $subtotal);
 
         if (!$stmt->execute()) {
             throw new Exception("Execute failed for item: " . $stmt->error);
