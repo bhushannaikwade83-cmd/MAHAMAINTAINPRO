@@ -1312,6 +1312,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
               categoryEmoji: emoji,
               categoryImagePath: categoryImagePath,
               description: getCategoryDescription(name),
+              categoryId: '${fullCategory['id'] ?? index}',
               services: dbServices,
               faqs: faqs,
             ),

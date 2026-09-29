@@ -125,6 +125,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                     categoryEmoji: emoji,
                     categoryImagePath: imagePath,
                     description: getCategoryDescription(name),
+                    categoryId: '${category['id'] ?? 0}',
                     services: services,
                     faqs: faqs,
                   ),

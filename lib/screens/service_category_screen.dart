@@ -12,6 +12,7 @@ class ServiceCategoryScreen extends StatefulWidget {
   final String? categoryIconPath;
   final String? categoryImagePath;
   final String description;
+  final String categoryId;
   final List<Map<String, dynamic>> services;
   final List<Map<String, dynamic>> faqs;
 
@@ -21,6 +22,7 @@ class ServiceCategoryScreen extends StatefulWidget {
     this.categoryIconPath,
     this.categoryImagePath,
     required this.description,
+    required this.categoryId,
     required this.services,
     this.faqs = const [],
     Key? key,
@@ -402,7 +404,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       debugPrint('📦 SERVICE CATEGORY SCREEN - Adding service');
                       debugPrint('   Service: ${service['name']}');
 
-                      final serviceCategoryId = '${service['category_id'] ?? 1}';
+                      final serviceCategoryId = widget.categoryId;
                       debugPrint('   Service category ID: $serviceCategoryId');
 
                       // Check if service is from different category

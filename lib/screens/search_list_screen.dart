@@ -89,6 +89,7 @@ class _SearchListScreenState extends State<SearchListScreen> {
                   categoryEmoji: emoji,
                   categoryImagePath: imagePath,
                   description: getCategoryDescription(categoryName),
+                  categoryId: '${category['id'] ?? 0}',
                   services: services,
                   faqs: faqs,
                 ),
