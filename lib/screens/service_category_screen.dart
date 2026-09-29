@@ -429,7 +429,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                     price: '₹${service['price'] ?? 0}',
                                     description: service['description'] ?? '',
                                     duration: service['duration'] ?? '',
-                                    serviceIcon: 'assets/images/logo.png',
+                                    serviceIcon: service['emoji'] ?? '✨',
                                     imagePath: service['image_path'],
                                     quantity: 1,
                                   ));
@@ -450,7 +450,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                           price: '₹${service['price'] ?? 0}',
                           description: service['description'] ?? '',
                           duration: service['duration'] ?? '',
-                          serviceIcon: 'assets/images/logo.png',
+                          serviceIcon: service['emoji'] ?? '✨',
                           imagePath: service['image_path'],
                           quantity: 1,
                         ));

@@ -60,7 +60,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       price: '₹${service['price'] ?? 0}',
       description: service['description'] ?? '',
       duration: service['duration'] ?? '',
-      serviceIcon: widget.categoryEmoji,
+      serviceIcon: service['emoji'] ?? widget.categoryEmoji,
       imagePath: service['image_path'],
       quantity: _quantity,
     );
