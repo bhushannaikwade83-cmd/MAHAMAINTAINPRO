@@ -154,7 +154,7 @@ class CartService with ChangeNotifier {
   }
 
   // ✅ ENFORCES SINGLE CATEGORY ONLY - Changed from serviceId to categoryId
-  void addItem(CartItem item) {
+  Future<void> addItem(CartItem item) async {
     if (_items.isEmpty || _items.first.categoryId == item.categoryId) {
       final existingIndex = _items.indexWhere((i) => i.id == item.id);
 
@@ -168,14 +168,16 @@ class CartService with ChangeNotifier {
       _items.clear();
       _items.add(item);
     }
-    _saveCart();
+    await _saveCart();  // ✅ NOW AWAITED
+    debugPrint('✅ Item added & saved: ${item.serviceName} (Category: ${item.categoryId})');
     notifyListeners();
   }
 
-  void replaceCart(CartItem item) {
+  Future<void> replaceCart(CartItem item) async {
     _items.clear();
     _items.add(item);
-    _saveCart();
+    await _saveCart();  // ✅ NOW AWAITED
+    debugPrint('✅ Cart replaced with: ${item.serviceName} (Category: ${item.categoryId})');
     notifyListeners();
   }
 

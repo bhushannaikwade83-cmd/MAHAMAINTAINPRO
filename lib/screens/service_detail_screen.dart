@@ -79,9 +79,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
-                cartService.replaceCart(cartItem);
+                await cartService.replaceCart(cartItem);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const CartScreen()),
@@ -94,7 +94,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       );
     } else {
       // Same category - just add
-      cartService.addItem(cartItem);
+      await cartService.addItem(cartItem);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const CartScreen()),

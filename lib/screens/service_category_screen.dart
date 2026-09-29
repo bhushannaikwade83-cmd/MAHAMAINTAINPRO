@@ -424,7 +424,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                   setState(() => service['quantity']++);
 
                                   // Replace entire cart with this service
-                                  cartService.replaceCart(CartItem(
+                                  await cartService.replaceCart(CartItem(
                                     id: '${service['id']}',
                                     serviceName: service['name'] ?? 'Service',
                                     serviceId: '${service['id']}',
@@ -445,7 +445,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       } else {
                         // Same category - just add
                         setState(() => service['quantity']++);
-                        cartService.addItem(CartItem(
+                        await cartService.addItem(CartItem(
                           id: '${service['id']}',
                           serviceName: service['name'] ?? 'Service',
                           serviceId: '${service['id']}',
