@@ -65,12 +65,17 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     try {
       final prefs = await SharedPreferences.getInstance();
       final userPhone = prefs.getString('userPhone');
-      final url = userPhone != null
-          ? 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php?phone_number=$userPhone'
-          : 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php';
+      if (userPhone == null) return;
+
+      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
       final response = await http
-          .get(Uri.parse(url), headers: SupabaseAuthRepository.staticAuthHeaders)
+          .post(
+            url,
+            headers: SupabaseAuthRepository.staticAuthHeaders,
+            body: jsonEncode({'phone_number': userPhone}),
+          )
           .timeout(const Duration(seconds: 10));
+
       if (!mounted) return;
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -85,6 +90,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         setState(() => _loadingAddresses = false);
       }
     } catch (e) {
+      debugPrint('❌ Error loading addresses: $e');
       if (mounted) setState(() => _loadingAddresses = false);
     }
   }
