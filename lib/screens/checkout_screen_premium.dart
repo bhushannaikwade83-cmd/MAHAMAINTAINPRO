@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../repositories/auth_repository.dart';
+import '../repositories/order_repository.dart';
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -151,6 +152,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> with SingleTickerProvid
     final totalBeforeDiscount = cartService.totalPrice + 50;
     final finalTotal = totalBeforeDiscount - _discountAmount;
     final orderId = 'ORD${DateTime.now().millisecondsSinceEpoch}';
+    final orderRepository = OrderRepository();
 
     try {
       final orderResponse = await http.post(
@@ -168,6 +170,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> with SingleTickerProvid
       ).timeout(const Duration(seconds: 10));
 
       if (orderResponse.statusCode != 200) throw Exception('Failed to create order');
+
+      // Save order items to database
+      final orderItems = cartService.items.map((item) => {
+        'service_id': item.serviceId,
+        'service_name': item.serviceName,
+        'category': item.categoryId,
+        'price': item.price,
+        'quantity': item.quantity,
+      }).toList();
+
+      await orderRepository.saveOrderItems(
+        orderId: orderId,
+        items: orderItems,
+      );
 
       var options = {
         'key': 'rzp_test_1DP5mmOlF5G0m1',
