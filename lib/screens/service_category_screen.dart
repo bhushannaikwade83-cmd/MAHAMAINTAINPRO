@@ -452,6 +452,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       debugPrint('   Service: ${service['name']}');
 
                       final serviceId = '${service['id']}';
+                      final serviceCategoryId = widget.categoryId;
                       debugPrint('   Service ID: $serviceId');
 
                       // Check if trying to add DIFFERENT SERVICE (not just different category)
