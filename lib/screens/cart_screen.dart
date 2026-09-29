@@ -435,32 +435,60 @@ class _CartScreenState extends State<CartScreen> with SingleTickerProviderStateM
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: item.imagePath != null && item.imagePath!.isNotEmpty
+                  child: item.imagePath != null && item.imagePath!.isNotEmpty && item.imagePath!.contains('http')
                       ? Image.network(
                           item.imagePath!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Text(item.serviceIcon, style: const TextStyle(fontSize: 24)),
+                            return Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [AppTheme.saffron.withOpacity(0.2), AppTheme.saffron.withOpacity(0.1)],
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  item.serviceIcon.isNotEmpty ? item.serviceIcon : '✨',
+                                  style: const TextStyle(fontSize: 26),
+                                ),
+                              ),
                             );
                           },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                    : null,
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(AppTheme.saffron.withOpacity(0.6)),
+                            return Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.grey.shade100, Colors.grey.shade50],
+                                ),
+                              ),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(AppTheme.saffron),
+                                  ),
+                                ),
                               ),
                             );
                           },
                           cacheWidth: 112,
                           cacheHeight: 112,
                         )
-                      : Center(
-                          child: Text(item.serviceIcon, style: const TextStyle(fontSize: 28)),
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppTheme.saffron.withOpacity(0.2), AppTheme.saffron.withOpacity(0.1)],
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              item.serviceIcon.isNotEmpty ? item.serviceIcon : '🛍️',
+                              style: const TextStyle(fontSize: 26),
+                            ),
+                          ),
                         ),
                 ),
               ),
