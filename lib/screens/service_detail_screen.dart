@@ -51,11 +51,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     await cartService.loadCart();
 
     final serviceId = '${service['id']}';
+    final serviceName = service['name'] ?? 'Service';
     final serviceCategoryId = '${service['category_id'] ?? ''}';
 
     final cartItem = CartItem(
       id: serviceId,
-      serviceName: service['name'] ?? 'Service',
+      serviceName: serviceName,
       serviceId: serviceId,
       categoryId: serviceCategoryId,
       price: '₹${service['price'] ?? 0}',
@@ -66,8 +67,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       quantity: _quantity,
     );
 
-    // Check if trying to add DIFFERENT SERVICE
-    if (cartService.hasDifferentService(serviceId)) {
+    // Check if trying to add DIFFERENT SERVICE (by name, allows same service from diff categories)
+    if (cartService.hasDifferentServiceByName(serviceName)) {
       // Show conflict dialog
       showDialog(
         context: context,

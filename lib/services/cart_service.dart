@@ -101,17 +101,22 @@ class CartService with ChangeNotifier {
     return _items.isNotEmpty ? _items.first.categoryId : null;
   }
 
-  // ✅ Check if trying to add DIFFERENT SERVICE (not just different category)
-  bool hasDifferentService(String serviceId) {
-    final isDifferent = _items.isNotEmpty && _items.first.serviceId != serviceId;
-    debugPrint('🔍 hasDifferentService check:');
+  // ✅ Check if trying to add DIFFERENT SERVICE (by SERVICE NAME, not ID)
+  bool hasDifferentServiceByName(String serviceName) {
+    final isDifferent = _items.isNotEmpty && _items.first.serviceName != serviceName;
+    debugPrint('🔍 hasDifferentServiceByName check:');
     debugPrint('   Cart items: ${_items.length}');
     if (_items.isNotEmpty) {
-      debugPrint('   First item serviceId: ${_items.first.serviceId}');
-      debugPrint('   New item serviceId: $serviceId');
+      debugPrint('   First item serviceName: ${_items.first.serviceName}');
+      debugPrint('   New item serviceName: $serviceName');
       debugPrint('   Is different? $isDifferent');
     }
     return isDifferent;
+  }
+
+  bool hasDifferentService(String serviceId) {
+    // Deprecated: Use hasDifferentServiceByName instead
+    return false;
   }
 
   bool hasDifferentCategory(String categoryId) {
