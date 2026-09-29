@@ -495,23 +495,15 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                [
-                  addr['building_name'] ?? '',
-                  addr['street'] ?? '',
-                  addr['area'] ?? '',
-                ].where((s) => s.isNotEmpty).join(', '),
+                addr['full_address']?.toString() ?? 'Address not available',
                 style: const TextStyle(
-                    fontSize: 13, height: 1.4, fontWeight: FontWeight.w600, color: _AppColors.ink),
-                maxLines: 2,
+                    fontSize: 13, height: 1.5, fontWeight: FontWeight.w500, color: _AppColors.ink),
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 6),
               Text(
-                [
-                  addr['city'] ?? '',
-                  addr['state'] ?? '',
-                  '${addr['pincode'] ?? ''}'
-                ].where((s) => s.isNotEmpty).join(', '),
+                'Phone: ${addr['phone_number'] ?? ''}',
                 style: const TextStyle(fontSize: 12, color: _AppColors.inkSoft),
               ),
             ]),
