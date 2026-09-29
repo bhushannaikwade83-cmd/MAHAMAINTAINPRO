@@ -261,6 +261,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
     final finalAmount = result['amount'] ?? ((cartService.totalPrice + 50) - _discountAmount);
 
+    debugPrint('💾 BEFORE CONFIRMATION - CartService has ${cartService.items.length} items: ${cartService.items.map((i) => i.serviceName).toList()}');
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
