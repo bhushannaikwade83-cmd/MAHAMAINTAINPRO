@@ -435,7 +435,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                     description: service['description'] ?? '',
                                     duration: service['duration'] ?? '',
                                     serviceIcon: service['emoji'] ?? '✨',
-                                    imagePath: service['image_path'],
+                                    imagePath: widget.categoryImagePath,
                                     quantity: 1,
                                   ));
                                 },
@@ -456,7 +456,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                           description: service['description'] ?? '',
                           duration: service['duration'] ?? '',
                           serviceIcon: service['emoji'] ?? '✨',
-                          imagePath: service['image_path'],
+                          imagePath: widget.categoryImagePath,
                           quantity: 1,
                         ));
                       }
