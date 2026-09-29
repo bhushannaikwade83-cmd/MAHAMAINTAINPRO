@@ -260,7 +260,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       return;
     }
 
-    final cartService = Provider.of<CartService>(context, listen: false);
     final selectedAddr = _addresses.isNotEmpty && _selectedAddressId != null
         ? _addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => <String, dynamic>{})
         : <String, dynamic>{};
