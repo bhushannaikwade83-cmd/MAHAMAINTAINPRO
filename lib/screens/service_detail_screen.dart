@@ -45,22 +45,56 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   void _addToCartAndCheckout() {
     final service = widget.service;
-    CartService().addItem(CartItem(
-      id: '${service['id']}_${DateTime.now().millisecondsSinceEpoch}',
+    final cartService = CartService();
+    final serviceCategoryId = '${service['category_id'] ?? ''}';
+
+    final cartItem = CartItem(
+      id: '${service['id']}',
       serviceName: service['name'] ?? 'Service',
       serviceId: '${service['id']}',
-      categoryId: '${service['category_id'] ?? ''}',
+      categoryId: serviceCategoryId,
       price: '₹${service['price'] ?? 0}',
       description: service['description'] ?? '',
       duration: service['duration'] ?? '',
       serviceIcon: widget.categoryEmoji,
       quantity: _quantity,
-    ));
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const CartScreen()),
     );
+
+    // Check if service is from different category
+    if (cartService.hasDifferentCategory(serviceCategoryId)) {
+      // Show conflict dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Different Category'),
+          content: const Text('Your cart has items from a different category.\n\nWould you like to replace them with this service?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                cartService.replaceCart(cartItem);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                );
+              },
+              child: const Text('Replace Cart'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Same category - just add
+      cartService.addItem(cartItem);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CartScreen()),
+      );
+    }
   }
 
   @override

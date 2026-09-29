@@ -247,9 +247,12 @@ if ($result['valid']) {
 }
 ```
 
-### Workflow 3: Checkout (in progress)
+### Workflow 3: Complete Checkout (Phase 3)
 
 ```php
+$checkout_service = new CheckoutService($pdo, $user_id);
+$pricing_service = new PricingService($pdo);
+
 // 1. Validate cart
 $validation = $this->validateCart($cart_id);
 if (!$validation['valid']) {
@@ -257,22 +260,43 @@ if (!$validation['valid']) {
 }
 
 // 2. Calculate final pricing
-$pricing = $pricing_service->calculateCartPricing($cart_id);
+$pricing = $pricing_service->calculateCartPricing($cart_id, $service_location_id);
 
-// 3. Create checkout session (TODO: Phase 3)
-$checkout_id = $this->initCheckout($cart_id, $pricing);
+// 3. Initialize checkout (lock prices, reserve slot)
+$checkout = $checkout_service->initCheckout(
+    $cart_id,
+    $service_location_id,
+    '2026-09-30',  // scheduled_date
+    $time_slot_id,
+    $pricing
+);
+// Returns: checkout_id, locked pricing, 15-min expiry
 
-// 4. Get payment intent (TODO: Phase 3)
-$payment = $this->createPaymentIntent($checkout_id, $pricing['total']);
+// 4. Create Razorpay payment order
+$payment = $checkout_service->createPaymentIntent(
+    $checkout['checkout_id'],
+    $checkout['pricing']['total'],
+    RAZORPAY_KEY_ID,
+    RAZORPAY_KEY_SECRET
+);
+// Returns: razorpay_order_id, key for frontend
 
-// 5. Verify payment (TODO: Phase 3)
-$payment_verified = $this->verifyPayment($checkout_id, $razorpay_response);
+// 5. Show Razorpay form to user
+// Frontend handles payment with razorpay_order_id
+// User pays and gets razorpay_response
 
-// 6. Create booking (TODO: Phase 3)
-$booking = $this->confirmBooking($checkout_id);
+// 6. Verify payment (server-to-server only!)
+$booking = $checkout_service->verifyAndCreateBooking(
+    $checkout['checkout_id'],
+    $razorpay_response['razorpay_payment_id'],
+    $razorpay_response['razorpay_signature'],
+    RAZORPAY_KEY_ID,
+    RAZORPAY_KEY_SECRET
+);
+// Returns: booking_id, order_id, confirmed status
 
-// 7. Clear cart
-$cart->clearCart();
+// 7. Get booking details
+$status = $checkout_service->getCheckoutStatus($checkout['checkout_id']);
 ```
 
 ---

@@ -172,19 +172,37 @@ Same as GET /cart
 
 ---
 
-## Checkout Endpoints (Phase 3)
+## Checkout Endpoints (Phase 3 - Complete)
 
 ### POST /checkout/init
 Initialize checkout session, lock prices, reserve slot
+- Request: `cart_id`, `service_location_id`, `scheduled_date`, `time_slot_id`
+- Response: `checkout_id`, locked `pricing`, 15-min expiry
+- See [CHECKOUT_API.md](CHECKOUT_API.md) for details
 
-### POST /checkout/:id/payment-intent
-Get Razorpay payment order details
+### POST /checkout/payment-intent
+Create Razorpay payment order
+- Request: `checkout_id`
+- Response: `razorpay_order_id`, `key`, amount
+- See [CHECKOUT_API.md](CHECKOUT_API.md) for details
 
-### POST /checkout/:id/verify-payment
-Verify payment and create booking
+### POST /checkout/verify-payment
+Verify payment and create booking (SERVER-TO-SERVER ONLY)
+- Request: `checkout_id`, `razorpay_payment_id`, `razorpay_signature`
+- Response: `booking_id`, `order_id`, confirmed status
+- See [CHECKOUT_API.md](CHECKOUT_API.md) for details
 
-### POST /checkout/:id/confirm-booking
-Create final booking from cart
+### GET /checkout/status
+Get checkout and booking status
+- Query: `checkout_id`
+- Response: Full checkout state with booking details
+- See [CHECKOUT_API.md](CHECKOUT_API.md) for details
+
+### POST /checkout/cancel
+Cancel checkout and release slot reservation
+- Request: `checkout_id`
+- Response: Success message
+- Only works before payment verified
 
 ---
 

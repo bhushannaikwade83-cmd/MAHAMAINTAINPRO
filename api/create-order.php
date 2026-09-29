@@ -42,9 +42,9 @@ try {
     // phone_number from verified JWT, not client input
     $phoneNumber = $token['phone_number'];
     $userId = $phoneNumber;
-    $addressId = $input['address_id'] ?? null;
-    $totalAmount = $input['total_amount'] ?? 0;
-    $serviceCount = $input['service_count'] ?? 0;
+    $addressId = !empty($input['address_id']) ? (int)$input['address_id'] : null;
+    $totalAmount = (float)($input['total_amount'] ?? 0);
+    $serviceCount = (int)($input['service_count'] ?? 0);
     $scheduledDate = $input['scheduled_date'] ?? null;
     $scheduledTime = $input['scheduled_time'] ?? null;
     $scheduledAt = null;

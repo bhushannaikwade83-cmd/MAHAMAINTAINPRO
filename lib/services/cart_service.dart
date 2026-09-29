@@ -37,7 +37,6 @@ class CartItem {
     return priceValue * quantity;
   }
 
-  // Convert CartItem to JSON for storage
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -55,7 +54,6 @@ class CartItem {
     };
   }
 
-  // Create CartItem from JSON
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       id: json['id'] ?? '',
@@ -99,11 +97,15 @@ class CartService with ChangeNotifier {
     return _items.isNotEmpty ? _items.first.categoryId : null;
   }
 
+  // ✅ NEW METHOD: Check if cart has items from different category
+  bool hasDifferentCategory(String categoryId) {
+    return _items.isNotEmpty && _items.first.categoryId != categoryId;
+  }
+
   bool hasDifferentService(String serviceId) {
     return _items.isNotEmpty && _items.first.serviceId != serviceId;
   }
 
-  // Initialize cart from persistent storage
   Future<void> loadCart() async {
     if (_isInitialized) return;
 
@@ -126,7 +128,6 @@ class CartService with ChangeNotifier {
     }
   }
 
-  // Save cart to persistent storage
   Future<void> _saveCart() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -137,23 +138,18 @@ class CartService with ChangeNotifier {
     }
   }
 
-  // Add item - ENFORCES SINGLE SERVICE ONLY
-  // If a different service is added, it replaces the entire cart
+  // ✅ ENFORCES SINGLE CATEGORY ONLY - Changed from serviceId to categoryId
   void addItem(CartItem item) {
-    // If cart is empty or same service, add it
-    if (_items.isEmpty || _items.first.serviceId == item.serviceId) {
+    if (_items.isEmpty || _items.first.categoryId == item.categoryId) {
       final existingIndex = _items.indexWhere((i) => i.id == item.id);
 
       if (existingIndex >= 0) {
-        // Same item, increase quantity
         _items[existingIndex].quantity += item.quantity;
       } else {
-        // New item, but same service - this shouldn't happen in single service mode
-        // But if it does, add it
         _items.add(item);
       }
     } else {
-      // Different service - replace entire cart
+      // Different category - replace entire cart
       _items.clear();
       _items.add(item);
     }
@@ -161,7 +157,6 @@ class CartService with ChangeNotifier {
     notifyListeners();
   }
 
-  // Replace cart with single item (explicit single service mode)
   void replaceCart(CartItem item) {
     _items.clear();
     _items.add(item);

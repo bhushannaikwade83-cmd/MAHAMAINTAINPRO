@@ -395,19 +395,61 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   const SizedBox(width: 10),
                   GestureDetector(
                     onTap: () {
-                    setState(() => service['quantity']++);
-                    CartService().addItem(CartItem(
-                      id: '${service['id']}',
-                      serviceName: service['name'] ?? 'Service',
-                      serviceId: '${service['id']}',
-                      categoryId: '${service['category_id'] ?? 1}',
-                      price: '₹${service['price'] ?? 0}',
-                      description: service['duration'] ?? '',
-                      duration: '30 min',
-                      serviceIcon: 'assets/images/logo.png',
-                      quantity: 1,
-                    ));
-                  },
+                      final cartService = CartService();
+                      final serviceCategoryId = '${service['category_id'] ?? 1}';
+
+                      // Check if service is from different category
+                      if (cartService.hasDifferentCategory(serviceCategoryId)) {
+                        // Show conflict dialog
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Different Category'),
+                            content: const Text('Your cart has items from a different category.\n\nWould you like to replace them with this service?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  setState(() => service['quantity']++);
+
+                                  // Replace entire cart with this service
+                                  cartService.replaceCart(CartItem(
+                                    id: '${service['id']}',
+                                    serviceName: service['name'] ?? 'Service',
+                                    serviceId: '${service['id']}',
+                                    categoryId: serviceCategoryId,
+                                    price: '₹${service['price'] ?? 0}',
+                                    description: service['description'] ?? '',
+                                    duration: service['duration'] ?? '',
+                                    serviceIcon: 'assets/images/logo.png',
+                                    quantity: 1,
+                                  ));
+                                },
+                                child: const Text('Replace Cart'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        // Same category - just add
+                        setState(() => service['quantity']++);
+                        cartService.addItem(CartItem(
+                          id: '${service['id']}',
+                          serviceName: service['name'] ?? 'Service',
+                          serviceId: '${service['id']}',
+                          categoryId: serviceCategoryId,
+                          price: '₹${service['price'] ?? 0}',
+                          description: service['description'] ?? '',
+                          duration: service['duration'] ?? '',
+                          serviceIcon: 'assets/images/logo.png',
+                          quantity: 1,
+                        ));
+                      }
+                    },
                     child: Text(
                       '+',
                       style: TextStyle(
