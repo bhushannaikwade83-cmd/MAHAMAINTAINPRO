@@ -39,7 +39,24 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   @override
   void initState() {
     super.initState();
-    _services = widget.services.map((s) => <String, dynamic>{...s, 'quantity': 0}).toList();
+    _loadServicesWithCartStatus();
+  }
+
+  Future<void> _loadServicesWithCartStatus() async {
+    final cartService = CartService();
+    await cartService.loadCart();
+
+    setState(() {
+      _services = widget.services.map((s) {
+        final serviceId = '${s['id']}';
+        final isInCart = cartService.items.any((item) => item.serviceId == serviceId);
+        return <String, dynamic>{
+          ...s,
+          'quantity': isInCart ? 1 : 0,  // Mark as 1 if in cart (visual indicator)
+          'isInCart': isInCart,
+        };
+      }).toList();
+    });
   }
 
   int get totalPrice => _services.fold(0, (sum, item) => sum + (((item['price'] as int?) ?? 0) * (item['quantity'] as int)));
@@ -316,15 +333,40 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    service['name'] ?? 'Service',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          service['name'] ?? 'Service',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (service['isInCart'] == true)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade100,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle, size: 14, color: Colors.green.shade700),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Added',
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.green.shade700),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   SingleChildScrollView(
