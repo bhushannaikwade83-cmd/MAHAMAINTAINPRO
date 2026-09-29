@@ -7,22 +7,10 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/cart_service.dart';
 import '../repositories/order_repository.dart';
+import '../config/app_theme.dart';
 import 'order_confirmation_screen.dart';
 import 'payment_options_screen.dart';
 import 'add_address_screen.dart';
-
-class _AppColors {
-  static const brand = Color(0xFFFF9A4D);
-  static const brandDeep = Color(0xFFF2762B);
-  static const brandSoft = Color(0xFFFFF1E4);
-  static const canvas = Color(0xFFFFF9F4);
-  static const card = Color(0xFFFFFFFF);
-  static const muted = Color(0xFFFCF3EA);
-  static const line = Color(0xFFF0DFD0);
-  static const ink = Color(0xFF2B1B10);
-  static const inkSoft = Color(0xFF8A7361);
-  static const onBrand = Color(0xFFFFFFFF);
-}
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});

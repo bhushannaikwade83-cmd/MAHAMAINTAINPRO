@@ -5,6 +5,7 @@ import '../data/service_catalog.dart';
 import '../utils/constants.dart';
 import 'schedule_service_screen.dart';
 import 'service_detail_screen.dart';
+import 'cart_screen.dart';
 
 class ServiceCategoryScreen extends StatefulWidget {
   final String categoryName;
@@ -213,16 +214,9 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        final selected = _services.where((s) => (s['quantity'] as int) > 0).toList();
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => ScheduleServiceScreen(
-                              categoryName: widget.categoryName,
-                              selectedServices: selected,
-                              totalPrice: totalPrice,
-                            ),
-                          ),
+                          MaterialPageRoute(builder: (context) => const CartScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -231,7 +225,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
-                        'Book Now',
+                        'View Cart',
                         style: TextStyle(fontSize: isSmall ? 14 : 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
