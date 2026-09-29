@@ -281,8 +281,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               builder: (context, cartService, _) {
                 final itemTotal = cartService.totalPrice;
                 final visitFee = 50.0;
+                final gstAmount = itemTotal * 0.18;
                 final discount = _appliedCoupon == null ? 0.0 : _discountAmount;
-                final total = itemTotal + visitFee - discount;
+                final total = itemTotal + visitFee + gstAmount - discount;
 
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -297,14 +298,15 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     const SizedBox(height: 14),
                     _Reveal(_stagger, 0.30, child: _couponCard(itemTotal + visitFee)),
                     const SizedBox(height: 14),
-                    _Reveal(_stagger, 0.38, child: _billCard(itemTotal, visitFee, discount, total)),
+                    _Reveal(_stagger, 0.38, child: _billCard(itemTotal, visitFee, gstAmount, discount, total)),
                   ],
                 );
               },
             ),
       bottomNavigationBar: Consumer<CartService>(
         builder: (context, cartService, _) {
-          final total = (cartService.totalPrice + 50) - _discountAmount;
+          final gst = cartService.totalPrice * 0.18;
+          final total = (cartService.totalPrice + 50 + gst) - _discountAmount;
           return _payBar(total);
         },
       ),
@@ -785,7 +787,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     );
   }
 
-  Widget _billCard(double itemTotal, double visitFee, double discount, double total) {
+  Widget _billCard(double itemTotal, double visitFee, double gstAmount, double discount, double total) {
     Widget row(String label, String value, {bool accent = false}) => Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -806,6 +808,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         const SizedBox(height: 14),
         row('Item total', '₹${itemTotal.toStringAsFixed(2)}'),
         row('Visit & service fee', '₹${visitFee.toStringAsFixed(2)}'),
+        row('GST (18%)', '₹${gstAmount.toStringAsFixed(2)}'),
         if (_appliedCoupon != null) row('Discount', '-₹${discount.toStringAsFixed(2)}', accent: true),
         const _DashedDivider(),
         const SizedBox(height: 14),
