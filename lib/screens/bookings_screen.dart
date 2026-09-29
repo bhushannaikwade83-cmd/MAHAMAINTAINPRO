@@ -235,6 +235,69 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
+  Future<void> _cancelOrder(String orderId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Order?'),
+        content: const Text('This will cancel your order and process a refund if payment was made.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep Order'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cancel Order', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userPhone = prefs.getString('userPhone');
+
+      final response = await http.post(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/cancel-order.php'),
+        headers: SupabaseAuthRepository.staticAuthHeaders,
+        body: jsonEncode({'order_id': orderId}),
+      ).timeout(const Duration(seconds: 15));
+
+      if (!mounted) return;
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Order cancelled successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _load(); // Reload bookings
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Failed to cancel order'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error cancelling order: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Widget _buildBookingCard(Map<String, dynamic> order) {
     final status = (order['current_status'] ?? order['order_status'] ?? 'pending').toString();
     final statusLabel = _statusLabels[status] ?? status;
@@ -317,17 +380,33 @@ class _BookingsScreenState extends State<BookingsScreen> {
                       '₹${order['total_amount'] ?? 0}',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.saffron,
-                        borderRadius: BorderRadius.circular(8),
+                    if (status == 'pending' || status == 'requested')
+                      GestureDetector(
+                        onTap: () => _cancelOrder(order['order_id']?.toString() ?? ''),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade400,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.saffron,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Track / Details',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
                       ),
-                      child: const Text(
-                        'Track / Details',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                    ),
                   ],
                 ),
               ],
