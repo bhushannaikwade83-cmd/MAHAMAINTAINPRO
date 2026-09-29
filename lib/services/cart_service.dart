@@ -103,7 +103,15 @@ class CartService with ChangeNotifier {
 
   // ✅ NEW METHOD: Check if cart has items from different category
   bool hasDifferentCategory(String categoryId) {
-    return _items.isNotEmpty && _items.first.categoryId != categoryId;
+    final isDifferent = _items.isNotEmpty && _items.first.categoryId != categoryId;
+    debugPrint('🔍 hasDifferentCategory check:');
+    debugPrint('   Cart items: ${_items.length}');
+    if (_items.isNotEmpty) {
+      debugPrint('   First item category: ${_items.first.categoryId}');
+      debugPrint('   New item category: $categoryId');
+      debugPrint('   Is different? $isDifferent');
+    }
+    return isDifferent;
   }
 
   bool hasDifferentService(String serviceId) {

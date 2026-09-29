@@ -399,8 +399,11 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
 
                       // ✅ CRITICAL: Load cart from storage first before checking category
                       await cartService.loadCart();
+                      debugPrint('📦 SERVICE CATEGORY SCREEN - Adding service');
+                      debugPrint('   Service: ${service['name']}');
 
                       final serviceCategoryId = '${service['category_id'] ?? 1}';
+                      debugPrint('   Service category ID: $serviceCategoryId');
 
                       // Check if service is from different category
                       if (cartService.hasDifferentCategory(serviceCategoryId)) {
