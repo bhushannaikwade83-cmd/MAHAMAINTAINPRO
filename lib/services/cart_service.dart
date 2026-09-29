@@ -176,6 +176,7 @@ class CartService with ChangeNotifier {
 
   // ✅ ENFORCES SINGLE CATEGORY ONLY - Changed from serviceId to categoryId
   Future<void> addItem(CartItem item) async {
+    debugPrint('📥 addItem() called: ${item.serviceName} | Current cart size: ${_items.length}');
     if (_items.isEmpty || _items.first.categoryId == item.categoryId) {
       final existingIndex = _items.indexWhere((i) => i.id == item.id);
 
