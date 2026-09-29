@@ -216,6 +216,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> with SingleTickerProvid
               addressLabel: selectedAddr['label'] ?? 'Home',
               addressText: '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['street'] ?? ''}, ${selectedAddr['area'] ?? ''}, ${selectedAddr['pincode'] ?? ''}',
               itemCount: cartService.items.length,
+              items: cartService.items.map((item) => item.serviceName).toList(),
             ),
           ),
         );

@@ -189,6 +189,7 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
                   addressText:
                       '${_selectedDate?.toLocal().toString().split(' ')[0]} at ${_selectedSlot!.label}',
                   itemCount: 1,
+                  items: [widget.serviceName],
                 ),
               ),
             );

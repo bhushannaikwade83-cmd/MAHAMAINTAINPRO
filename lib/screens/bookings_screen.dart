@@ -289,11 +289,17 @@ class _BookingsScreenState extends State<BookingsScreen> {
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                           ),
                           const SizedBox(height: 4),
+                          // Show items if available, else show service_count from database
                           if (items.isNotEmpty)
                             Text(items,
                                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                 maxLines: 1,
-                                overflow: TextOverflow.ellipsis),
+                                overflow: TextOverflow.ellipsis)
+                          else if (order['service_count'] != null)
+                            Text(
+                              '${order['service_count']} service${order['service_count'] > 1 ? 's' : ''}',
+                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                            ),
                           if (scheduledAt != null) ...[
                             const SizedBox(height: 4),
                             Text('🗓️ $scheduledAt', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
