@@ -419,168 +419,180 @@ class _CartScreenState extends State<CartScreen> with SingleTickerProviderStateM
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppTheme.saffron.withOpacity(0.15), AppTheme.saffron.withOpacity(0.05)],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.saffron.withOpacity(0.2)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: item.imagePath != null && item.imagePath!.isNotEmpty && item.imagePath!.contains('http')
-                      ? Image.network(
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // IMAGE WITH OVERLAY (Like home screen)
+                if (item.imagePath != null && item.imagePath!.isNotEmpty)
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                        child: Image.network(
                           item.imagePath!,
+                          height: 140,
+                          width: double.infinity,
                           fit: BoxFit.cover,
+                          filterQuality: FilterQuality.high,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [AppTheme.saffron.withOpacity(0.2), AppTheme.saffron.withOpacity(0.1)],
-                                ),
-                              ),
+                              height: 140,
+                              color: AppTheme.saffron.withOpacity(0.1),
                               child: Center(
-                                child: Text(
-                                  item.serviceIcon.isNotEmpty ? item.serviceIcon : '✨',
-                                  style: const TextStyle(fontSize: 26),
-                                ),
+                                child: Icon(Icons.image_not_supported_outlined, size: 40, color: AppTheme.saffron.withOpacity(0.4)),
                               ),
                             );
                           },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.grey.shade100, Colors.grey.shade50],
-                                ),
-                              ),
+                              height: 140,
+                              color: Colors.grey.shade100,
                               child: Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation(AppTheme.saffron),
-                                  ),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation(AppTheme.saffron),
                                 ),
                               ),
                             );
                           },
-                          cacheWidth: 112,
-                          cacheHeight: 112,
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppTheme.saffron.withOpacity(0.2), AppTheme.saffron.withOpacity(0.1)],
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              item.serviceIcon.isNotEmpty ? item.serviceIcon : '🛍️',
-                              style: const TextStyle(fontSize: 26),
-                            ),
-                          ),
+                          cacheWidth: 500,
+                          cacheHeight: 280,
                         ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.serviceName,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.schedule, size: 12, color: Colors.grey.shade500),
-                        const SizedBox(width: 4),
-                        Text(
-                          item.duration,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
+                      // Gradient Overlay
+                      Container(
+                        height: 140,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.center,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black38],
                           ),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      // Service Name on Image
+                      Positioned(
+                        bottom: 12,
+                        left: 16,
+                        right: 16,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.serviceName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                // Details Section
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Duration & Price in Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.schedule_rounded, size: 13, color: Colors.grey.shade500),
+                              const SizedBox(width: 6),
+                              Text(
+                                item.duration,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            item.price,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.saffron,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Quantity Controls
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppTheme.saffron.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                if (item.quantity == 1) {
+                                  cartService.removeItem(item.id);
+                                } else {
+                                  cartService.updateQuantity(item.id, item.quantity - 1);
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                child: Icon(Icons.remove, size: 16, color: AppTheme.saffron),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                '${item.quantity}',
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => cartService.updateQuantity(item.id, item.quantity + 1),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                child: Icon(Icons.add, size: 16, color: AppTheme.saffron),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    item.price,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.saffron,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppTheme.saffron.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            if (item.quantity == 1) {
-                              cartService.removeItem(item.id);
-                            } else {
-                              cartService.updateQuantity(item.id, item.quantity - 1);
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            child: Icon(Icons.remove, size: 16, color: AppTheme.saffron),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Text(
-                            '${item.quantity}',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => cartService.updateQuantity(item.id, item.quantity + 1),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            child: Icon(Icons.add, size: 16, color: AppTheme.saffron),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-        if (index < total - 1) Divider(color: Colors.grey.shade100, height: 1, indent: 16, endIndent: 16),
       ],
     );
   }
