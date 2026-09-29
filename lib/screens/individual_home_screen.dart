@@ -315,19 +315,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
           }
           debugPrint('✅ Services loaded from database: ${homeServices.length} categories found');
 
-          // Debug: Check image paths for each category
-          for (var category in categoriesData) {
-            final name = category['name'] ?? 'Unknown';
-            final imagePath = category['image_path'];
-            final serviceCount = (category['services'] as List?)?.length ?? 0;
-            debugPrint('📸 [$name] image_path: $imagePath | Services: $serviceCount');
-
-            if (imagePath == null || imagePath.toString().isEmpty) {
-              debugPrint('⚠️ WARNING: Empty image_path for $name');
-            } else {
-              debugPrint('🖼️ URL for $name: $imagePath');
-            }
-          }
         } else {
           debugPrint('❌ API success=false or no categories');
         }
@@ -1462,8 +1449,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     required String time,
     required bool isSmall,
   }) {
-    debugPrint('🎨 Building image card for $name: $imagePath');
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Stack(
