@@ -43,13 +43,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         .toList();
   }
 
-  void _addToCartAndCheckout() async {
+  void _addToCartAndCheckout() {
     final service = widget.service;
     final cartService = CartService();
     final serviceCategoryId = '${service['category_id'] ?? ''}';
-
-    // ✅ LOAD persisted cart from SharedPreferences before checking category
-    await cartService.loadCart();
 
     final cartItem = CartItem(
       id: '${service['id']}',

@@ -394,12 +394,9 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   ),
                   const SizedBox(width: 10),
                   GestureDetector(
-                    onTap: () async {
+                    onTap: () {
                       final cartService = CartService();
                       final serviceCategoryId = '${service['category_id'] ?? 1}';
-
-                      // ✅ LOAD persisted cart from SharedPreferences before checking category
-                      await cartService.loadCart();
 
                       // Check if service is from different category
                       if (cartService.hasDifferentCategory(serviceCategoryId)) {
