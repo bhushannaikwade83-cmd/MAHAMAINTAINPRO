@@ -394,8 +394,12 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   ),
                   const SizedBox(width: 10),
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       final cartService = CartService();
+
+                      // ✅ CRITICAL: Load cart from storage first before checking category
+                      await cartService.loadCart();
+
                       final serviceCategoryId = '${service['category_id'] ?? 1}';
 
                       // Check if service is from different category

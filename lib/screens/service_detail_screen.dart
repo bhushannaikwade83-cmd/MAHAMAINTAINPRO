@@ -43,9 +43,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         .toList();
   }
 
-  void _addToCartAndCheckout() {
+  void _addToCartAndCheckout() async {
     final service = widget.service;
     final cartService = CartService();
+
+    // ✅ CRITICAL: Load cart from storage first before checking category
+    await cartService.loadCart();
+
     final serviceCategoryId = '${service['category_id'] ?? ''}';
 
     final cartItem = CartItem(
