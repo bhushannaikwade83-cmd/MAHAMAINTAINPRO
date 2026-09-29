@@ -107,9 +107,16 @@ class CartService with ChangeNotifier {
     debugPrint('🔍 hasDifferentServiceByName check:');
     debugPrint('   Cart items: ${_items.length}');
     if (_items.isNotEmpty) {
-      debugPrint('   First item serviceName: ${_items.first.serviceName}');
-      debugPrint('   New item serviceName: $serviceName');
+      debugPrint('   First item serviceName: "${_items.first.serviceName}"');
+      debugPrint('   New item serviceName: "$serviceName"');
+      debugPrint('   Names match? ${_items.first.serviceName == serviceName}');
       debugPrint('   Is different? $isDifferent');
+
+      // Print each character to check for hidden spaces/differences
+      if (_items.first.serviceName != serviceName) {
+        debugPrint('   First item chars: ${_items.first.serviceName.split('').map((c) => "'$c' (${c.codeUnitAt(0)})").join(', ')}');
+        debugPrint('   New item chars: ${serviceName.split('').map((c) => "'$c' (${c.codeUnitAt(0)})").join(', ')}');
+      }
     }
     return isDifferent;
   }
