@@ -436,9 +436,10 @@ class _CartScreenState extends State<CartScreen> with SingleTickerProviderStateM
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // IMAGE WITH OVERLAY (Like home screen)
-                if (item.imagePath != null && item.imagePath!.isNotEmpty)
-                  Stack(
-                    children: [
+                Stack(
+                  children: [
+                    // Image or Emoji Background
+                    if (item.imagePath != null && item.imagePath!.isNotEmpty)
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
                         child: Image.network(
@@ -448,13 +449,7 @@ class _CartScreenState extends State<CartScreen> with SingleTickerProviderStateM
                           fit: BoxFit.cover,
                           filterQuality: FilterQuality.high,
                           errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 140,
-                              color: AppTheme.saffron.withOpacity(0.1),
-                              child: Center(
-                                child: Icon(Icons.image_not_supported_outlined, size: 40, color: AppTheme.saffron.withOpacity(0.4)),
-                              ),
-                            );
+                            return _buildEmojiBackground(item.serviceIcon, 140);
                           },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
@@ -472,44 +467,46 @@ class _CartScreenState extends State<CartScreen> with SingleTickerProviderStateM
                           cacheWidth: 500,
                           cacheHeight: 280,
                         ),
-                      ),
-                      // Gradient Overlay
-                      Container(
-                        height: 140,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.center,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black38],
-                          ),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                      )
+                    else
+                      _buildEmojiBackground(item.serviceIcon, 140),
+                    // Gradient Overlay
+                    Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.center,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black38],
                         ),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
                       ),
-                      // Service Name on Image
-                      Positioned(
-                        bottom: 12,
-                        left: 16,
-                        right: 16,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.serviceName,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.3,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                    ),
+                    // Service Name on Image
+                    Positioned(
+                      bottom: 12,
+                      left: 16,
+                      right: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.serviceName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.3,
                             ),
-                          ],
-                        ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
                 // Details Section
                 Padding(
                   padding: const EdgeInsets.all(14),
@@ -620,6 +617,29 @@ class _CartScreenState extends State<CartScreen> with SingleTickerProviderStateM
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmojiBackground(String emoji, double height) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+      child: Container(
+        height: height,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppTheme.saffron.withOpacity(0.15), AppTheme.saffron.withOpacity(0.05)],
+          ),
+        ),
+        child: Center(
+          child: Text(
+            emoji,
+            style: const TextStyle(fontSize: 80),
+          ),
+        ),
+      ),
     );
   }
 }
