@@ -127,8 +127,16 @@ class CartService with ChangeNotifier {
   }
 
   bool hasDifferentCategory(String categoryId) {
-    // Deprecated: Use hasDifferentService instead (SERVICE-based enforcement, not category-based)
-    return false;  // Always return false, check service instead
+    // ✅ CATEGORY-BASED enforcement: Only same category allowed
+    final isDifferent = _items.isNotEmpty && _items.first.categoryId != categoryId;
+    debugPrint('🔍 hasDifferentCategory check:');
+    debugPrint('   Cart items: ${_items.length}');
+    if (_items.isNotEmpty) {
+      debugPrint('   First item categoryId: ${_items.first.categoryId}');
+      debugPrint('   New item categoryId: $categoryId');
+      debugPrint('   Is different category? $isDifferent');
+    }
+    return isDifferent;
   }
 
   Future<void> loadCart() async {

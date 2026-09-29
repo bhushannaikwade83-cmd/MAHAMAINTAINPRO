@@ -452,12 +452,12 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       debugPrint('   Service: ${service['name']}');
 
                       final serviceId = '${service['id']}';
-                      final serviceName = service['name'] ?? 'Service';
                       final serviceCategoryId = widget.categoryId;
-                      debugPrint('   Service: $serviceName');
+                      debugPrint('   Service: ${service['name']}');
+                      debugPrint('   Service Category ID: $serviceCategoryId');
 
-                      // Check if trying to add DIFFERENT SERVICE (by name, allows same service from diff categories)
-                      if (cartService.hasDifferentServiceByName(serviceName)) {
+                      // Check if trying to add from DIFFERENT CATEGORY
+                      if (cartService.hasDifferentCategory(serviceCategoryId)) {
                         // Show conflict dialog
                         showDialog(
                           context: context,
