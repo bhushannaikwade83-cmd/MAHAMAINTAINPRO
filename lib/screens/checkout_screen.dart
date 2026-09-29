@@ -237,11 +237,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   void _handlePaymentSuccess(Map<String, dynamic> result, String orderId) async {
     final cartService = Provider.of<CartService>(context, listen: false);
 
-    debugPrint('🟢 PAYMENT SUCCESS - Creating OrderConfirmation');
-    debugPrint('   Order ID: $orderId');
-    debugPrint('   Cart items count: ${cartService.items.length}');
-    debugPrint('   Cart items: ${cartService.items.map((i) => i.serviceName).toList()}');
-
     // Step 3: Verify payment with backend
     final verifyResult = await _orderRepository.verifyPayment(
       orderId: orderId,
