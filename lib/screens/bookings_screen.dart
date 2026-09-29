@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_theme.dart';
 import '../repositories/auth_repository.dart';
 import 'order_tracking_screen.dart';
@@ -59,28 +60,45 @@ class _BookingsScreenState extends State<BookingsScreen> {
   Future<void> _load({bool silent = false}) async {
     if (!silent) setState(() => _loading = true);
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final userPhone = prefs.getString('userPhone');
+
+      if (userPhone == null) {
+        setState(() {
+          _loading = false;
+          _error = 'User phone not found';
+        });
+        return;
+      }
+
       final response = await http
-          .get(
+          .post(
             Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-orders.php'),
             headers: SupabaseAuthRepository.staticAuthHeaders,
+            body: jsonEncode({'phone_number': userPhone}),
           )
           .timeout(const Duration(seconds: 15));
 
       if (!mounted) return;
       final data = jsonDecode(response.body);
+      debugPrint('📦 Orders API Response: ${data['success']} | Orders count: ${(data['orders'] as List?)?.length ?? 0}');
+
       if (response.statusCode == 200 && data['success'] == true) {
         setState(() {
           _orders = List<Map<String, dynamic>>.from(data['orders'] ?? []);
           _loading = false;
           _error = null;
         });
+        debugPrint('✅ Loaded ${_orders.length} orders for user $userPhone');
       } else if (!silent) {
         setState(() {
           _loading = false;
           _error = data['message']?.toString() ?? 'Could not load bookings';
         });
+        debugPrint('❌ Error: ${_error}');
       }
     } catch (e) {
+      debugPrint('❌ Error loading orders: $e');
       if (!mounted) return;
       if (!silent) {
         setState(() {
