@@ -419,7 +419,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                 child: const Text('Cancel'),
                               ),
                               TextButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.pop(context);
                                   setState(() => service['quantity']++);
 
