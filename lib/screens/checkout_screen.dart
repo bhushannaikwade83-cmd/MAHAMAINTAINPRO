@@ -489,12 +489,23 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                '${addr['building_name'] ?? ''}, ${addr['area'] ?? ''}',
+                [
+                  addr['building_name'] ?? '',
+                  addr['street'] ?? '',
+                  addr['area'] ?? '',
+                ].where((s) => s.isNotEmpty).join(', '),
                 style: const TextStyle(
-                    fontSize: 14, height: 1.3, fontWeight: FontWeight.w600, color: _AppColors.ink),
+                    fontSize: 13, height: 1.4, fontWeight: FontWeight.w600, color: _AppColors.ink),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 6),
               Text(
-                'PIN ${addr['pincode'] ?? ''}',
+                [
+                  addr['city'] ?? '',
+                  addr['state'] ?? '',
+                  '${addr['pincode'] ?? ''}'
+                ].where((s) => s.isNotEmpty).join(', '),
                 style: const TextStyle(fontSize: 12, color: _AppColors.inkSoft),
               ),
             ]),
