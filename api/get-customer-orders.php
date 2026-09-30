@@ -66,17 +66,27 @@ try {
 
     $query .= " GROUP BY o.order_id ORDER BY o.created_at DESC LIMIT 50";
 
+    error_log('🔍 [get-customer-orders] SQL Query: ' . $query);
+    error_log('📱 [get-customer-orders] Phone param: ' . $phone);
+    error_log('🔎 [get-customer-orders] Filter: ' . $filter);
+
     $stmt = $conn->prepare($query);
     if (!$stmt) {
+        error_log('❌ Prepare failed: ' . $conn->error);
         throw new Exception("Prepare failed: " . $conn->error);
     }
+
+    error_log('✅ Statement prepared');
 
     $stmt->bind_param('s', $phone);
     $stmt->execute();
     $result = $stmt->get_result();
 
+    error_log('📊 Result rows: ' . $result->num_rows);
+
     $orders = [];
     while ($row = $result->fetch_assoc()) {
+        error_log('📍 Processing order: ' . $row['order_id']);
         $orders[] = [
             'id' => (int)$row['id'],
             'order_id' => $row['order_id'],
