@@ -133,8 +133,8 @@ try {
     }
     $stmt->close();
 
-    // Generate OTP for job completion verification
-    $completionOtp = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+    // Generate 6-digit OTP for job completion verification
+    $completionOtp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
 
     // Update order with OTP (directly in orders table)
     $updateOtpQuery = "UPDATE orders SET completion_otp = ? WHERE order_id = ?";

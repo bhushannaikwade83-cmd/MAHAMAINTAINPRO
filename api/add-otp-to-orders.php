@@ -17,8 +17,8 @@ try {
     $checkCol = $conn->query("SHOW COLUMNS FROM orders LIKE 'completion_otp'");
 
     if ($checkCol->num_rows === 0) {
-        // Add completion_otp column
-        $sql = "ALTER TABLE orders ADD COLUMN completion_otp VARCHAR(10) NOT NULL DEFAULT ''";
+        // Add completion_otp column (6-digit OTP)
+        $sql = "ALTER TABLE orders ADD COLUMN completion_otp VARCHAR(6) NOT NULL DEFAULT ''";
 
         if ($conn->query($sql) === TRUE) {
             echo json_encode([
