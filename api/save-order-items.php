@@ -78,7 +78,7 @@ try {
         $quantity = intval($item['quantity'] ?? 1);
         $subtotal = $price * $quantity;
 
-        $stmt->bind_param("isisdid", $orderId, $serviceId, $serviceName, $category, $price, $quantity, $subtotal);
+        $stmt->bind_param("sisidid", $orderId, $serviceId, $serviceName, $category, $price, $quantity, $subtotal);
 
         if (!$stmt->execute()) {
             throw new Exception("Execute failed for item: " . $stmt->error);
