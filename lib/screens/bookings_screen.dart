@@ -72,10 +72,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
       }
 
       final response = await http
-          .post(
-            Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-orders.php'),
+          .get(
+            Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-customer-orders.php?phone=$userPhone&filter=all'),
             headers: SupabaseAuthRepository.staticAuthHeaders,
-            body: jsonEncode({'phone_number': userPhone}),
           )
           .timeout(const Duration(seconds: 15));
 
