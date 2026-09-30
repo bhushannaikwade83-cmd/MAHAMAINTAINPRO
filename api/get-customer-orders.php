@@ -30,37 +30,74 @@ try {
         throw new Exception('Phone number is required');
     }
 
-    $query = "
-        SELECT
-            o.id,
-            o.order_id,
-            o.total_amount as amount,
-            o.order_status,
-            o.completion_otp,
-            o.created_at,
-            o.before_photo_url,
-            o.after_photo_url,
-            o.payment_screenshot_url,
-            o.customer_signature_url,
-            o.work_description,
-            o.parts_used,
-            o.additional_charges,
-            o.pincode,
-            o.vendor_id,
-            a.full_address,
-            GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services,
-            COALESCE(r.rating, 0) as vendor_rating,
-            COALESCE(r.comment, '') as vendor_comment,
-            v.name as vendor_name,
-            ROUND(AVG(r2.rating), 1) as vendor_avg_rating
-        FROM orders o
-        LEFT JOIN order_items oi ON o.order_id = oi.order_id
-        LEFT JOIN addresses a ON o.address_id = a.id
-        LEFT JOIN ratings r ON o.order_id = r.order_id
-        LEFT JOIN vendors v ON o.vendor_id = v.id
-        LEFT JOIN ratings r2 ON o.vendor_id = r2.vendor_id
-        WHERE o.phone_number = ?
-    ";
+    // Check if ratings table exists first
+    $tableCheckResult = $conn->query("SHOW TABLES LIKE 'ratings'");
+    $ratingsTableExists = $tableCheckResult && $tableCheckResult->num_rows > 0;
+
+    if ($ratingsTableExists) {
+        $query = "
+            SELECT
+                o.id,
+                o.order_id,
+                o.total_amount as amount,
+                o.order_status,
+                o.completion_otp,
+                o.created_at,
+                o.before_photo_url,
+                o.after_photo_url,
+                o.payment_screenshot_url,
+                o.customer_signature_url,
+                o.work_description,
+                o.parts_used,
+                o.additional_charges,
+                o.pincode,
+                o.vendor_id,
+                a.full_address,
+                GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services,
+                COALESCE(r.rating, 0) as vendor_rating,
+                COALESCE(r.comment, '') as vendor_comment,
+                v.name as vendor_name,
+                ROUND(AVG(r2.rating), 1) as vendor_avg_rating
+            FROM orders o
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            LEFT JOIN addresses a ON o.address_id = a.id
+            LEFT JOIN ratings r ON o.order_id = r.order_id
+            LEFT JOIN vendors v ON o.vendor_id = v.id
+            LEFT JOIN ratings r2 ON o.vendor_id = r2.vendor_id
+            WHERE o.phone_number = ?
+        ";
+    } else {
+        // Fallback query if ratings table doesn't exist yet
+        $query = "
+            SELECT
+                o.id,
+                o.order_id,
+                o.total_amount as amount,
+                o.order_status,
+                o.completion_otp,
+                o.created_at,
+                o.before_photo_url,
+                o.after_photo_url,
+                o.payment_screenshot_url,
+                o.customer_signature_url,
+                o.work_description,
+                o.parts_used,
+                o.additional_charges,
+                o.pincode,
+                o.vendor_id,
+                a.full_address,
+                GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services,
+                0 as vendor_rating,
+                '' as vendor_comment,
+                v.name as vendor_name,
+                0 as vendor_avg_rating
+            FROM orders o
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            LEFT JOIN addresses a ON o.address_id = a.id
+            LEFT JOIN vendors v ON o.vendor_id = v.id
+            WHERE o.phone_number = ?
+        ";
+    }
 
     // Apply filter
     if ($filter === 'pending') {
