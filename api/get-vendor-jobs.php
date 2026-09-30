@@ -96,9 +96,12 @@ try {
             o.after_photo_url,
             o.payment_screenshot_url,
             o.customer_signature_url,
+            o.pincode,
+            a.full_address,
             GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services
         FROM orders o
         LEFT JOIN order_items oi ON o.order_id = oi.order_id
+        LEFT JOIN addresses a ON o.address_id = a.id
         WHERE o.vendor_id = ? AND (
             o.vendor_status IN ('accepted', 'in_progress', 'completed')
             OR o.order_status IN ('accepted', 'service_started', 'service_completed')
