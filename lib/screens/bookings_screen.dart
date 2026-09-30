@@ -336,99 +336,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
     }
   }
 
-  Future<void> _showRatingDialog(Map<String, dynamic> order) async {
-    int rating = 5;
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rate This Service'),
-        content: StatefulBuilder(
-          builder: (context, setState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) {
-                  return GestureDetector(
-                    onTap: () => setState(() => rating = i + 1),
-                    child: Icon(
-                      i < rating ? Icons.star : Icons.star_outline,
-                      color: Colors.amber,
-                      size: 32,
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  hintText: 'Add comment (optional)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                maxLines: 3,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => _submitRating(order, rating, controller.text),
-            child: const Text('Submit'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _submitRating(Map<String, dynamic> order, int rating, String comment) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/save-rating.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-        body: jsonEncode({
-          'order_id': order['order_id'],
-          'vendor_id': order['vendor_id'],
-          'customer_phone': order['phone_number'],
-          'rating': rating,
-          'comment': comment,
-        }),
-      );
-
-      if (!mounted) return;
-      final data = jsonDecode(response.body);
-
-      if (data['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Rating submitted! Thank you'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context);
-        _load();
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
-    }
-  }
-
   Widget _buildBookingCard(Map<String, dynamic> order) {
     final status = (order['status'] ?? order['order_status'] ?? 'pending').toString();
     final statusLabel = _statusLabels[status] ?? status;
     final services = order['services']?.toString() ?? 'Service';
     final otp = order['completion_otp']?.toString() ?? '';
-    final isCompleted = status == 'service_completed';
-    final isRated = order['is_rated'] == true;
-    final vendorRating = (order['vendor_rating'] as num?)?.toDouble() ?? 0.0;
 
     final orderId = order['id'] is int ? order['id'] as int : int.tryParse('${order['id']}') ?? 0;
 
@@ -550,34 +462,14 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 ),
               if (otp.isNotEmpty) const SizedBox(height: 12),
 
-              // Amount + Vendor Rating
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '₹${order['amount'] ?? 0}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                  if (vendorRating > 0)
-                    Row(
-                      children: [
-                        Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade600),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$vendorRating',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.amber.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
+              // Amount
+              Text(
+                '₹${order['amount'] ?? 0}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E293B),
+                ),
               ),
               const SizedBox(height: 12),
 
@@ -629,31 +521,6 @@ class _BookingsScreenState extends State<BookingsScreen> {
                         ),
                       ),
                     ),
-                  if (isCompleted && !isRated) ...[
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _showRatingDialog(order),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade100,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.amber.shade300),
-                          ),
-                          child: Text(
-                            '⭐ Rate',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.amber.shade700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ],
