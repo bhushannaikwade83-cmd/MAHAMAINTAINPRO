@@ -76,9 +76,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
       }
 
       debugPrint('🔄 Fetching orders for phone: $userPhone');
+      debugPrint('📞 Phone length: ${userPhone.length}');
+      debugPrint('📞 Phone bytes: ${userPhone.codeUnits}');
+
+      final apiUrl = 'https://digitrixmedia.com/mahamaintainpro/api/get-customer-orders.php?phone=$userPhone&filter=all';
+      debugPrint('🌐 API URL: $apiUrl');
+      debugPrint('🔐 Headers: ${SupabaseAuthRepository.staticAuthHeaders}');
+
       final response = await http
           .get(
-            Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-customer-orders.php?phone=$userPhone&filter=all'),
+            Uri.parse(apiUrl),
             headers: SupabaseAuthRepository.staticAuthHeaders,
           )
           .timeout(const Duration(seconds: 15));
