@@ -37,8 +37,8 @@ try {
         throw new Exception('Action must be "accept" or "reject"');
     }
 
-    // Verify this order belongs to this vendor
-    $checkQuery = "SELECT vendor_id, vendor_status FROM orders WHERE order_id = ?";
+    // Verify this order exists and is available (vendor_id can be NULL for new orders)
+    $checkQuery = "SELECT vendor_id, order_status FROM orders WHERE order_id = ?";
     $stmt = $conn->prepare($checkQuery);
     if (!$stmt) {
         throw new Exception('Prepare failed: ' . $conn->error);
@@ -53,8 +53,14 @@ try {
         throw new Exception('Order not found');
     }
 
-    if ($order['vendor_id'] !== $vendorId) {
-        throw new Exception('This order is not assigned to this vendor');
+    // If vendor_id is already set AND it's different vendor, reject
+    if (!empty($order['vendor_id']) && $order['vendor_id'] !== $vendorId) {
+        throw new Exception('This order is already assigned to another vendor');
+    }
+
+    // For accept: verify order is still pending/requested
+    if ($action === 'accept' && !in_array($order['order_status'], ['pending', 'requested'])) {
+        throw new Exception('Order is no longer available');
     }
 
     // Update order status based on action
