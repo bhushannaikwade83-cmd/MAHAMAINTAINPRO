@@ -66,23 +66,37 @@ try {
 
     $query .= " GROUP BY o.order_id ORDER BY o.created_at DESC LIMIT 50";
 
-    error_log('🔍 [get-customer-orders] SQL Query: ' . $query);
-    error_log('📱 [get-customer-orders] Phone param: ' . $phone);
-    error_log('🔎 [get-customer-orders] Filter: ' . $filter);
+    error_log('═══════════════════════════════════════');
+    error_log('🔍 [get-customer-orders] START');
+    error_log('📱 Phone param: "' . $phone . '"');
+    error_log('🔎 Filter: "' . $filter . '"');
+    error_log('🔍 SQL (first 200 chars): ' . substr($query, 0, 200));
 
     $stmt = $conn->prepare($query);
     if (!$stmt) {
-        error_log('❌ Prepare failed: ' . $conn->error);
+        error_log('❌ Prepare FAILED: ' . $conn->error);
         throw new Exception("Prepare failed: " . $conn->error);
     }
-
     error_log('✅ Statement prepared');
 
     $stmt->bind_param('s', $phone);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    if (!$stmt->execute()) {
+        error_log('❌ Execute FAILED: ' . $stmt->error);
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    error_log('✅ Query executed');
 
+    $result = $stmt->get_result();
     error_log('📊 Result rows: ' . $result->num_rows);
+
+    if ($result->num_rows === 0) {
+        error_log('⚠️ NO ROWS RETURNED!');
+        $simpleCount = "SELECT COUNT(*) as cnt FROM orders WHERE phone_number = '$phone'";
+        $cntResult = $conn->query($simpleCount);
+        $cntRow = $cntResult->fetch_assoc();
+        error_log('🔎 Simple count: ' . $cntRow['cnt'] . ' orders for phone ' . $phone);
+    }
+    error_log('═══════════════════════════════════════');
 
     $orders = [];
     while ($row = $result->fetch_assoc()) {
