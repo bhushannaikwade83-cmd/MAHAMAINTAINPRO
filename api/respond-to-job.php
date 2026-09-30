@@ -60,17 +60,37 @@ try {
     // Update order status based on action
     $newStatus = ($action === 'accept') ? 'accepted' : 'rejected';
 
-    $updateQuery = "UPDATE orders SET vendor_status = ?, updated_at = NOW() WHERE order_id = ?";
-    $stmt = $conn->prepare($updateQuery);
-    if (!$stmt) {
-        throw new Exception('Prepare failed: ' . $conn->error);
+    // For accept: update vendor_id. For reject: just update status
+    if ($action === 'accept') {
+        $updateQuery = "UPDATE orders SET vendor_id = ?, order_status = ?, updated_at = NOW() WHERE order_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        if (!$stmt) {
+            throw new Exception('Prepare failed: ' . $conn->error);
+        }
+        $stmt->bind_param('iss', $vendorId, $newStatus, $bookingId);
+    } else {
+        $updateQuery = "UPDATE orders SET order_status = ?, updated_at = NOW() WHERE order_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        if (!$stmt) {
+            throw new Exception('Prepare failed: ' . $conn->error);
+        }
+        $stmt->bind_param('ss', $newStatus, $bookingId);
     }
-    $stmt->bind_param('ss', $newStatus, $bookingId);
 
     if (!$stmt->execute()) {
         throw new Exception('Update failed: ' . $stmt->error);
     }
     $stmt->close();
+
+    // Log to order_status table for audit trail
+    $logQuery = "INSERT INTO order_status (order_id, status, changed_at) VALUES (?, ?, NOW())";
+    $logStmt = $conn->prepare($logQuery);
+    if (!$logStmt) {
+        throw new Exception('Log prepare failed: ' . $conn->error);
+    }
+    $logStmt->bind_param('ss', $bookingId, $newStatus);
+    $logStmt->execute();
+    $logStmt->close();
 
     http_response_code(200);
     echo json_encode([
