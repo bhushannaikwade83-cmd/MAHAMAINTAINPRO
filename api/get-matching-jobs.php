@@ -99,6 +99,7 @@ try {
         $jobQuery = "SELECT
             o.id, o.order_id, o.phone_number, o.address_id, o.pincode, o.total_amount,
             o.service_count, o.scheduled_at, o.created_at,
+            o.before_photo_url, o.after_photo_url, o.payment_screenshot_url, o.customer_signature_url,
             GROUP_CONCAT(oi.service_name SEPARATOR ', ') as service_names,
             GROUP_CONCAT(oi.category SEPARATOR ', ') as categories,
             a.full_address
@@ -123,6 +124,7 @@ try {
         $jobQuery = "SELECT
             o.id, o.order_id, o.phone_number, o.address_id, o.pincode, o.total_amount,
             o.service_count, o.scheduled_at, o.created_at,
+            o.before_photo_url, o.after_photo_url, o.payment_screenshot_url, o.customer_signature_url,
             GROUP_CONCAT(oi.service_name SEPARATOR ', ') as service_names,
             GROUP_CONCAT(oi.category SEPARATOR ', ') as categories,
             a.full_address
@@ -180,6 +182,30 @@ try {
         ];
     }
     $jobStmt->close();
+
+    // Convert relative photo URLs to absolute
+    function makeAbsoluteUrl($url) {
+        if (empty($url)) return null;
+        if (strpos($url, 'https://') === 0 || strpos($url, 'http://') === 0) {
+            return $url;
+        }
+        return 'https://' . $_SERVER['HTTP_HOST'] . $url;
+    }
+
+    foreach ($jobs as &$job) {
+        if (isset($job['before_photo_url'])) {
+            $job['before_photo_url'] = makeAbsoluteUrl($job['before_photo_url']);
+        }
+        if (isset($job['after_photo_url'])) {
+            $job['after_photo_url'] = makeAbsoluteUrl($job['after_photo_url']);
+        }
+        if (isset($job['payment_screenshot_url'])) {
+            $job['payment_screenshot_url'] = makeAbsoluteUrl($job['payment_screenshot_url']);
+        }
+        if (isset($job['customer_signature_url'])) {
+            $job['customer_signature_url'] = makeAbsoluteUrl($job['customer_signature_url']);
+        }
+    }
 
     http_response_code(200);
     error_log("Success! Returning " . count($jobs) . " jobs", 3, $logfile);
