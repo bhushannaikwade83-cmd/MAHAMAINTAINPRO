@@ -22,6 +22,21 @@ if ($conn->connect_error) {
     exit();
 }
 
+// Auto-create ratings table if it doesn't exist
+$createRatingsSQL = "CREATE TABLE IF NOT EXISTS ratings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id VARCHAR(50) NOT NULL UNIQUE,
+    vendor_id INT NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    rating INT NOT NULL,
+    comment TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_vendor_id (vendor_id),
+    INDEX idx_customer_phone (customer_phone)
+)";
+$conn->query($createRatingsSQL);
+
 try {
     $phone = $_GET['phone'] ?? null;
     $filter = $_GET['filter'] ?? 'all';
