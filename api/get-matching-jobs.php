@@ -42,6 +42,9 @@ try {
     // Get vendor's service categories (as IDs for matching with order_items)
     $categoryQuery = "SELECT category_id FROM vendor_service_categories WHERE vendor_id = ?";
     $categoryStmt = $conn->prepare($categoryQuery);
+    if (!$categoryStmt) {
+        throw new Exception("Category query prepare failed: " . $conn->error);
+    }
     $categoryStmt->bind_param("i", $vendor_id);
     $categoryStmt->execute();
     $categoryResult = $categoryStmt->get_result();
@@ -55,6 +58,9 @@ try {
     // Get vendor's service pincodes
     $pincodeQuery = "SELECT pincode FROM vendor_pincodes WHERE vendor_id = ?";
     $pincodeStmt = $conn->prepare($pincodeQuery);
+    if (!$pincodeStmt) {
+        throw new Exception("Pincode query prepare failed: " . $conn->error);
+    }
     $pincodeStmt->bind_param("i", $vendor_id);
     $pincodeStmt->execute();
     $pincodeResult = $pincodeStmt->get_result();
@@ -97,6 +103,9 @@ try {
         ORDER BY o.created_at DESC LIMIT 50";
 
         $jobStmt = $conn->prepare($jobQuery);
+        if (!$jobStmt) {
+            throw new Exception("Job query prepare failed (with categories): " . $conn->error);
+        }
         $types = str_repeat('s', count($vendorPincodes)) . str_repeat('i', count($vendorCategories));
         $params = array_merge($vendorPincodes, $vendorCategories);
         $jobStmt->bind_param($types, ...$params);
@@ -117,6 +126,9 @@ try {
         ORDER BY o.created_at DESC LIMIT 50";
 
         $jobStmt = $conn->prepare($jobQuery);
+        if (!$jobStmt) {
+            throw new Exception("Job query prepare failed (no categories): " . $conn->error);
+        }
         $types = str_repeat('s', count($vendorPincodes));
         $params = $vendorPincodes;
         $jobStmt->bind_param($types, ...$params);
