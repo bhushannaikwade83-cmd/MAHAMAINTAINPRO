@@ -92,7 +92,7 @@ try {
             o.service_count, o.scheduled_at, o.created_at,
             GROUP_CONCAT(oi.service_name SEPARATOR ', ') as service_names,
             GROUP_CONCAT(oi.category SEPARATOR ', ') as categories,
-            a.full_address, a.society_name
+            a.full_address
         FROM orders o
         LEFT JOIN order_items oi ON o.order_id = oi.order_id
         LEFT JOIN addresses a ON o.address_id = a.id
@@ -116,7 +116,7 @@ try {
             o.service_count, o.scheduled_at, o.created_at,
             GROUP_CONCAT(oi.service_name SEPARATOR ', ') as service_names,
             GROUP_CONCAT(oi.category SEPARATOR ', ') as categories,
-            a.full_address, a.society_name
+            a.full_address
         FROM orders o
         LEFT JOIN order_items oi ON o.order_id = oi.order_id
         LEFT JOIN addresses a ON o.address_id = a.id
@@ -154,7 +154,7 @@ try {
             'customer_phone' => $row['phone_number'],
             'service_name' => $row['service_names'],
             'service_category_id' => 1,
-            'location_address' => $row['full_address'] ?? $row['society_name'] ?? 'N/A',
+            'location_address' => $row['full_address'] ?? 'N/A',
             'pincode' => $row['pincode'],
             'budget' => (int)$row['total_amount'],
             'amount' => (int)$row['total_amount'],
