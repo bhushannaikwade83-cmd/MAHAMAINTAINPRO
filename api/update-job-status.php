@@ -170,8 +170,8 @@ try {
         }
 
         // Update order with completion data
-        $updateFields = ['status = ?'];
-        $params = ['completed'];
+        $updateFields = ['order_status = ?'];
+        $params = ['service_completed'];
 
         if (!empty($photos['after'])) {
             $updateFields[] = 'after_photo_url = ?';
