@@ -71,12 +71,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
         return;
       }
 
+      debugPrint('🔄 Fetching orders for phone: $userPhone');
       final response = await http
           .get(
             Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-customer-orders.php?phone=$userPhone&filter=all'),
             headers: SupabaseAuthRepository.staticAuthHeaders,
           )
           .timeout(const Duration(seconds: 15));
+
+      debugPrint('📡 HTTP Status Code: ${response.statusCode}');
+      debugPrint('📄 Raw Response Body: ${response.body}');
 
       if (!mounted) return;
       final data = jsonDecode(response.body);
@@ -89,6 +93,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
           _error = null;
         });
         debugPrint('✅ Loaded ${_orders.length} orders for user $userPhone');
+        for (var i = 0; i < _orders.length; i++) {
+          debugPrint('   Order $i: ${_orders[i]['order_id']} - ${_orders[i]['status']} - OTP: ${_orders[i]['completion_otp']}');
+        }
       } else if (!silent) {
         setState(() {
           _loading = false;

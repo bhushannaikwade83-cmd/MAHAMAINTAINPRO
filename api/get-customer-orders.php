@@ -24,90 +24,44 @@ if ($conn->connect_error) {
 
 try {
     $phone = $_GET['phone'] ?? null;
-    $filter = $_GET['filter'] ?? 'all'; // all, pending, completed, rated
+    $filter = $_GET['filter'] ?? 'all';
 
     if (!$phone) {
         throw new Exception('Phone number is required');
     }
 
-    // Check if ratings table exists first
-    $tableCheckResult = $conn->query("SHOW TABLES LIKE 'ratings'");
-    $ratingsTableExists = $tableCheckResult && $tableCheckResult->num_rows > 0;
+    // Simple reliable query - NO ratings table dependency
+    $query = "
+        SELECT
+            o.id,
+            o.order_id,
+            o.total_amount as amount,
+            o.order_status as status,
+            o.completion_otp,
+            o.created_at,
+            o.before_photo_url,
+            o.after_photo_url,
+            o.payment_screenshot_url,
+            o.customer_signature_url,
+            o.work_description,
+            o.parts_used,
+            o.additional_charges,
+            o.pincode,
+            o.vendor_id,
+            a.full_address as address,
+            GROUP_CONCAT(DISTINCT oi.service_name SEPARATOR ', ') as services,
+            v.name as vendor_name
+        FROM orders o
+        LEFT JOIN order_items oi ON o.order_id = oi.order_id
+        LEFT JOIN addresses a ON o.address_id = a.id
+        LEFT JOIN vendors v ON o.vendor_id = v.id
+        WHERE o.phone_number = ?
+    ";
 
-    if ($ratingsTableExists) {
-        $query = "
-            SELECT
-                o.id,
-                o.order_id,
-                o.total_amount as amount,
-                o.order_status,
-                o.completion_otp,
-                o.created_at,
-                o.before_photo_url,
-                o.after_photo_url,
-                o.payment_screenshot_url,
-                o.customer_signature_url,
-                o.work_description,
-                o.parts_used,
-                o.additional_charges,
-                o.pincode,
-                o.vendor_id,
-                a.full_address,
-                GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services,
-                COALESCE(r.rating, 0) as vendor_rating,
-                COALESCE(r.comment, '') as vendor_comment,
-                v.name as vendor_name,
-                ROUND(AVG(r2.rating), 1) as vendor_avg_rating
-            FROM orders o
-            LEFT JOIN order_items oi ON o.order_id = oi.order_id
-            LEFT JOIN addresses a ON o.address_id = a.id
-            LEFT JOIN ratings r ON o.order_id = r.order_id
-            LEFT JOIN vendors v ON o.vendor_id = v.id
-            LEFT JOIN ratings r2 ON o.vendor_id = r2.vendor_id
-            WHERE o.phone_number = ?
-        ";
-    } else {
-        // Fallback query if ratings table doesn't exist yet
-        $query = "
-            SELECT
-                o.id,
-                o.order_id,
-                o.total_amount as amount,
-                o.order_status,
-                o.completion_otp,
-                o.created_at,
-                o.before_photo_url,
-                o.after_photo_url,
-                o.payment_screenshot_url,
-                o.customer_signature_url,
-                o.work_description,
-                o.parts_used,
-                o.additional_charges,
-                o.pincode,
-                o.vendor_id,
-                a.full_address,
-                GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services,
-                0 as vendor_rating,
-                '' as vendor_comment,
-                v.name as vendor_name,
-                0 as vendor_avg_rating
-            FROM orders o
-            LEFT JOIN order_items oi ON o.order_id = oi.order_id
-            LEFT JOIN addresses a ON o.address_id = a.id
-            LEFT JOIN vendors v ON o.vendor_id = v.id
-            WHERE o.phone_number = ?
-        ";
-    }
-
-    // Apply filter
     if ($filter === 'pending') {
         $query .= " AND o.order_status IN ('pending', 'requested', 'accepted')";
     } elseif ($filter === 'completed') {
         $query .= " AND o.order_status = 'service_completed'";
-    } elseif ($filter === 'rated') {
-        $query .= " AND r.rating IS NOT NULL";
-    } elseif ($filter === 'unrated') {
-        $query .= " AND o.order_status = 'service_completed' AND r.rating IS NULL";
     }
 
     $query .= " GROUP BY o.order_id ORDER BY o.created_at DESC LIMIT 50";
@@ -127,29 +81,27 @@ try {
             'id' => (int)$row['id'],
             'order_id' => $row['order_id'],
             'amount' => (float)$row['amount'],
-            'status' => $row['order_status'],
-            'completion_otp' => $row['completion_otp'],
+            'status' => $row['status'],
+            'completion_otp' => $row['completion_otp'] ?? '',
             'created_at' => $row['created_at'],
-            'address' => $row['full_address'],
-            'pincode' => $row['pincode'],
-            'services' => $row['services'],
-            'vendor_id' => $row['vendor_id'],
-            'vendor_name' => $row['vendor_name'],
-            'vendor_rating' => (float)$row['vendor_avg_rating'],
+            'address' => $row['address'] ?? '',
+            'pincode' => $row['pincode'] ?? '',
+            'services' => $row['services'] ?? 'Service',
+            'vendor_id' => (int)$row['vendor_id'],
+            'vendor_name' => $row['vendor_name'] ?? '',
+            'vendor_rating' => 0,
+            'is_rated' => false,
             'photos' => [
-                'before' => $row['before_photo_url'],
-                'after' => $row['after_photo_url'],
-                'payment' => $row['payment_screenshot_url'],
-                'signature' => $row['customer_signature_url'],
+                'before' => $row['before_photo_url'] ?? '',
+                'after' => $row['after_photo_url'] ?? '',
+                'payment' => $row['payment_screenshot_url'] ?? '',
+                'signature' => $row['customer_signature_url'] ?? '',
             ],
             'work_details' => [
-                'description' => $row['work_description'],
-                'parts_used' => $row['parts_used'],
-                'additional_charges' => (float)$row['additional_charges'],
+                'description' => $row['work_description'] ?? '',
+                'parts_used' => $row['parts_used'] ?? '',
+                'additional_charges' => (float)($row['additional_charges'] ?? 0),
             ],
-            'my_rating' => (int)$row['vendor_rating'],
-            'my_comment' => $row['vendor_comment'],
-            'is_rated' => (int)$row['vendor_rating'] > 0,
         ];
     }
     $stmt->close();
