@@ -183,6 +183,7 @@ try {
         'message' => 'Order created successfully',
         'order_id' => $orderId,
         'amount' => $totalAmount,
+        'completion_otp' => $completionOtp,
     ]);
 
 } catch (Exception $e) {
