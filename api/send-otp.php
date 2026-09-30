@@ -67,8 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         die(json_encode(['success' => false, 'message' => 'Invalid phone number']));
     }
 
-    // Generate 6-digit OTP (cryptographically random)
-    $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    // Generate 4-digit OTP (cryptographically random)
+    $otp = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
     $expires_at = date('Y-m-d H:i:s', strtotime('+10 minutes'));
     error_log('🎲 Generated OTP: ' . $otp . ' (Expires: ' . $expires_at . ')');
 
