@@ -80,25 +80,34 @@ class SupabaseAuthRepository {
   Future<AuthResult> sendOtp(String phoneNumber) async {
     _currentPhoneNumber = phoneNumber;
 
+    debugPrint('🔐 [AuthRepository.sendOtp] Started');
+    debugPrint('📱 Raw phone: $phoneNumber');
+
     if (DEMO_MODE) {
+      debugPrint('🎯 DEMO_MODE enabled');
       // Check if M-PIN exists for this phone
       final mpinExists = await hasMpin(phoneNumber);
 
       if (mpinExists) {
+        debugPrint('⚠️ M-PIN exists, returning AuthRequiresMpin');
         return AuthRequiresMpin(phoneNumber);
       }
 
       // Generate dummy OTP for demo
       _demoOtp = '123456';
       _demoUserId = phoneNumber;
+      debugPrint('✅ Demo OTP generated: $_demoOtp');
       return const AuthSuccess();
     }
 
     try {
+      debugPrint('📍 Checking if M-PIN exists...');
       // Check if M-PIN exists for this phone
       final mpinExists = await hasMpin(phoneNumber);
+      debugPrint('📍 M-PIN exists: $mpinExists');
 
       if (mpinExists) {
+        debugPrint('⚠️ M-PIN exists, returning AuthRequiresMpin');
         return AuthRequiresMpin(phoneNumber);
       }
 
@@ -108,23 +117,39 @@ class SupabaseAuthRepository {
         cleanPhone = cleanPhone.substring(cleanPhone.length - 10);
       }
 
+      debugPrint('📞 Cleaned phone: $cleanPhone');
+      debugPrint('🌐 Calling send-otp.php...');
+
       final response = await http.post(
         Uri.parse('$API_BASE_URL/send-otp.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone_number': cleanPhone}),
       ).timeout(const Duration(seconds: 10));
 
+      debugPrint('📡 HTTP Status: ${response.statusCode}');
+      debugPrint('📄 Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        debugPrint('✅ Success flag: ${data['success']}');
+        debugPrint('📋 Message: ${data['message']}');
+
         if (data['success'] == true) {
+          debugPrint('🎉 OTP sent successfully!');
           return const AuthSuccess();
         } else {
-          return AuthError(data['message'] ?? 'Failed to send OTP');
+          final error = AuthError(data['message'] ?? 'Failed to send OTP');
+          debugPrint('❌ API returned false: ${error.message}');
+          return error;
         }
       } else {
-        return AuthError('Server error: ${response.statusCode}');
+        final error = AuthError('Server error: ${response.statusCode}');
+        debugPrint('❌ ${error.message}');
+        return error;
       }
     } catch (e) {
+      debugPrint('❌ Exception: $e');
+      debugPrint('🔍 Stack trace: ${StackTrace.current}');
       return AuthError('Error sending OTP: $e');
     }
   }
