@@ -133,6 +133,67 @@ try {
     }
     $stmt->close();
 
+    // Generate and send OTP to customer for job completion verification
+    $completionOtp = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+    $otpExpiresAt = date('Y-m-d H:i:s', strtotime('+2 hours'));
+
+    // Store OTP in database
+    $otpTable = "CREATE TABLE IF NOT EXISTS completion_otp_storage (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id VARCHAR(50) NOT NULL UNIQUE,
+        phone_number VARCHAR(20) NOT NULL,
+        otp VARCHAR(10) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        verified_at DATETIME NULL,
+        INDEX idx_order_id (order_id),
+        INDEX idx_phone_number (phone_number),
+        INDEX idx_expires_at (expires_at)
+    )";
+    $conn->query($otpTable);
+
+    $otpStmt = $conn->prepare(
+        "INSERT INTO completion_otp_storage (order_id, phone_number, otp, expires_at)
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE otp = ?, expires_at = ?"
+    );
+    if ($otpStmt) {
+        $otpStmt->bind_param('ssssss', $orderId, $phoneNumber, $completionOtp, $otpExpiresAt, $completionOtp, $otpExpiresAt);
+        $otpStmt->execute();
+        $otpStmt->close();
+    }
+
+    // Send OTP via SMS to customer
+    $SMS_USER = "acctsmmp";
+    $SMS_KEY = "503856edbcXX";
+    $SMS_SENDER_ID = "MHMNPR";
+    $SMS_ENTITY_ID = "1701178591434877016";
+    $SMS_TEMPLATE_ID = "1777178609736013559";
+    $SMS_GATEWAY_URL = "http://sms3.bpil.in/submitsms.jsp";
+
+    $smsMessage = "$completionOtp is your service completion OTP for order $orderId. Valid for 2 hours. Share this with the service provider to complete the service.";
+
+    $smsParams = array(
+        'user' => $SMS_USER,
+        'key' => $SMS_KEY,
+        'mobile' => '91' . $phoneNumber,
+        'message' => $smsMessage,
+        'senderid' => $SMS_SENDER_ID,
+        'accusage' => '1',
+        'entityid' => $SMS_ENTITY_ID,
+        'tempid' => $SMS_TEMPLATE_ID
+    );
+
+    $smsUrl = $SMS_GATEWAY_URL . '?' . http_build_query($smsParams);
+
+    // Send SMS asynchronously (don't block order creation if SMS fails)
+    try {
+        $context = stream_context_create(['http' => ['timeout' => 3]]);
+        @file_get_contents($smsUrl, false, $context);
+    } catch (Exception $e) {
+        error_log("SMS send failed for order $orderId: " . $e->getMessage());
+    }
+
     // Notify the customer their order was placed
     $conn->query("CREATE TABLE IF NOT EXISTS notifications (
         id INT AUTO_INCREMENT PRIMARY KEY,

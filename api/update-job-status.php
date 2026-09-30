@@ -97,6 +97,29 @@ try {
         $message = 'Job started';
 
     } elseif ($action === 'complete') {
+        // Verify OTP before allowing completion
+        $completion_otp = $_POST['completion_otp'] ?? null;
+
+        if (!$completion_otp) {
+            throw new Exception('OTP is required to complete the job');
+        }
+
+        // Check OTP in database
+        $otpCheckQuery = "SELECT otp, expires_at FROM completion_otp_storage
+                          WHERE order_id = ? AND otp = ? AND expires_at > NOW()";
+        $otpCheckStmt = $conn->prepare($otpCheckQuery);
+        if (!$otpCheckStmt) {
+            throw new Exception("OTP verification failed: " . $conn->error);
+        }
+        $otpCheckStmt->bind_param("ss", $booking_id, $completion_otp);
+        $otpCheckStmt->execute();
+        $otpResult = $otpCheckStmt->get_result();
+
+        if ($otpResult->num_rows === 0) {
+            throw new Exception('Invalid or expired OTP. Cannot complete the job.');
+        }
+        $otpCheckStmt->close();
+
         // Handle job completion with photos and payment
         $photos = [];
 
