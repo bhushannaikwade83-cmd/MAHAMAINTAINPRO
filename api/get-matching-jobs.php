@@ -1,12 +1,17 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 ini_set('log_errors', 1);
+
+$logfile = '/tmp/get-matching-jobs.log';
+error_log("=== Request at " . date('Y-m-d H:i:s') . " ===", 3, $logfile);
+error_log("Method: " . $_SERVER['REQUEST_METHOD'], 3, $logfile);
+error_log("Query: " . json_encode($_GET), 3, $logfile);
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -28,6 +33,7 @@ if ($conn->connect_error) {
 
 try {
     $vendor_id = isset($_GET['vendor_id']) ? intval($_GET['vendor_id']) : null;
+    error_log("Vendor ID: $vendor_id", 3, $logfile);
 
     if (!$vendor_id) {
         throw new Exception('Vendor ID required');
@@ -44,6 +50,7 @@ try {
         $vendorCategories[] = (int)$row['category_id'];
     }
     $categoryStmt->close();
+    error_log("Vendor categories: " . json_encode($vendorCategories), 3, $logfile);
 
     // Get vendor's service pincodes
     $pincodeQuery = "SELECT pincode FROM vendor_pincodes WHERE vendor_id = ?";
@@ -56,8 +63,10 @@ try {
         $vendorPincodes[] = $row['pincode'];
     }
     $pincodeStmt->close();
+    error_log("Vendor pincodes: " . json_encode($vendorPincodes), 3, $logfile);
 
     if (empty($vendorPincodes)) {
+        error_log("No pincodes - returning empty jobs", 3, $logfile);
         echo json_encode([
             'success' => true,
             'jobs' => [],
@@ -115,6 +124,7 @@ try {
 
     $jobStmt->execute();
     $jobResult = $jobStmt->get_result();
+    error_log("Query executed. Rows found: " . $jobResult->num_rows, 3, $logfile);
 
     $jobs = [];
     while ($row = $jobResult->fetch_assoc()) {
@@ -152,6 +162,7 @@ try {
     $jobStmt->close();
 
     http_response_code(200);
+    error_log("Success! Returning " . count($jobs) . " jobs", 3, $logfile);
     echo json_encode([
         'success' => true,
         'jobs' => $jobs,
@@ -160,7 +171,8 @@ try {
 
 } catch (Exception $e) {
     http_response_code(400);
-    error_log("Get matching jobs error: " . $e->getMessage());
+    error_log("Get matching jobs error: " . $e->getMessage(), 3, $logfile);
+    error_log("Stack trace: " . $e->getTraceAsString(), 3, $logfile);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 
