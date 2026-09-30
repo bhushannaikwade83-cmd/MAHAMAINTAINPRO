@@ -126,7 +126,7 @@ try {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $stmt->bind_param("sssisidiss", $orderId, $userId, $phoneNumber, $addressId, $pincode, $totalAmount, $serviceCount, $scheduledAt, $couponCode);
+    $stmt->bind_param("sssisdiss", $orderId, $userId, $phoneNumber, $addressId, $pincode, $totalAmount, $serviceCount, $scheduledAt, $couponCode);
 
     if (!$stmt->execute()) {
         throw new Exception("Execute failed: " . $stmt->error);
