@@ -29,6 +29,8 @@ try {
     $bookingId = $input['booking_id'] ?? null; // This is order_id
     $action = $input['action'] ?? null; // 'accept' or 'reject'
 
+    error_log("Respond to job: vendor_id=$vendorId, booking_id=$bookingId, action=$action");
+
     if (!$vendorId || !$bookingId || !$action) {
         throw new Exception('Missing required fields: vendor_id, booking_id, action');
     }
@@ -49,8 +51,18 @@ try {
     $order = $result->fetch_assoc();
     $stmt->close();
 
+    error_log("Order lookup for booking_id=$bookingId: " . ($order ? "FOUND" : "NOT FOUND"));
+
     if (!$order) {
-        throw new Exception('Order not found');
+        // Check if order exists with different format
+        $debugQuery = "SELECT order_id FROM orders LIMIT 5";
+        $debugResult = $conn->query($debugQuery);
+        $sample = [];
+        while ($row = $debugResult->fetch_assoc()) {
+            $sample[] = $row['order_id'];
+        }
+        error_log("Sample order_ids in DB: " . json_encode($sample));
+        throw new Exception('Order not found: ' . $bookingId);
     }
 
     // If vendor_id is already set AND it's different vendor, reject
