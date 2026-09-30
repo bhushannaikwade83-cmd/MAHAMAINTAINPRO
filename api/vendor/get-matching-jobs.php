@@ -29,7 +29,7 @@ try {
         throw new Exception('Vendor ID required');
     }
 
-    // Get vendor's service categories
+    // Get vendor's service categories (as IDs for matching with order_items)
     $categoryQuery = "SELECT category_id FROM vendor_service_categories WHERE vendor_id = ?";
     $categoryStmt = $conn->prepare($categoryQuery);
     $categoryStmt->bind_param("i", $vendor_id);
@@ -37,7 +37,7 @@ try {
     $categoryResult = $categoryStmt->get_result();
     $vendorCategories = [];
     while ($row = $categoryResult->fetch_assoc()) {
-        $vendorCategories[] = $row['category_id'];
+        $vendorCategories[] = (int)$row['category_id'];
     }
     $categoryStmt->close();
 
@@ -53,77 +53,91 @@ try {
     }
     $pincodeStmt->close();
 
-    if (empty($vendorCategories) || empty($vendorPincodes)) {
+    if (empty($vendorPincodes)) {
         echo json_encode([
             'success' => true,
             'jobs' => [],
-            'message' => 'Vendor has no service categories or pincodes configured'
+            'message' => 'Vendor has no pincodes configured. Add pincodes in "My Shop Pincodes"'
         ]);
         exit();
     }
 
-    // Build placeholders for IN clause
-    $categoryPlaceholders = implode(',', array_fill(0, count($vendorCategories), '?'));
+    // Build placeholders for pincode IN clause
     $pincodePlaceholders = implode(',', array_fill(0, count($vendorPincodes), '?'));
 
-    // Fetch matching orders
-    $jobQuery = "SELECT
-        o.id,
-        o.order_id,
-        o.phone_number,
-        o.address_id,
-        o.pincode,
-        o.total_amount,
-        o.service_count,
-        o.scheduled_at,
-        o.created_at,
-        GROUP_CONCAT(oi.service_name SEPARATOR ', ') as service_names,
-        GROUP_CONCAT(oi.category SEPARATOR ', ') as categories,
-        GROUP_CONCAT(oi.price SEPARATOR ', ') as prices,
-        a.full_address,
-        a.city,
-        a.society_name
-    FROM orders o
-    LEFT JOIN order_items oi ON o.order_id = oi.order_id
-    LEFT JOIN addresses a ON o.address_id = a.id
-    WHERE o.order_status IN ('pending', 'requested')
-    AND o.pincode IN ($pincodePlaceholders)
-    AND oi.category IN ($categoryPlaceholders)
-    GROUP BY o.order_id
-    ORDER BY o.created_at DESC
-    LIMIT 50";
+    // If vendor has categories, filter by them; otherwise show all orders for their pincodes
+    if (!empty($vendorCategories)) {
+        $categoryPlaceholders = implode(',', array_fill(0, count($vendorCategories), '?'));
+        $jobQuery = "SELECT
+            o.id, o.order_id, o.phone_number, o.address_id, o.pincode, o.total_amount,
+            o.service_count, o.scheduled_at, o.created_at,
+            GROUP_CONCAT(oi.service_name SEPARATOR ', ') as service_names,
+            GROUP_CONCAT(oi.category SEPARATOR ', ') as categories,
+            a.full_address, a.city, a.society_name
+        FROM orders o
+        LEFT JOIN order_items oi ON o.order_id = oi.order_id
+        LEFT JOIN addresses a ON o.address_id = a.id
+        WHERE o.order_status IN ('pending', 'requested')
+        AND o.pincode IN ($pincodePlaceholders)
+        AND oi.category IN ($categoryPlaceholders)
+        GROUP BY o.order_id
+        ORDER BY o.created_at DESC LIMIT 50";
 
-    $jobStmt = $conn->prepare($jobQuery);
+        $jobStmt = $conn->prepare($jobQuery);
+        $types = str_repeat('s', count($vendorPincodes)) . str_repeat('i', count($vendorCategories));
+        $params = array_merge($vendorPincodes, $vendorCategories);
+        $jobStmt->bind_param($types, ...$params);
+    } else {
+        // No categories - show all orders for vendor's pincodes
+        $jobQuery = "SELECT
+            o.id, o.order_id, o.phone_number, o.address_id, o.pincode, o.total_amount,
+            o.service_count, o.scheduled_at, o.created_at,
+            GROUP_CONCAT(oi.service_name SEPARATOR ', ') as service_names,
+            GROUP_CONCAT(oi.category SEPARATOR ', ') as categories,
+            a.full_address, a.city, a.society_name
+        FROM orders o
+        LEFT JOIN order_items oi ON o.order_id = oi.order_id
+        LEFT JOIN addresses a ON o.address_id = a.id
+        WHERE o.order_status IN ('pending', 'requested')
+        AND o.pincode IN ($pincodePlaceholders)
+        GROUP BY o.order_id
+        ORDER BY o.created_at DESC LIMIT 50";
 
-    // Bind pincode parameters
-    $types = str_repeat('s', count($vendorPincodes));
-    $params = $vendorPincodes;
+        $jobStmt = $conn->prepare($jobQuery);
+        $types = str_repeat('s', count($vendorPincodes));
+        $params = $vendorPincodes;
+        $jobStmt->bind_param($types, ...$params);
+    }
 
-    // Bind category parameters
-    $types .= str_repeat('s', count($vendorCategories));
-    $params = array_merge($params, $vendorCategories);
-
-    // Bind all parameters
-    $jobStmt->bind_param($types, ...$params);
     $jobStmt->execute();
     $jobResult = $jobStmt->get_result();
 
     $jobs = [];
     while ($row = $jobResult->fetch_assoc()) {
+        $createdAt = new DateTime($row['created_at']);
+        $expiresAt = (clone $createdAt)->modify('+10 minutes');
+
         $jobs[] = [
             'id' => (int)$row['id'],
-            'order_id' => $row['order_id'],
-            'phone_number' => $row['phone_number'],
+            'customer_name' => 'Customer Order',
+            'customer_phone' => $row['phone_number'],
+            'service_name' => $row['service_names'],
+            'service_category_id' => 1,
+            'location_address' => $row['full_address'] ?? $row['society_name'] ?? 'N/A',
             'pincode' => $row['pincode'],
-            'address' => $row['full_address'] ?? $row['society_name'] ?? 'N/A',
             'city' => $row['city'] ?? 'N/A',
-            'service_names' => $row['service_names'],
-            'categories' => $row['categories'],
-            'amount' => (float)$row['total_amount'],
-            'service_count' => (int)$row['service_count'],
-            'scheduled_at' => $row['scheduled_at'],
+            'budget' => (int)$row['total_amount'],
+            'amount' => (int)$row['total_amount'],
+            'scheduled_date' => $row['scheduled_at'] ? date('Y-m-d', strtotime($row['scheduled_at'])) : null,
+            'scheduled_time' => $row['scheduled_at'] ? date('H:i', strtotime($row['scheduled_at'])) : null,
+            'booking_type' => $row['scheduled_at'] ? 'slot' : 'instant',
+            'customer_id' => 0,
             'created_at' => $row['created_at'],
-            'status' => 'available'
+            'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
+            'description' => $row['service_names'],
+            'status' => 'pending',
+            'order_id' => $row['order_id'],
+            'service_count' => (int)$row['service_count']
         ];
     }
     $jobStmt->close();
