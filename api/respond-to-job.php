@@ -120,8 +120,9 @@ try {
 
 } catch (Exception $e) {
     http_response_code(400);
-    error_log("Respond to job error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    $errorMsg = $e->getMessage();
+    error_log("Respond to job error: " . $errorMsg);
+    echo json_encode(['success' => false, 'message' => $errorMsg, 'debug' => $errorMsg]);
 }
 
 $conn->close();
