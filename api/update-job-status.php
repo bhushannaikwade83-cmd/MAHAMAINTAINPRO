@@ -208,14 +208,14 @@ try {
         }
 
         $params[] = $booking_id;
-        $updateQuery = "UPDATE orders SET " . implode(", ", $updateFields) . ", order_status = 'service_completed', updated_at = NOW() WHERE order_id = ?";
+        $updateQuery = "UPDATE orders SET " . implode(", ", $updateFields) . ", updated_at = NOW() WHERE order_id = ?";
         $updateStmt = $conn->prepare($updateQuery);
         if (!$updateStmt) {
             throw new Exception("Prepare failed: " . $conn->error);
         }
 
-        // Build type string - add one more 's' for order_status field we added
-        $types = str_repeat('s', count($params)) . 's';
+        // Build type string dynamically based on params count
+        $types = str_repeat('s', count($params));
         $updateStmt->bind_param($types, ...$params);
         $updateStmt->execute();
         $updateStmt->close();
