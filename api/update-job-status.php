@@ -73,7 +73,7 @@ try {
             $photoName = $booking_id . '_before_' . time() . '.jpg';
             $photoPath = $photoDir . $photoName;
             if (move_uploaded_file($_FILES['before_photo']['tmp_name'], $photoPath)) {
-                $photoUrl = '/mahamaintainpro/api/photos/job_photos/' . $photoName;
+                $photoUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/job_photos/' . $photoName;
                 $updateQuery = "UPDATE orders SET before_photo_url = ?, order_status = 'service_started' WHERE order_id = ?";
                 $updateStmt = $conn->prepare($updateQuery);
                 if (!$updateStmt) {
@@ -109,7 +109,7 @@ try {
             $photoName = $booking_id . '_after_' . time() . '.jpg';
             $photoPath = $photoDir . $photoName;
             if (move_uploaded_file($_FILES['after_photo']['tmp_name'], $photoPath)) {
-                $photos['after'] = '/mahamaintainpro/api/photos/job_photos/' . $photoName;
+                $photos['after'] = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/job_photos/' . $photoName;
             }
         }
 
@@ -122,7 +122,7 @@ try {
             $photoName = $booking_id . '_payment_' . time() . '.jpg';
             $photoPath = $photoDir . $photoName;
             if (move_uploaded_file($_FILES['payment_screenshot']['tmp_name'], $photoPath)) {
-                $photos['payment'] = '/mahamaintainpro/api/photos/payments/' . $photoName;
+                $photos['payment'] = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/payments/' . $photoName;
             }
         }
 
@@ -135,7 +135,7 @@ try {
             $photoName = $booking_id . '_signature_' . time() . '.jpg';
             $photoPath = $photoDir . $photoName;
             if (move_uploaded_file($_FILES['customer_signature']['tmp_name'], $photoPath)) {
-                $photos['signature'] = '/mahamaintainpro/api/photos/signatures/' . $photoName;
+                $photos['signature'] = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/signatures/' . $photoName;
             }
         }
 
