@@ -45,6 +45,23 @@ try {
     }
     $checkStmt->close();
 
+    // Get order's numeric ID for logging
+    $getIdQuery = "SELECT id FROM orders WHERE order_id = ?";
+    $getIdStmt = $conn->prepare($getIdQuery);
+    if (!$getIdStmt) {
+        throw new Exception("Get ID prepare failed: " . $conn->error);
+    }
+    $getIdStmt->bind_param("s", $booking_id);
+    $getIdStmt->execute();
+    $idResult = $getIdStmt->get_result();
+    $idRow = $idResult->fetch_assoc();
+    $orderId = $idRow['id'] ?? null;
+    $getIdStmt->close();
+
+    if (!$orderId) {
+        throw new Exception("Order not found");
+    }
+
     // Handle based on action
     if ($action === 'start') {
         // Save before photo if provided
@@ -57,7 +74,7 @@ try {
             $photoPath = $photoDir . $photoName;
             if (move_uploaded_file($_FILES['before_photo']['tmp_name'], $photoPath)) {
                 $photoUrl = '/mahamaintainpro/api/photos/job_photos/' . $photoName;
-                $updateQuery = "UPDATE orders SET before_photo_url = ?, status = 'started' WHERE order_id = ?";
+                $updateQuery = "UPDATE orders SET before_photo_url = ?, order_status = 'service_started' WHERE order_id = ?";
                 $updateStmt = $conn->prepare($updateQuery);
                 if (!$updateStmt) {
                     throw new Exception("Update failed: " . $conn->error);
@@ -65,6 +82,16 @@ try {
                 $updateStmt->bind_param("ss", $photoUrl, $booking_id);
                 $updateStmt->execute();
                 $updateStmt->close();
+
+                // Log to order_status table
+                $logStatus = 'service_started';
+                $logQuery = "INSERT INTO order_status (order_id, status, changed_at) VALUES (?, ?, NOW())";
+                $logStmt = $conn->prepare($logQuery);
+                if ($logStmt) {
+                    $logStmt->bind_param("is", $orderId, $logStatus);
+                    $logStmt->execute();
+                    $logStmt->close();
+                }
             }
         }
         $message = 'Job started';
@@ -151,17 +178,28 @@ try {
         }
 
         $params[] = $booking_id;
-        $updateQuery = "UPDATE orders SET " . implode(", ", $updateFields) . ", updated_at = NOW() WHERE order_id = ?";
+        $updateQuery = "UPDATE orders SET " . implode(", ", $updateFields) . ", order_status = 'service_completed', updated_at = NOW() WHERE order_id = ?";
         $updateStmt = $conn->prepare($updateQuery);
         if (!$updateStmt) {
             throw new Exception("Prepare failed: " . $conn->error);
         }
 
-        // Build type string
-        $types = str_repeat('s', count($params) - 1) . 's'; // All strings for now
+        // Build type string - add one more 's' for order_status field we added
+        $types = str_repeat('s', count($params)) . 's';
         $updateStmt->bind_param($types, ...$params);
         $updateStmt->execute();
         $updateStmt->close();
+
+        // Log to order_status table
+        $logStatus = 'service_completed';
+        $logQuery = "INSERT INTO order_status (order_id, status, changed_at) VALUES (?, ?, NOW())";
+        $logStmt = $conn->prepare($logQuery);
+        if ($logStmt) {
+            $logStmt->bind_param("is", $orderId, $logStatus);
+            $logStmt->execute();
+            $logStmt->close();
+        }
+
         $message = 'Job completed';
 
     } else {
