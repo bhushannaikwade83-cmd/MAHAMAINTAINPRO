@@ -77,22 +77,25 @@ try {
 
     // Update order status based on action
     $newStatus = ($action === 'accept') ? 'accepted' : 'rejected';
+    $newVendorStatus = ($action === 'accept') ? 'accepted' : 'rejected';
 
-    // For accept: update vendor_id. For reject: just update status
+    // For accept: update vendor_id and both statuses. For reject: update both statuses
     if ($action === 'accept') {
-        $updateQuery = "UPDATE orders SET vendor_id = ?, order_status = ?, updated_at = NOW() WHERE order_id = ?";
+        $updateQuery = "UPDATE orders SET vendor_id = ?, order_status = ?, vendor_status = ?, updated_at = NOW() WHERE order_id = ?";
         $stmt = $conn->prepare($updateQuery);
         if (!$stmt) {
             throw new Exception('Prepare failed: ' . $conn->error);
         }
-        $stmt->bind_param('iss', $vendorId, $newStatus, $bookingId);
+        // Convert vendorId to integer for binding
+        $vendorIdInt = (int)$vendorId;
+        $stmt->bind_param('isss', $vendorIdInt, $newStatus, $newVendorStatus, $bookingId);
     } else {
-        $updateQuery = "UPDATE orders SET order_status = ?, updated_at = NOW() WHERE order_id = ?";
+        $updateQuery = "UPDATE orders SET order_status = ?, vendor_status = ?, updated_at = NOW() WHERE order_id = ?";
         $stmt = $conn->prepare($updateQuery);
         if (!$stmt) {
             throw new Exception('Prepare failed: ' . $conn->error);
         }
-        $stmt->bind_param('ss', $newStatus, $bookingId);
+        $stmt->bind_param('sss', $newStatus, $newVendorStatus, $bookingId);
     }
 
     if (!$stmt->execute()) {

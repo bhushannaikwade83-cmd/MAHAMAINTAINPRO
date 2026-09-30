@@ -297,24 +297,133 @@ class _BookingsScreenState extends State<BookingsScreen> {
     }
   }
 
-  Widget _buildBookingCard(Map<String, dynamic> order) {
-    final status = (order['current_status'] ?? order['order_status'] ?? 'pending').toString();
-    final statusLabel = _statusLabels[status] ?? status;
-    final statusColor = _statusColors[status] ?? Colors.grey;
+  Color _getStatusGradientStart(String status) {
+    switch (status) {
+      case 'service_completed':
+        return const Color(0xFF10B981);
+      case 'service_started':
+        return const Color(0xFF3B82F6);
+      case 'accepted':
+        return const Color(0xFF8B5CF6);
+      case 'requested':
+      case 'pending':
+        return const Color(0xFFF59E0B);
+      default:
+        return Colors.grey;
+    }
+  }
 
-    // Build service names with prices
-    final items = (order['items'] as List<dynamic>? ?? [])
-        .map((i) {
-          final itemMap = i as Map;
-          final name = itemMap['service_name']?.toString() ?? '';
-          final price = itemMap['price']?.toString() ?? '0';
-          return name.isNotEmpty ? '$name - ₹$price' : '';
-        })
-        .where((n) => n.isNotEmpty)
-        .join('\n');
+  Color _getStatusGradientEnd(String status) {
+    switch (status) {
+      case 'service_completed':
+        return const Color(0xFF059669);
+      case 'service_started':
+        return const Color(0xFF06B6D4);
+      case 'accepted':
+        return const Color(0xFFA78BFA);
+      case 'requested':
+      case 'pending':
+        return const Color(0xFFF97316);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Future<void> _showRatingDialog(Map<String, dynamic> order) async {
+    int rating = 5;
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rate This Service'),
+        content: StatefulBuilder(
+          builder: (context, setState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (i) {
+                  return GestureDetector(
+                    onTap: () => setState(() => rating = i + 1),
+                    child: Icon(
+                      i < rating ? Icons.star : Icons.star_outline,
+                      color: Colors.amber,
+                      size: 32,
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: 'Add comment (optional)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => _submitRating(order, rating, controller.text),
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submitRating(Map<String, dynamic> order, int rating, String comment) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/save-rating.php'),
+        headers: SupabaseAuthRepository.staticAuthHeaders,
+        body: jsonEncode({
+          'order_id': order['order_id'],
+          'vendor_id': order['vendor_id'],
+          'customer_phone': order['phone_number'],
+          'rating': rating,
+          'comment': comment,
+        }),
+      );
+
+      if (!mounted) return;
+      final data = jsonDecode(response.body);
+
+      if (data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Rating submitted! Thank you'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+        _load();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Widget _buildBookingCard(Map<String, dynamic> order) {
+    final status = (order['status'] ?? order['order_status'] ?? 'pending').toString();
+    final statusLabel = _statusLabels[status] ?? status;
+    final services = order['services']?.toString() ?? 'Service';
+    final otp = order['completion_otp']?.toString() ?? '';
+    final isCompleted = status == 'service_completed';
+    final isRated = order['is_rated'] == true;
+    final vendorRating = (order['vendor_rating'] as num?)?.toDouble() ?? 0.0;
 
     final orderId = order['id'] is int ? order['id'] as int : int.tryParse('${order['id']}') ?? 0;
-    final scheduledAt = order['scheduled_at']?.toString();
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -327,111 +436,221 @@ class _BookingsScreenState extends State<BookingsScreen> {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            order['order_id']?.toString() ?? 'Order',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                          ),
-                          const SizedBox(height: 4),
-                          // Show items if available, else show service_count from database
-                          if (items.isNotEmpty)
-                            Text(items,
-                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis)
-                          else if (order['service_count'] != null)
-                            Text(
-                              '${order['service_count']} service${order['service_count'] > 1 ? 's' : ''}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                            ),
-                          if (scheduledAt != null) ...[
-                            const SizedBox(height: 4),
-                            Text('🗓️ $scheduledAt', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '₹${order['total_amount'] ?? 0}',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    if (status == 'pending' || status == 'requested')
-                      GestureDetector(
-                        onTap: () => _cancelOrder(order['order_id']?.toString() ?? ''),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade400,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.saffron,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'Track / Details',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  statusLabel,
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border(
+              left: BorderSide(
+                color: _getStatusGradientStart(status).withOpacity(0.6),
+                width: 5,
               ),
             ),
-          ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: Order ID + Status Badge
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          order['order_id']?.toString() ?? 'Order',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          services,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [_getStatusGradientStart(status), _getStatusGradientEnd(status)],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // OTP Display (if available)
+              if (otp.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE0E7FF),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Color(0xFF818CF8), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.lock_rounded, size: 14, color: Color(0xFF4F46E5)),
+                      const SizedBox(width: 8),
+                      Text(
+                        'OTP: $otp',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF4F46E5),
+                          letterSpacing: 1,
+                          fontFamily: 'Courier',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (otp.isNotEmpty) const SizedBox(height: 12),
+
+              // Amount + Vendor Rating
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '₹${order['amount'] ?? 0}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  if (vendorRating > 0)
+                    Row(
+                      children: [
+                        Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$vendorRating',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.amber.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Action Buttons
+              Row(
+                children: [
+                  if (status == 'pending' || status == 'requested')
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _cancelOrder(order['order_id']?.toString() ?? ''),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.red.shade300),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.red.shade700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [_getStatusGradientStart(status), _getStatusGradientEnd(status)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'View Details',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (isCompleted && !isRated) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _showRatingDialog(order),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.amber.shade300),
+                          ),
+                          child: Text(
+                            '⭐ Rate',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.amber.shade700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
