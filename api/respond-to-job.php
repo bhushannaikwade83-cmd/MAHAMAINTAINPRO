@@ -82,15 +82,33 @@ try {
     }
     $stmt->close();
 
-    // Log to order_status table for audit trail
-    $logQuery = "INSERT INTO order_status (order_id, status, changed_at) VALUES (?, ?, NOW())";
-    $logStmt = $conn->prepare($logQuery);
-    if (!$logStmt) {
-        throw new Exception('Log prepare failed: ' . $conn->error);
+    // Log to order_status table for audit trail (use 'cancelled' instead of 'rejected')
+    $logStatus = ($action === 'accept') ? 'accepted' : 'cancelled';
+
+    // Get the order's numeric ID for logging
+    $getIdQuery = "SELECT id FROM orders WHERE order_id = ?";
+    $getIdStmt = $conn->prepare($getIdQuery);
+    if (!$getIdStmt) {
+        throw new Exception('Get ID prepare failed: ' . $conn->error);
     }
-    $logStmt->bind_param('ss', $bookingId, $newStatus);
-    $logStmt->execute();
-    $logStmt->close();
+    $getIdStmt->bind_param('s', $bookingId);
+    $getIdStmt->execute();
+    $idResult = $getIdStmt->get_result();
+    if ($idRow = $idResult->fetch_assoc()) {
+        $orderId = $idRow['id'];
+        $getIdStmt->close();
+
+        $logQuery = "INSERT INTO order_status (order_id, status, changed_at) VALUES (?, ?, NOW())";
+        $logStmt = $conn->prepare($logQuery);
+        if (!$logStmt) {
+            throw new Exception('Log prepare failed: ' . $conn->error);
+        }
+        $logStmt->bind_param('is', $orderId, $logStatus);
+        if (!$logStmt->execute()) {
+            error_log("Order status log failed: " . $logStmt->error);
+        }
+        $logStmt->close();
+    }
 
     http_response_code(200);
     echo json_encode([
