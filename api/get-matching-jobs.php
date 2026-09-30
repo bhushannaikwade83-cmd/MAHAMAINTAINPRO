@@ -31,6 +31,15 @@ if ($conn->connect_error) {
     exit();
 }
 
+// DEBUG: Check addresses table schema
+$schema = $conn->query("DESCRIBE addresses");
+$columns = [];
+if ($schema) {
+    while ($col = $schema->fetch_assoc()) {
+        $columns[] = $col['Field'];
+    }
+}
+
 try {
     $vendor_id = isset($_GET['vendor_id']) ? intval($_GET['vendor_id']) : null;
     error_log("Vendor ID: $vendor_id", 3, $logfile);
@@ -184,7 +193,11 @@ try {
     http_response_code(400);
     error_log("Get matching jobs error: " . $e->getMessage(), 3, $logfile);
     error_log("Stack trace: " . $e->getTraceAsString(), 3, $logfile);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'debug_addresses_columns' => $columns ?? []
+    ]);
 }
 
 $conn->close();
