@@ -133,8 +133,9 @@ try {
     }
     $stmt->close();
 
-    // Generate 6-digit OTP for job completion verification
-    $completionOtp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+    // Generate strong 6-digit OTP for job completion verification
+    // Using random_int for cryptographically secure random numbers
+    $completionOtp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
     // Update order with OTP (directly in orders table)
     $updateOtpQuery = "UPDATE orders SET completion_otp = ? WHERE order_id = ?";
@@ -145,36 +146,9 @@ try {
         $updateOtpStmt->close();
     }
 
-    // Send OTP via SMS to customer
-    $SMS_USER = "acctsmmp";
-    $SMS_KEY = "503856edbcXX";
-    $SMS_SENDER_ID = "MHMNPR";
-    $SMS_ENTITY_ID = "1701178591434877016";
-    $SMS_TEMPLATE_ID = "1777178609736013559";
-    $SMS_GATEWAY_URL = "http://sms3.bpil.in/submitsms.jsp";
-
-    $smsMessage = "$completionOtp is your service completion OTP for order $orderId. Valid for 2 hours. Share this with the service provider to complete the service.";
-
-    $smsParams = array(
-        'user' => $SMS_USER,
-        'key' => $SMS_KEY,
-        'mobile' => '91' . $phoneNumber,
-        'message' => $smsMessage,
-        'senderid' => $SMS_SENDER_ID,
-        'accusage' => '1',
-        'entityid' => $SMS_ENTITY_ID,
-        'tempid' => $SMS_TEMPLATE_ID
-    );
-
-    $smsUrl = $SMS_GATEWAY_URL . '?' . http_build_query($smsParams);
-
-    // Send SMS asynchronously (don't block order creation if SMS fails)
-    try {
-        $context = stream_context_create(['http' => ['timeout' => 3]]);
-        @file_get_contents($smsUrl, false, $context);
-    } catch (Exception $e) {
-        error_log("SMS send failed for order $orderId: " . $e->getMessage());
-    }
+    // OTP saved to database - customer will see in their My Bookings app
+    // No SMS needed - OTP displayed directly in app
+    // Strong 6-digit random OTP: $completionOtp
 
     // Notify the customer their order was placed
     $conn->query("CREATE TABLE IF NOT EXISTS notifications (
