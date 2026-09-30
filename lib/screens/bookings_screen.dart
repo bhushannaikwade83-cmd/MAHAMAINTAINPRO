@@ -63,7 +63,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
       final prefs = await SharedPreferences.getInstance();
       final userPhone = prefs.getString('userPhone');
 
-      if (userPhone == null) {
+      debugPrint('🔍 SharedPreferences userPhone: "$userPhone"');
+      debugPrint('📍 All prefs keys: ${prefs.getKeys()}');
+
+      if (userPhone == null || userPhone.isEmpty) {
+        debugPrint('❌ userPhone is null or empty!');
         setState(() {
           _loading = false;
           _error = 'User phone not found';
