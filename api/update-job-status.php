@@ -104,19 +104,26 @@ try {
             throw new Exception('OTP is required to complete the job');
         }
 
-        // Check OTP in database
-        $otpCheckQuery = "SELECT otp, expires_at FROM completion_otp_storage
-                          WHERE order_id = ? AND otp = ? AND expires_at > NOW()";
+        // Check OTP in database (from orders table)
+        $otpCheckQuery = "SELECT completion_otp FROM orders WHERE order_id = ?";
         $otpCheckStmt = $conn->prepare($otpCheckQuery);
         if (!$otpCheckStmt) {
             throw new Exception("OTP verification failed: " . $conn->error);
         }
-        $otpCheckStmt->bind_param("ss", $booking_id, $completion_otp);
+        $otpCheckStmt->bind_param("s", $booking_id);
         $otpCheckStmt->execute();
         $otpResult = $otpCheckStmt->get_result();
 
         if ($otpResult->num_rows === 0) {
-            throw new Exception('Invalid or expired OTP. Cannot complete the job.');
+            throw new Exception('Order not found');
+        }
+
+        $otpRow = $otpResult->fetch_assoc();
+        $storedOtp = $otpRow['completion_otp'] ?? '';
+
+        // Verify OTP matches
+        if ($storedOtp !== $completion_otp) {
+            throw new Exception('Invalid OTP. Cannot complete the job.');
         }
         $otpCheckStmt->close();
 

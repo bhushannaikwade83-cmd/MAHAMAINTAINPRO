@@ -133,34 +133,16 @@ try {
     }
     $stmt->close();
 
-    // Generate and send OTP to customer for job completion verification
+    // Generate OTP for job completion verification
     $completionOtp = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
-    $otpExpiresAt = date('Y-m-d H:i:s', strtotime('+2 hours'));
 
-    // Store OTP in database
-    $otpTable = "CREATE TABLE IF NOT EXISTS completion_otp_storage (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        order_id VARCHAR(50) NOT NULL UNIQUE,
-        phone_number VARCHAR(20) NOT NULL,
-        otp VARCHAR(10) NOT NULL,
-        expires_at DATETIME NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        verified_at DATETIME NULL,
-        INDEX idx_order_id (order_id),
-        INDEX idx_phone_number (phone_number),
-        INDEX idx_expires_at (expires_at)
-    )";
-    $conn->query($otpTable);
-
-    $otpStmt = $conn->prepare(
-        "INSERT INTO completion_otp_storage (order_id, phone_number, otp, expires_at)
-         VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE otp = ?, expires_at = ?"
-    );
-    if ($otpStmt) {
-        $otpStmt->bind_param('ssssss', $orderId, $phoneNumber, $completionOtp, $otpExpiresAt, $completionOtp, $otpExpiresAt);
-        $otpStmt->execute();
-        $otpStmt->close();
+    // Update order with OTP (directly in orders table)
+    $updateOtpQuery = "UPDATE orders SET completion_otp = ? WHERE order_id = ?";
+    $updateOtpStmt = $conn->prepare($updateOtpQuery);
+    if ($updateOtpStmt) {
+        $updateOtpStmt->bind_param('ss', $completionOtp, $orderId);
+        $updateOtpStmt->execute();
+        $updateOtpStmt->close();
     }
 
     // Send OTP via SMS to customer
