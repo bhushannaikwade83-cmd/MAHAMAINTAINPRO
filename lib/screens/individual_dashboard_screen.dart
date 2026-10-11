@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/dashboard_tab_controller.dart';
 import '../widgets/custom_footer.dart';
 import 'individual_home_screen.dart';
@@ -336,6 +337,33 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
     );
   }
 
+  Future<void> _openWhatsAppHelp() async {
+    const phoneNumber = '+919876543210';
+    const message = 'Hello, I need help with the app.';
+
+    final whatsappUrl = Uri.parse(
+      'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}'
+    );
+
+    try {
+      if (await canLaunchUrl(whatsappUrl)) {
+        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('WhatsApp is not installed')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error opening WhatsApp: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -353,6 +381,11 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
             });
           },
           userRole: 'individual',
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _openWhatsAppHelp,
+          tooltip: 'Need Help? Contact Support',
+          child: const Icon(Icons.help_outline),
         ),
       ),
     );
