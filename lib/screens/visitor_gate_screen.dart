@@ -140,7 +140,7 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
         Uri.parse('$API_BASE_URL/save-visitor.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(const Duration(seconds: 45));
 
       final data = jsonDecode(response.body);
 

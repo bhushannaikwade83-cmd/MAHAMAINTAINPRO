@@ -48,7 +48,12 @@ $createTableQuery = "CREATE TABLE IF NOT EXISTS visitors (
 $conn->query($createTableQuery);
 
 try {
+    error_log("=== VISITOR SAVE REQUEST ===");
+    error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
+    error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+
     $input = json_decode(file_get_contents('php://input'), true);
+    error_log("Input received: " . json_encode(['name' => $input['name'] ?? null, 'phone' => $input['phone'] ?? null, 'purpose' => $input['purpose'] ?? null, 'has_photo' => !empty($input['photoBase64'])]));
 
     $name = $input['name'] ?? null;
     $phone = $input['phone'] ?? null;
@@ -68,9 +73,11 @@ try {
     if ($photoBase64) {
         $photoData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $photoBase64));
 
-        $uploadDir = '/var/www/html/mahamaintainpro/api/photos/visitor_photos/';
+        $uploadDir = __DIR__ . '/photos/visitor_photos/';
         if (!is_dir($uploadDir)) {
-            @mkdir($uploadDir, 0777, true);
+            if (!@mkdir($uploadDir, 0777, true)) {
+                error_log("Failed to create visitor photos directory: $uploadDir");
+            }
         }
 
         $filename = 'visitor_' . uniqid() . '_' . time() . '.jpg';
@@ -78,6 +85,9 @@ try {
 
         if (file_put_contents($filepath, $photoData)) {
             $photoUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/visitor_photos/' . $filename;
+            error_log("Visitor photo saved: $photoUrl");
+        } else {
+            error_log("Failed to save visitor photo at: $filepath");
         }
     }
 
