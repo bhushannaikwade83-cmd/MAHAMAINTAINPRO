@@ -8,22 +8,20 @@ import '../config/app_theme.dart';
 import 'visitor_details_screen.dart';
 
 Widget _buildVisitorAvatar(Map visitor, {double size = 40}) {
-  // Try photo_url from API first
+  // Try photo_url from API first (direct load, no proxy)
   final photoUrl = visitor['photo_url'] as String?;
   if (photoUrl != null && photoUrl.isNotEmpty && photoUrl.startsWith('http')) {
-    // Extract filename from URL
-    final filename = photoUrl.split('/').last;
-    // Load via CORS proxy to avoid CORS errors
-    final proxyUrl = 'https://digitrixmedia.com/mahamaintainpro/api/serve-photo.php?file=$filename';
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.network(
-        proxyUrl,
+        photoUrl,
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(size),
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('⚠️ Photo load failed: $photoUrl - Error: $error');
+          return _buildDefaultAvatar(size);
+        },
       ),
     );
   }
