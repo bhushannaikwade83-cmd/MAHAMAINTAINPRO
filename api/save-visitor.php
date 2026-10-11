@@ -69,39 +69,7 @@ try {
 
     $photoUrl = null;
 
-    // Save photo if provided
-    if ($photoBase64) {
-        $photoData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $photoBase64));
-
-        // Use absolute path for public HTML
-        $uploadDir = '/var/www/html/mahamaintainpro/api/photos/visitor_photos/';
-
-        // Create directory if not exists
-        if (!is_dir($uploadDir)) {
-            if (!@mkdir($uploadDir, 0777, true)) {
-                error_log("Failed to create directory: $uploadDir");
-                // Fallback to relative path if absolute fails
-                $uploadDir = __DIR__ . '/photos/visitor_photos/';
-                @mkdir($uploadDir, 0777, true);
-            }
-        }
-
-        $filename = 'visitor_' . uniqid() . '_' . time() . '.jpg';
-        $filepath = $uploadDir . $filename;
-
-        if (file_put_contents($filepath, $photoData)) {
-            // Generate absolute public URL
-            $photoUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/visitor_photos/' . $filename;
-            error_log("✅ Visitor photo saved: $photoUrl");
-            error_log("Physical path: $filepath");
-        } else {
-            error_log("❌ Failed to save visitor photo at: $filepath");
-            error_log("Directory exists: " . (is_dir($uploadDir) ? 'yes' : 'no'));
-            error_log("Is writable: " . (is_writable($uploadDir) ? 'yes' : 'no'));
-        }
-    }
-
-    // Insert visitor record
+    // Insert visitor record FIRST (before photo processing)
     $query = "INSERT INTO visitors (name, phone, purpose, photo_url, gate, guard_name, flat_number)
               VALUES (?, ?, ?, ?, ?, ?, ?)";
 
@@ -117,13 +85,50 @@ try {
     $visitorId = $stmt->insert_id;
     $stmt->close();
 
+    // Send success response IMMEDIATELY
     http_response_code(200);
     echo json_encode([
         'success' => true,
         'message' => 'Visitor registered successfully',
-        'visitor_id' => $visitorId,
-        'photo_url' => $photoUrl
+        'visitor_id' => $visitorId
     ]);
+
+    // Flush to ensure response is sent immediately
+    ob_flush();
+    flush();
+
+    // Handle photo save in background (after response sent)
+    if ($photoBase64) {
+        try {
+            $photoData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $photoBase64));
+
+            $uploadDir = '/var/www/html/mahamaintainpro/api/photos/visitor_photos/';
+
+            if (!is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0777, true);
+            }
+
+            $filename = 'visitor_' . uniqid() . '_' . time() . '.jpg';
+            $filepath = $uploadDir . $filename;
+
+            if (file_put_contents($filepath, $photoData)) {
+                $photoUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/visitor_photos/' . $filename;
+
+                // Update database with photo URL
+                $updateQuery = "UPDATE visitors SET photo_url = ? WHERE id = ?";
+                $updateStmt = $conn->prepare($updateQuery);
+                $updateStmt->bind_param('si', $photoUrl, $visitorId);
+                $updateStmt->execute();
+                $updateStmt->close();
+
+                error_log("✅ Photo saved: $photoUrl");
+            } else {
+                error_log("❌ Failed to save photo");
+            }
+        } catch (Exception $photoError) {
+            error_log("Photo error: " . $photoError->getMessage());
+        }
+    }
 
 } catch (Exception $e) {
     http_response_code(400);
