@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:typed_data';
 import '../config/app_theme.dart';
 import 'visitor_details_screen.dart';
 
@@ -52,12 +55,60 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
   final _visitorNameController = TextEditingController();
   final _visitorPhoneController = TextEditingController();
   final _visitorPurposeController = TextEditingController();
+  Uint8List? _photoBytes;
   bool _isSaving = false;
+  static const String API_BASE_URL = 'https://digitrixmedia.com/mahamaintainpro/api';
 
   Future<List<dynamic>> _loadVisitors() async {
     final prefs = await SharedPreferences.getInstance();
     final visitors = prefs.getStringList('visitors') ?? [];
     return visitors.map((item) => jsonDecode(item)).toList();
+  }
+
+  Future<void> _pickPhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Capture Photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera, color: AppTheme.saffron),
+              title: const Text('Take a Photo'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: AppTheme.saffron),
+              title: const Text('Choose from Gallery'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    try {
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 80);
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      setState(() => _photoBytes = bytes);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open camera/gallery: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _addVisitor() async {
@@ -73,31 +124,58 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final visitors = prefs.getStringList('visitors') ?? [];
+      String? photoBase64;
+      if (_photoBytes != null) {
+        photoBase64 = 'data:image/jpeg;base64,' + base64Encode(_photoBytes!);
+      }
 
-      final newVisitor = jsonEncode({
+      final payload = {
         'name': _visitorNameController.text,
         'phone': _visitorPhoneController.text,
         'purpose': _visitorPurposeController.text,
-        'timestamp': DateTime.now().toString(),
-      });
+        'photoBase64': photoBase64,
+      };
 
-      visitors.add(newVisitor);
-      await prefs.setStringList('visitors', visitors);
+      final response = await http.post(
+        Uri.parse('$API_BASE_URL/save-visitor.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      ).timeout(const Duration(seconds: 15));
 
-      _visitorNameController.clear();
-      _visitorPhoneController.clear();
-      _visitorPurposeController.clear();
+      final data = jsonDecode(response.body);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Visitor added successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        setState(() {});
+      if (response.statusCode == 200 && data['success'] == true) {
+        // Also save to local SharedPreferences for offline access
+        final prefs = await SharedPreferences.getInstance();
+        final visitors = prefs.getStringList('visitors') ?? [];
+
+        final newVisitor = jsonEncode({
+          'name': _visitorNameController.text,
+          'phone': _visitorPhoneController.text,
+          'purpose': _visitorPurposeController.text,
+          'photoBase64': photoBase64,
+          'timestamp': DateTime.now().toString(),
+        });
+
+        visitors.add(newVisitor);
+        await prefs.setStringList('visitors', visitors);
+
+        _visitorNameController.clear();
+        _visitorPhoneController.clear();
+        _visitorPurposeController.clear();
+        _photoBytes = null;
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Visitor registered successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          setState(() {});
+        }
+      } else {
+        throw Exception(data['message'] ?? 'Failed to register visitor');
       }
     } catch (e) {
       if (mounted) {
@@ -153,6 +231,77 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Photo Section
+                          if (_photoBytes != null)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Photo',
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                ),
+                                const SizedBox(height: 8),
+                                Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.memory(_photoBytes!, width: double.infinity, height: 200, fit: BoxFit.cover),
+                                    ),
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: GestureDetector(
+                                        onTap: () => setState(() => _photoBytes = null),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                            )
+                          else
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Visitor Photo',
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                ),
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: _pickPhoto,
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey.shade300, width: 2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.grey.shade50,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.photo_camera, size: 40, color: Colors.grey.shade400),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Tap to capture photo',
+                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                            ),
                           _buildTextField('Visitor Name', _visitorNameController, Icons.person),
                           const SizedBox(height: 12),
                           _buildTextField('Phone Number', _visitorPhoneController, Icons.phone, keyboardType: TextInputType.phone),
