@@ -1907,18 +1907,34 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     );
   }
 
-  void _openWhatsApp() {
+  void _openWhatsApp() async {
     final message = Uri.encodeComponent('Hi! I need help with a service.');
     final whatsappUrl = 'https://wa.me/919876543210?text=$message';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Opening WhatsApp...'),
-        backgroundColor: Color(0xFF25D366),
-        duration: Duration(seconds: 1),
-      ),
-    );
-    // In production: launchUrl(Uri.parse(whatsappUrl))
+    try {
+      if (await canLaunchUrl(Uri.parse(whatsappUrl))) {
+        await launchUrl(Uri.parse(whatsappUrl), mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('WhatsApp is not installed'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening WhatsApp: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _navigateToSocietyDashboard() {
