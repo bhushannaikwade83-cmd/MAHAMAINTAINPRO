@@ -1,11 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../config/supabase_config.dart';
-
-const String _jwtTokenPrefsKey = 'jwtToken';
 
 sealed class AuthResult {
   const AuthResult();
@@ -43,72 +39,30 @@ class SupabaseAuthRepository {
   String? _demoOtp;
   String? _currentPhoneNumber; // Store current phone for M-PIN operations
 
-  // Static so any screen can attach the auth header without needing
-  // Riverpod `ref` access (most screens here are plain StatefulWidgets).
-  static String? _authToken; // JWT token returned by verify-otp.php
-
-  /// Global accessor for the current session's JWT, for screens that
-  /// build API requests directly instead of going through this repository.
-  static String? get currentToken => _authToken;
-
-  /// Store the JWT in memory and persist it so it survives app restarts.
-  /// Call this right after any successful login (OTP or M-PIN).
-  static Future<void> setToken(String? token) async {
-    _authToken = token;
-    final prefs = await SharedPreferences.getInstance();
-    if (token != null) {
-      await prefs.setString(_jwtTokenPrefsKey, token);
-    } else {
-      await prefs.remove(_jwtTokenPrefsKey);
-    }
-  }
-
-  /// Load the persisted JWT back into memory. Call this at app startup
-  /// (e.g. splash screen) before any authenticated API call is made.
-  static Future<void> restoreToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _authToken = prefs.getString(_jwtTokenPrefsKey);
-  }
-
-  /// Standard headers for authenticated PHP API requests, usable statically.
-  static Map<String, String> get staticAuthHeaders => {
-        'Content-Type': 'application/json',
-        if (_authToken != null) 'Authorization': 'Bearer $_authToken',
-      };
-
   final SupabaseClient _client = SupabaseConfig.client;
 
   Future<AuthResult> sendOtp(String phoneNumber) async {
     _currentPhoneNumber = phoneNumber;
 
-    debugPrint('🔐 [AuthRepository.sendOtp] Started');
-    debugPrint('📱 Raw phone: $phoneNumber');
-
     if (DEMO_MODE) {
-      debugPrint('🎯 DEMO_MODE enabled');
       // Check if M-PIN exists for this phone
       final mpinExists = await hasMpin(phoneNumber);
 
       if (mpinExists) {
-        debugPrint('⚠️ M-PIN exists, returning AuthRequiresMpin');
         return AuthRequiresMpin(phoneNumber);
       }
 
       // Generate dummy OTP for demo
       _demoOtp = '123456';
       _demoUserId = phoneNumber;
-      debugPrint('✅ Demo OTP generated: $_demoOtp');
       return const AuthSuccess();
     }
 
     try {
-      debugPrint('📍 Checking if M-PIN exists...');
       // Check if M-PIN exists for this phone
       final mpinExists = await hasMpin(phoneNumber);
-      debugPrint('📍 M-PIN exists: $mpinExists');
 
       if (mpinExists) {
-        debugPrint('⚠️ M-PIN exists, returning AuthRequiresMpin');
         return AuthRequiresMpin(phoneNumber);
       }
 
@@ -118,39 +72,23 @@ class SupabaseAuthRepository {
         cleanPhone = cleanPhone.substring(cleanPhone.length - 10);
       }
 
-      debugPrint('📞 Cleaned phone: $cleanPhone');
-      debugPrint('🌐 Calling send-otp.php...');
-
       final response = await http.post(
         Uri.parse('$API_BASE_URL/send-otp.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone_number': cleanPhone}),
       ).timeout(const Duration(seconds: 10));
 
-      debugPrint('📡 HTTP Status: ${response.statusCode}');
-      debugPrint('📄 Response Body: ${response.body}');
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        debugPrint('✅ Success flag: ${data['success']}');
-        debugPrint('📋 Message: ${data['message']}');
-
         if (data['success'] == true) {
-          debugPrint('🎉 OTP sent successfully!');
           return const AuthSuccess();
         } else {
-          final error = AuthError(data['message'] ?? 'Failed to send OTP');
-          debugPrint('❌ API returned false: ${error.message}');
-          return error;
+          return AuthError(data['message'] ?? 'Failed to send OTP');
         }
       } else {
-        final error = AuthError('Server error: ${response.statusCode}');
-        debugPrint('❌ ${error.message}');
-        return error;
+        return AuthError('Server error: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('❌ Exception: $e');
-      debugPrint('🔍 Stack trace: ${StackTrace.current}');
       return AuthError('Error sending OTP: $e');
     }
   }
@@ -166,26 +104,20 @@ class SupabaseAuthRepository {
     }
 
     try {
-      String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
-      if (cleanPhone.length > 10) {
-        cleanPhone = cleanPhone.substring(cleanPhone.length - 10);
-      }
+      final response = await _client.auth.verifyOTP(
+        phone: phoneNumber,
+        token: otp,
+        type: OtpType.sms,
+      );
 
-      final response = await http.post(
-        Uri.parse('$API_BASE_URL/verify-otp.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'phone_number': cleanPhone, 'otp': otp}),
-      ).timeout(const Duration(seconds: 10));
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        _currentPhoneNumber = cleanPhone; // Store phone number for M-PIN
-        await SupabaseAuthRepository.setToken(data['token']); // Persist JWT
+      if (response.session != null) {
+        _currentPhoneNumber = phoneNumber; // Store phone number for M-PIN
         return const AuthSuccess();
       } else {
-        return AuthError(data['message'] ?? 'Verification failed');
+        return const AuthError('Verification failed');
       }
+    } on AuthException catch (e) {
+      return AuthError(e.message);
     } catch (e) {
       return AuthError(e.toString());
     }
@@ -222,6 +154,14 @@ class SupabaseAuthRepository {
     } catch (e) {
       return AuthError('Error resending OTP: $e');
     }
+  }
+
+  Future<void> logout() async {
+    if (!DEMO_MODE) {
+      await _client.auth.signOut();
+    }
+    _demoUserId = null;
+    _demoOtp = null;
   }
 
   String? getCurrentUserId() {
@@ -268,8 +208,9 @@ class SupabaseAuthRepository {
     try {
       final response = await http.post(
         Uri.parse('$API_BASE_URL/save-mpin.php'),
-        headers: staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
+          'phone_number': _currentPhoneNumber,
           'mpin': mpin,
         }),
       );
@@ -314,14 +255,10 @@ class SupabaseAuthRepository {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           _currentPhoneNumber = phoneNumber; // Store phone for session
-          await SupabaseAuthRepository.setToken(data['token']); // Persist JWT
           return const AuthSuccess();
         } else {
           return AuthError(data['error'] ?? 'M-PIN verification failed');
         }
-      } else if (response.statusCode == 429) {
-        final data = jsonDecode(response.body);
-        return AuthError(data['message'] ?? 'Too many attempts. Please try again later.');
       } else {
         return AuthError('Server error: ${response.statusCode}');
       }
@@ -370,38 +307,16 @@ class SupabaseAuthRepository {
     }
   }
 
-  /// Logout - clears session and stored data
-  Future<void> logout() async {
-    if (!DEMO_MODE) {
-      await _client.auth.signOut();
-    }
-    _currentPhoneNumber = null;
-    _demoUserId = null;
-    _demoOtp = null;
-    await SupabaseAuthRepository.setToken(null);
-  }
 
   /// Get current logged-in phone number
   String? getCurrentPhoneNumber() {
     return _currentPhoneNumber;
   }
 
-  /// Get the JWT auth token for authenticated API requests
-  String? getAuthToken() {
-    return _authToken;
-  }
-
-  /// Standard headers for authenticated PHP API requests
-  Map<String, String> get authHeaders => {
-        'Content-Type': 'application/json',
-        if (_authToken != null) 'Authorization': 'Bearer $_authToken',
-      };
-
   /// Clear auth state completely
   Future<void> clearAuthState() async {
     _currentPhoneNumber = null;
     _demoUserId = null;
     _demoOtp = null;
-    await SupabaseAuthRepository.setToken(null);
   }
 }
