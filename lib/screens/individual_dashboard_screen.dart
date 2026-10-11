@@ -382,11 +382,6 @@ class _IndividualDashboardScreenState extends State<IndividualDashboardScreen> {
           },
           userRole: 'individual',
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _openWhatsAppHelp,
-          tooltip: 'Need Help? Contact Support',
-          child: const Icon(Icons.help_outline),
-        ),
       ),
     );
   }
