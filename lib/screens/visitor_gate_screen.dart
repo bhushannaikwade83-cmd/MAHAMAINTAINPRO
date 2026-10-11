@@ -59,11 +59,10 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
   bool _isSaving = false;
   static const String API_BASE_URL = 'https://digitrixmedia.com/mahamaintainpro/api';
 
-  Future<List<dynamic>> _loadVisitors() async {
+  Future<List<dynamic>> _loadRecentVisitors() async {
     try {
-      // Try to load from API first
       final response = await http.get(
-        Uri.parse('$API_BASE_URL/get-visitors.php'),
+        Uri.parse('$API_BASE_URL/get-visitors.php?status=pending&limit=5'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(const Duration(seconds: 10));
 
@@ -74,13 +73,28 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
         }
       }
     } catch (e) {
-      debugPrint('API load error: $e, using local storage');
+      debugPrint('Recent visitors API error: $e');
     }
+    return [];
+  }
 
-    // Fallback to SharedPreferences if API fails
-    final prefs = await SharedPreferences.getInstance();
-    final visitors = prefs.getStringList('visitors') ?? [];
-    return visitors.map((item) => jsonDecode(item)).toList();
+  Future<List<dynamic>> _loadRegisteredVisitors() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$API_BASE_URL/get-visitors.php?status=approved'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['visitors'] ?? [];
+        }
+      }
+    } catch (e) {
+      debugPrint('Registered visitors API error: $e');
+    }
+    return [];
   }
 
   Future<void> _pickPhoto() async {
@@ -359,14 +373,13 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                   ),
                   const SizedBox(height: 12),
                   FutureBuilder<List<dynamic>>(
-                    future: _loadVisitors(),
+                    future: _loadRecentVisitors(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      final allVisitors = snapshot.data ?? [];
-                      final recentVisitors = allVisitors.reversed.take(5).toList();
+                      final recentVisitors = snapshot.data ?? [];
 
                       if (recentVisitors.isEmpty) {
                         return Center(
@@ -440,7 +453,7 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                   ),
                   const SizedBox(height: 12),
                   FutureBuilder<List<dynamic>>(
-                    future: _loadVisitors(),
+                    future: _loadRegisteredVisitors(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
