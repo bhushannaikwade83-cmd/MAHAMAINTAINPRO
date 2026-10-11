@@ -211,14 +211,6 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
     }
   }
 
-  Future<void> _deleteVisitor(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    final visitors = prefs.getStringList('visitors') ?? [];
-    visitors.removeAt(index);
-    await prefs.setStringList('visitors', visitors);
-    setState(() {});
-  }
-
   @override
   void dispose() {
     _visitorNameController.dispose();
@@ -484,10 +476,10 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                                 builder: (context) => VisitorDetailsScreen(
                                   visitor: visitor,
                                   index: index,
-                                  onDelete: _deleteVisitor,
+                                  onDelete: (_) {},
                                 ),
                               ),
-                            ).then((_) => setState(() {})),
+                            ),
                             child: Card(
                               margin: const EdgeInsets.only(bottom: 12),
                               child: Padding(
@@ -501,23 +493,13 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  visitor['name'] ?? 'Unknown',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                              GestureDetector(
-                                                onTap: () => _deleteVisitor(index),
-                                                child: const Icon(Icons.delete, color: Colors.red, size: 20),
-                                              ),
-                                            ],
+                                          Text(
+                                            visitor['name'] ?? 'Unknown',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                           const SizedBox(height: 6),
                                           if (visitor['flatNo'] != null)
