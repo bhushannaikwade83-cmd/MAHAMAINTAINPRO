@@ -11,10 +11,15 @@ Widget _buildVisitorAvatar(Map visitor, {double size = 40}) {
   // Try photo_url from API first
   final photoUrl = visitor['photo_url'] as String?;
   if (photoUrl != null && photoUrl.isNotEmpty && photoUrl.startsWith('http')) {
+    // Extract filename from URL
+    final filename = photoUrl.split('/').last;
+    // Load via CORS proxy to avoid CORS errors
+    final proxyUrl = 'https://digitrixmedia.com/mahamaintainpro/api/serve-photo.php?file=$filename';
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.network(
-        photoUrl,
+        proxyUrl,
         width: size,
         height: size,
         fit: BoxFit.cover,
