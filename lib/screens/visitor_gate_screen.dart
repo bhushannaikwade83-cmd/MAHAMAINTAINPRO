@@ -8,13 +8,38 @@ import '../config/app_theme.dart';
 import 'visitor_details_screen.dart';
 
 Widget _buildVisitorAvatar(Map visitor, {double size = 40}) {
-  final photoBase64 = visitor['photoBase64'] as String?;
-  if (photoBase64 != null) {
+  // Try photo_url from API first
+  final photoUrl = visitor['photo_url'] as String?;
+  if (photoUrl != null && photoUrl.isNotEmpty && photoUrl.startsWith('http')) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: Image.memory(base64Decode(photoBase64), width: size, height: size, fit: BoxFit.cover),
+      child: Image.network(
+        photoUrl,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(size),
+      ),
     );
   }
+
+  // Fallback to photoBase64 from local storage
+  final photoBase64 = visitor['photoBase64'] as String?;
+  if (photoBase64 != null && photoBase64.isNotEmpty) {
+    try {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.memory(base64Decode(photoBase64), width: size, height: size, fit: BoxFit.cover),
+      );
+    } catch (e) {
+      return _buildDefaultAvatar(size);
+    }
+  }
+
+  return _buildDefaultAvatar(size);
+}
+
+Widget _buildDefaultAvatar(double size) {
   return Container(
     width: size,
     height: size,
