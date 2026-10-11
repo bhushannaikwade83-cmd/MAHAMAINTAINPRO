@@ -68,9 +68,14 @@ class _SearchListScreenState extends State<SearchListScreen> {
             final categoryName = category['name'] as String? ?? '';
             final emoji = category['emoji'] as String? ?? '🔧';
             final imagePath = category['image_path'] as String?;
-            final services = (category['services'] as List<dynamic>?)
+            var services = (category['services'] as List<dynamic>?)
                 ?.map((s) => Map<String, dynamic>.from(s as Map))
                 .toList() ?? [];
+
+            // Fallback to local catalog if API didn't return services
+            if (services.isEmpty) {
+              services = getServicesForCategory(categoryName, emoji);
+            }
 
             entries.add(
               _SearchEntry(
