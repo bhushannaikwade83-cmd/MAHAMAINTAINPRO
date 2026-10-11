@@ -73,10 +73,16 @@ try {
     if ($photoBase64) {
         $photoData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $photoBase64));
 
-        $uploadDir = __DIR__ . '/photos/visitor_photos/';
+        // Use absolute path for public HTML
+        $uploadDir = '/var/www/html/mahamaintainpro/api/photos/visitor_photos/';
+
+        // Create directory if not exists
         if (!is_dir($uploadDir)) {
             if (!@mkdir($uploadDir, 0777, true)) {
-                error_log("Failed to create visitor photos directory: $uploadDir");
+                error_log("Failed to create directory: $uploadDir");
+                // Fallback to relative path if absolute fails
+                $uploadDir = __DIR__ . '/photos/visitor_photos/';
+                @mkdir($uploadDir, 0777, true);
             }
         }
 
@@ -84,10 +90,14 @@ try {
         $filepath = $uploadDir . $filename;
 
         if (file_put_contents($filepath, $photoData)) {
+            // Generate absolute public URL
             $photoUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/mahamaintainpro/api/photos/visitor_photos/' . $filename;
-            error_log("Visitor photo saved: $photoUrl");
+            error_log("✅ Visitor photo saved: $photoUrl");
+            error_log("Physical path: $filepath");
         } else {
-            error_log("Failed to save visitor photo at: $filepath");
+            error_log("❌ Failed to save visitor photo at: $filepath");
+            error_log("Directory exists: " . (is_dir($uploadDir) ? 'yes' : 'no'));
+            error_log("Is writable: " . (is_writable($uploadDir) ? 'yes' : 'no'));
         }
     }
 
