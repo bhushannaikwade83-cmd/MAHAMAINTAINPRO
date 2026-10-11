@@ -102,7 +102,8 @@ try {
         try {
             $photoData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $photoBase64));
 
-            $uploadDir = '/var/www/html/mahamaintainpro/api/photos/visitor_photos/';
+            // Use relative path based on current directory (__DIR__ = api directory)
+            $uploadDir = __DIR__ . '/photos/visitor_photos/';
 
             if (!is_dir($uploadDir)) {
                 @mkdir($uploadDir, 0777, true);
@@ -121,9 +122,11 @@ try {
                 $updateStmt->execute();
                 $updateStmt->close();
 
-                error_log("✅ Photo saved: $photoUrl");
+                error_log("✅ Photo saved: $photoUrl to $filepath");
             } else {
-                error_log("❌ Failed to save photo");
+                error_log("❌ Failed to save photo at $filepath");
+                error_log("Upload dir exists: " . (is_dir($uploadDir) ? 'yes' : 'no'));
+                error_log("Upload dir writable: " . (is_writable($uploadDir) ? 'yes' : 'no'));
             }
         } catch (Exception $photoError) {
             error_log("Photo error: " . $photoError->getMessage());

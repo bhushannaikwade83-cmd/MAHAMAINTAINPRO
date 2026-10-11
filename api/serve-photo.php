@@ -27,7 +27,8 @@ try {
     $filename = basename($filename);
     error_log("serve-photo.php - Sanitized filename: $filename");
 
-    $uploadDir = '/var/www/html/mahamaintainpro/api/photos/visitor_photos/';
+    // Use relative path based on current directory (__DIR__ = api directory)
+    $uploadDir = __DIR__ . '/photos/visitor_photos/';
     $filepath = $uploadDir . $filename;
 
     error_log("serve-photo.php - Full path: $filepath");
