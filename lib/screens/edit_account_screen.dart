@@ -127,7 +127,10 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
       final checkUrl = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-user.php');
       final checkResponse = await http.post(
         checkUrl,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $phoneNumber',
+        },
         body: jsonEncode({'phone_number': phoneNumber}),
       ).timeout(const Duration(seconds: 10));
 
@@ -161,7 +164,10 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
 
       final response = await http.post(
         updateUrl,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $phoneNumber',
+        },
         body: jsonEncode(updateData),
       ).timeout(const Duration(seconds: 10));
 
