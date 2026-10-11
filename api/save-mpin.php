@@ -2,35 +2,24 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// JWT Authentication (Security Layer)
-require_once 'jwt-auth.php';
-$authToken = verifyJWTToken();
-
 try {
     $input = json_decode(file_get_contents('php://input'), true);
 
-    if (!$input || empty($input['mpin'])) {
+    if (!$input || empty($input['phone_number']) || empty($input['mpin'])) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'mpin is required']);
+        echo json_encode(['success' => false, 'error' => 'phone_number and mpin are required']);
         exit;
     }
 
-    // phone_number from verified JWT, not client input
-    $phoneNumber = $authToken['phone_number'];
+    $phoneNumber = $input['phone_number'];
     $mpin = $input['mpin'];
-
-    if (!preg_match('/^[0-9]{4}$/', $mpin)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'mpin must be 4 digits']);
-        exit;
-    }
 
     // Hash the M-PIN using password_hash for security
     $mpinHash = password_hash($mpin, PASSWORD_BCRYPT);
@@ -72,6 +61,6 @@ try {
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

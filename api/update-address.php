@@ -2,16 +2,12 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-// JWT Authentication (Security Layer)
-require_once 'jwt-auth.php';
-$token = verifyJWTToken();
 
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
@@ -30,8 +26,7 @@ try {
     $data = json_decode(file_get_contents('php://input'), true);
 
     $addressId = $data['address_id'] ?? null;
-    // phone_number from verified JWT, not client input
-    $phoneNumber = $token['phone_number'];
+    $phoneNumber = $data['phone_number'] ?? null;
     $addressType = $data['address_type'] ?? 'Home';
     $building = $data['building'] ?? '';
     $buildingName = $data['building_name'] ?? '';
@@ -87,7 +82,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     error_log($e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

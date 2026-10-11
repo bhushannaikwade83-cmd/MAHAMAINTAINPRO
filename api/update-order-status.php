@@ -16,11 +16,6 @@ $database = "digitrix_maha_maintain_pro";
 
 $conn = new mysqli($servername, $db_username, $db_password, $database);
 
-require_once 'ensure-orders-schema.php';
-if (!$conn->connect_error) {
-    ensureOrdersSchema($conn);
-}
-
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);
@@ -56,16 +51,15 @@ try {
     }
 
     // Verify order exists
-    $checkOrder = "SELECT id, phone_number, order_id FROM orders WHERE id = ?";
+    $checkOrder = "SELECT id FROM orders WHERE id = ?";
     $stmt = $conn->prepare($checkOrder);
     if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
     $stmt->bind_param('i', $orderId);
     $stmt->execute();
     $result = $stmt->get_result();
-    $orderRow = $result->fetch_assoc();
     $stmt->close();
 
-    if (!$orderRow) {
+    if ($result->num_rows === 0) {
         throw new Exception('Order not found: ' . $orderId);
     }
 
@@ -91,41 +85,6 @@ try {
     }
     $stmt->close();
 
-    // Notify the customer - populates their in-app notification inbox
-    $statusMessages = [
-        'requested' => 'Your service request has been received.',
-        'accepted' => 'Your order has been accepted.',
-        'technician_assigned' => 'A technician has been assigned to your order.',
-        'technician_on_the_way' => 'Your technician is on the way.',
-        'service_started' => 'Your service has started.',
-        'service_completed' => 'Your service has been completed.',
-        'cancelled' => 'Your order has been cancelled.',
-        'on_hold' => 'Your order has been put on hold.',
-    ];
-    $notifTitle = 'Order ' . $orderRow['order_id'] . ' update';
-    $notifBody = $statusMessages[$status] ?? ('Order status changed to ' . $status);
-    $createNotifTable = "CREATE TABLE IF NOT EXISTS notifications (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        phone_number VARCHAR(20) NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        body TEXT,
-        type VARCHAR(50) DEFAULT 'general',
-        reference_id VARCHAR(100),
-        is_read TINYINT(1) DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_phone (phone_number)
-    )";
-    $conn->query($createNotifTable);
-    $notifStmt = $conn->prepare(
-        "INSERT INTO notifications (phone_number, title, body, type, reference_id) VALUES (?, ?, ?, 'order', ?)"
-    );
-    if ($notifStmt) {
-        $orderIdStr = (string) $orderId;
-        $notifStmt->bind_param('ssss', $orderRow['phone_number'], $notifTitle, $notifBody, $orderIdStr);
-        $notifStmt->execute();
-        $notifStmt->close();
-    }
-
     http_response_code(200);
     echo json_encode([
         'success' => true,
@@ -138,7 +97,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Update order status error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

@@ -122,7 +122,6 @@ class _MpinSetupScreenState extends ConsumerState<MpinSetupScreen> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   suffixIcon: IconButton(
                     icon: Icon(_obscureCreate ? Icons.visibility_off : Icons.visibility),
-                    tooltip: _obscureCreate ? 'Show M-PIN' : 'Hide M-PIN',
                     onPressed: () => setState(() => _obscureCreate = !_obscureCreate),
                   ),
                 ),
@@ -143,7 +142,6 @@ class _MpinSetupScreenState extends ConsumerState<MpinSetupScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     suffixIcon: IconButton(
                       icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility),
-                      tooltip: _obscureConfirm ? 'Show M-PIN' : 'Hide M-PIN',
                       onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                   ),

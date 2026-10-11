@@ -59,7 +59,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Check status error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

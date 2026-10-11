@@ -8,9 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/../jwt-auth.php';
-$authToken = requireVendorRole();
-
 try {
     $pdo = new PDO("mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
         "digitrix_maha_user", "maha_user@70", [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -74,6 +71,6 @@ try {
     ]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

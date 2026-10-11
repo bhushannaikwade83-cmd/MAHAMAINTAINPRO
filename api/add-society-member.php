@@ -2,16 +2,12 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-// Only an approved society secretary can add members to their society
-require_once 'jwt-auth.php';
-requireSecretaryRole();
 
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
@@ -32,8 +28,6 @@ try {
     $user_id = intval($input['user_id'] ?? 0);
     $is_committee = intval($input['is_committee'] ?? 0);
     $is_enabled = intval($input['is_enabled'] ?? 1);
-    $member_type = in_array($input['member_type'] ?? 'owner', ['owner', 'tenant'], true) ? $input['member_type'] : 'owner';
-    $flat_id = isset($input['flat_id']) && $input['flat_id'] !== '' ? (int)$input['flat_id'] : null;
 
     if ($user_id <= 0) {
         throw new Exception('User ID is required');
@@ -56,8 +50,8 @@ try {
         ]);
     } else {
         // Insert new member
-        $stmt = $conn->prepare("INSERT INTO society_customers_individual (user_id, is_committee, is_enabled, member_type, flat_id) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("iiisi", $user_id, $is_committee, $is_enabled, $member_type, $flat_id);
+        $stmt = $conn->prepare("INSERT INTO society_customers_individual (user_id, is_committee, is_enabled) VALUES (?, ?, ?)");
+        $stmt->bind_param("iii", $user_id, $is_committee, $is_enabled);
         $stmt->execute();
 
         http_response_code(201);
@@ -78,7 +72,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Add member error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

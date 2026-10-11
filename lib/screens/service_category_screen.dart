@@ -4,8 +4,6 @@ import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
 import '../utils/constants.dart';
 import 'schedule_service_screen.dart';
-import 'service_detail_screen.dart';
-import 'cart_screen.dart';
 
 class ServiceCategoryScreen extends StatefulWidget {
   final String categoryName;
@@ -13,9 +11,7 @@ class ServiceCategoryScreen extends StatefulWidget {
   final String? categoryIconPath;
   final String? categoryImagePath;
   final String description;
-  final String categoryId;
   final List<Map<String, dynamic>> services;
-  final List<Map<String, dynamic>> faqs;
 
   const ServiceCategoryScreen({
     required this.categoryName,
@@ -23,9 +19,7 @@ class ServiceCategoryScreen extends StatefulWidget {
     this.categoryIconPath,
     this.categoryImagePath,
     required this.description,
-    required this.categoryId,
     required this.services,
-    this.faqs = const [],
     Key? key,
   }) : super(key: key);
 
@@ -39,35 +33,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   @override
   void initState() {
     super.initState();
-    _loadServicesWithCartStatus();
-  }
-
-  Future<void> _loadServicesWithCartStatus() async {
-    final cartService = CartService();
-    await cartService.loadCart();
-
-    setState(() {
-      _services = widget.services.map((s) {
-        final serviceId = '${s['id']}';
-        final cartItem = cartService.items.firstWhere(
-          (item) => item.serviceId == serviceId,
-          orElse: () => CartItem(
-            id: '', serviceName: '', serviceId: '', categoryId: '',
-            price: '', description: '', duration: '', serviceIcon: '',
-            quantity: 0,
-          ),
-        );
-
-        final quantityInCart = cartItem.quantity;
-        final isInCart = quantityInCart > 0;
-
-        return <String, dynamic>{
-          ...s,
-          'quantity': quantityInCart,  // Show actual quantity from cart
-          'isInCart': isInCart,
-        };
-      }).toList();
-    });
+    _services = widget.services.map((s) => <String, dynamic>{...s, 'quantity': 0}).toList();
   }
 
   int get totalPrice => _services.fold(0, (sum, item) => sum + (((item['price'] as int?) ?? 0) * (item['quantity'] as int)));
@@ -242,9 +208,16 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
+                        final selected = _services.where((s) => (s['quantity'] as int) > 0).toList();
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const CartScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => ScheduleServiceScreen(
+                              categoryName: widget.categoryName,
+                              selectedServices: selected,
+                              totalPrice: totalPrice,
+                            ),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -253,7 +226,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
-                        'View Cart',
+                        'Book Now',
                         style: TextStyle(fontSize: isSmall ? 14 : 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
@@ -277,21 +250,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     final isSelected = service['quantity'] > 0;
 
     return GestureDetector(
-      onTap: () {
-        final related = _services.where((s) => s['id'] != service['id']).take(3).toList();
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ServiceDetailScreen(
-              service: service,
-              categoryName: widget.categoryName,
-              categoryEmoji: widget.categoryEmoji,
-              relatedServices: related,
-              faqs: widget.faqs,
-            ),
-          ),
-        );
-      },
       child: Container(
         margin: EdgeInsets.only(bottom: isSmall ? 8 : 12),
         padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16, vertical: isSmall ? 12 : 14),
@@ -321,8 +279,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     child: Image.network(
                       imagePath,
                       fit: BoxFit.cover,
-                      cacheWidth: 100,
-                      cacheHeight: 100,
                       errorBuilder: (c,e,st) => Center(child: Text(service['emoji'] ?? '🔧', style: const TextStyle(fontSize: 24))),
                     ),
                   );
@@ -344,40 +300,15 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          service['name'] ?? 'Service',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (service['isInCart'] == true)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade100,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.check_circle, size: 14, color: Colors.green.shade700),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Added',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.green.shade700),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                  Text(
+                    service['name'] ?? 'Service',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   SingleChildScrollView(
@@ -443,73 +374,20 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   ),
                   const SizedBox(width: 10),
                   GestureDetector(
-                    onTap: () async {
-                      final cartService = CartService();
-
-                      // ✅ CRITICAL: Load cart from storage first before checking service
-                      await cartService.loadCart();
-                      debugPrint('📦 SERVICE CATEGORY SCREEN - Adding service');
-                      debugPrint('   Service: ${service['name']}');
-
-                      final serviceId = '${service['id']}';
-                      final serviceCategoryId = widget.categoryId;
-                      debugPrint('   Service: ${service['name']}');
-                      debugPrint('   Service Category ID: $serviceCategoryId');
-
-                      // Check if trying to add from DIFFERENT CATEGORY
-                      if (cartService.hasDifferentCategory(serviceCategoryId)) {
-                        // Show conflict dialog
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Different Category'),
-                            content: const Text('Your cart has items from a different category.\n\nWould you like to replace them with this service?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  setState(() => service['quantity']++);
-
-                                  // Replace entire cart with this service
-                                  await cartService.replaceCart(CartItem(
-                                    id: '${service['id']}',
-                                    serviceName: service['name'] ?? 'Service',
-                                    serviceId: '${service['id']}',
-                                    categoryId: serviceCategoryId,
-                                    price: '₹${service['price'] ?? 0}',
-                                    description: service['description'] ?? '',
-                                    duration: service['duration'] ?? '',
-                                    serviceIcon: service['emoji'] ?? '✨',
-                                    imagePath: widget.categoryImagePath,
-                                    quantity: 1,
-                                  ));
-                                },
-                                child: const Text('Replace Cart'),
-                              ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        // Same category - just add
-                        setState(() => service['quantity']++);
-                        await cartService.addItem(CartItem(
-                          id: '${service['id']}',
-                          serviceName: service['name'] ?? 'Service',
-                          serviceId: '${service['id']}',
-                          categoryId: serviceCategoryId,
-                          price: '₹${service['price'] ?? 0}',
-                          description: service['description'] ?? '',
-                          duration: service['duration'] ?? '',
-                          serviceIcon: service['emoji'] ?? '✨',
-                          imagePath: widget.categoryImagePath,
-                          quantity: 1,
-                        ));
-                      }
-                    },
+                    onTap: () {
+                    setState(() => service['quantity']++);
+                    CartService().addItem(CartItem(
+                      id: '${service['id']}',
+                      serviceName: service['name'] ?? 'Service',
+                      serviceId: '${service['id']}',
+                      categoryId: '${service['category_id'] ?? 1}',
+                      price: '₹${service['price'] ?? 0}',
+                      description: service['duration'] ?? '',
+                      duration: '30 min',
+                      serviceIcon: 'assets/images/logo.png',
+                      quantity: 1,
+                    ));
+                  },
                     child: Text(
                       '+',
                       style: TextStyle(

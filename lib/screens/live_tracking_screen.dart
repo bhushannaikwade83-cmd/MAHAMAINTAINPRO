@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 import '../models/service_request_model.dart';
-import '../repositories/auth_repository.dart';
 
 class _AppColors {
   static const brand = Color(0xFFFF9A4D);
@@ -37,37 +36,28 @@ class LiveTrackingScreen extends StatefulWidget {
 }
 
 class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
-  late Timer _pollTimer;
+  late Timer _locationTimer;
+  late Timer _statusTimer;
 
   ServiceRequest? _request;
   Map<String, dynamic>? _liveLocation;
   bool _loading = true;
-  bool _pollingFailed = false;
   String _statusMessage = 'Finding vendors...';
   int _etaMinutes = 0;
   double _distanceKm = 0;
-
-  int _pollTicks = 0;
 
   @override
   void initState() {
     super.initState();
     _fetchRequest();
-    // Single timer driving both refreshes, instead of two independent
-    // Timer objects - location every tick (5s), status every other tick
-    // (10s), matching the original cadences without the extra timer.
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _pollTicks++;
-      _fetchLiveLocation();
-      if (_pollTicks % 2 == 0) _fetchRequestStatus();
-    });
+    _locationTimer = Timer.periodic(const Duration(seconds: 5), (_) => _fetchLiveLocation());
+    _statusTimer = Timer.periodic(const Duration(seconds: 10), (_) => _fetchRequestStatus());
   }
 
   Future<void> _fetchRequest() async {
     try {
       final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/get-service-request.php?request_id=${widget.requestId}'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor-get-requests.php?request_id=${widget.requestId}'),
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
@@ -92,8 +82,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/customer-get-live-location.php?request_id=${widget.requestId}'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/customer-get-live-location.php?request_id=${widget.requestId}'),
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
@@ -105,23 +94,18 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             _liveLocation = data['vendor_location'];
             _etaMinutes = data['eta_minutes'] ?? 0;
             _distanceKm = data['distance_km'] ?? 0;
-            _pollingFailed = false;
           });
         }
       }
     } catch (e) {
-      // A single poll failing isn't worth interrupting the screen for, but
-      // if it keeps failing the user should know their connection dropped
-      // rather than silently seeing a stale ETA/location forever.
-      if (mounted) setState(() => _pollingFailed = true);
+      // Silent fail for polling
     }
   }
 
   Future<void> _fetchRequestStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor/get-service-request.php?request_id=${widget.requestId}'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/vendor-get-requests.php?request_id=${widget.requestId}'),
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
@@ -132,12 +116,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           setState(() {
             _request = ServiceRequest.fromJson(data['requests'][0]);
             _updateStatusMessage();
-            _pollingFailed = false;
           });
         }
       }
     } catch (e) {
-      if (mounted) setState(() => _pollingFailed = true);
+      // Silent fail for polling
     }
   }
 
@@ -168,7 +151,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
 
   @override
   void dispose() {
-    _pollTimer.cancel();
+    _locationTimer.cancel();
+    _statusTimer.cancel();
     super.dispose();
   }
 
@@ -238,29 +222,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (_pollingFailed) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: _AppColors.warning.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _AppColors.warning.withOpacity(0.4)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.wifi_off_rounded, size: 16, color: _AppColors.warning),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Connection trouble - live updates may be delayed',
-                      style: TextStyle(fontSize: 12, color: _AppColors.ink),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-          ],
           _statusCard(),
           const SizedBox(height: 14),
           if (_request!.assignedVendorId != null) ...[

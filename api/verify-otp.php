@@ -10,8 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once 'rate-limiter.php';
-
 // Database credentials
 $servername = "localhost";
 $username = "digitrix_maha_user";
@@ -27,21 +25,6 @@ if ($conn->connect_error) {
 }
 
 $conn->set_charset("utf8");
-
-// Issue tokens through the shared jwt-auth.php secret/signer - a token
-// signed with a different, locally-hardcoded secret here would never
-// verify against verifyJWTToken() in the endpoints that check it later
-// (create-order.php, etc.), failing every authenticated request with
-// "Invalid token signature" regardless of how many times the user logs in.
-require_once 'jwt-auth.php';
-
-function generateJWTToken($phoneNumber) {
-    return generateJWT([
-        'phone_number' => $phoneNumber,
-        'type' => 'user_auth',
-        'role' => 'resident',
-    ], 86400);
-}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
@@ -59,10 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         http_response_code(400);
         die(json_encode(['success' => false, 'message' => 'Invalid phone number']));
     }
-
-    // Max 5 guesses per 10 minutes per phone number - a 4-6 digit OTP is
-    // brute-forceable otherwise.
-    checkRateLimit('verify_otp_' . $phone_number, 5, 600);
 
     // Check OTP
     $sql = "SELECT otp, expires_at, created_at FROM otp_storage
@@ -97,18 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $delete_sql = "DELETE FROM otp_storage WHERE phone_number = '$phone_number'";
     $conn->query($delete_sql);
 
-    // Generate JWT token
-    $jwt_token = generateJWTToken($phone_number);
-
-    // Return success with JWT token
+    // Generate session token or return success
     http_response_code(200);
     echo json_encode([
         'success' => true,
         'message' => 'OTP verified successfully',
-        'phone_number' => $phone_number,
-        'token' => $jwt_token,
-        'token_type' => 'Bearer',
-        'expires_in' => 86400
+        'phone_number' => $phone_number
     ]);
 
 } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {

@@ -21,10 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// JWT Authentication (Security Layer)
-require_once 'jwt-auth.php';
-$authToken = verifyJWTToken();
-
 // Database credentials
 $servername = "localhost";
 $username = "digitrix_maha_user";
@@ -60,13 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     debug_log("Phone: " . $data['phone_number'] . ", Name: " . $data['full_name']);
 
-    // phone_number must match the verified JWT (prevents editing another user's profile)
-    if (trim($data['phone_number']) !== $authToken['phone_number']) {
-        http_response_code(403);
-        die(json_encode(['success' => false, 'message' => 'Phone number does not match authenticated session']));
-    }
-
-    $phone_number = $conn->real_escape_string($authToken['phone_number']);
+    $phone_number = $conn->real_escape_string(trim($data['phone_number']));
     $full_name = $conn->real_escape_string(trim($data['full_name']));
     $email = isset($data['email']) && !empty($data['email']) ? $conn->real_escape_string(trim($data['email'])) : NULL;
     $address = isset($data['address']) ? $conn->real_escape_string(trim($data['address'])) : '';

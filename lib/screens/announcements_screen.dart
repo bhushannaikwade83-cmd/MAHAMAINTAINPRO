@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_theme.dart';
-import '../repositories/auth_repository.dart';
-
-const String _apiBaseUrl = 'https://digitrixmedia.com/mahamaintainpro/api';
 
 class AnnouncementsScreen extends StatefulWidget {
   final bool isCommittee;
@@ -21,34 +17,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   final _descriptionController = TextEditingController();
   bool _isSaving = false;
 
-  Future<int> _societyId() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('societyId') ?? 1;
-  }
-
   Future<List<dynamic>> _loadAnnouncements() async {
-    final societyId = await _societyId();
-    try {
-      final response = await http.get(
-        Uri.parse('$_apiBaseUrl/get-society-notices.php?society_id=$societyId'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          return (data['notices'] as List).map((n) => {
-                'id': n['id'],
-                'title': n['title'],
-                'description': n['description'],
-                'timestamp': n['created_at'],
-              }).toList();
-        }
-      }
-    } catch (e) {
-      // Silent fail - list just shows empty
-    }
-    return [];
+    final prefs = await SharedPreferences.getInstance();
+    final announcements = prefs.getStringList('announcements') ?? [];
+    return announcements.map((item) => jsonDecode(item)).toList();
   }
 
   Future<void> _addAnnouncement() async {
@@ -62,21 +34,17 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final societyId = await _societyId();
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/add-society-notice.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-        body: jsonEncode({
-          'society_id': societyId,
-          'title': _titleController.text.trim(),
-          'description': _descriptionController.text.trim(),
-        }),
-      ).timeout(const Duration(seconds: 10));
+      final prefs = await SharedPreferences.getInstance();
+      final announcements = prefs.getStringList('announcements') ?? [];
 
-      final data = jsonDecode(response.body);
-      if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(data['message'] ?? data['error'] ?? 'Failed to post notice');
-      }
+      final newAnnouncement = jsonEncode({
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'timestamp': DateTime.now().toString(),
+      });
+
+      announcements.add(newAnnouncement);
+      await prefs.setStringList('announcements', announcements);
 
       _titleController.clear();
       _descriptionController.clear();
@@ -102,10 +70,11 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   }
 
   Future<void> _deleteAnnouncement(int index) async {
-    // Notices are now tracked server-side; deletion isn't exposed yet.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notice deletion is not available yet.')),
-    );
+    final prefs = await SharedPreferences.getInstance();
+    final announcements = prefs.getStringList('announcements') ?? [];
+    announcements.removeAt(index);
+    await prefs.setStringList('announcements', announcements);
+    setState(() {});
   }
 
   @override
@@ -247,7 +216,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                                 if (widget.isCommittee)
                                   IconButton(
                                     icon: const Icon(Icons.delete, color: Colors.red),
-                                    tooltip: 'Delete announcement',
                                     onPressed: () => _deleteAnnouncement(storageIndex),
                                   ),
                               ],

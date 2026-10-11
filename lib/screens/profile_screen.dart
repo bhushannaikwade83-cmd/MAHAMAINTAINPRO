@@ -9,9 +9,6 @@ import 'notifications_settings_screen.dart';
 import 'about_screen.dart';
 import 'login_screen.dart';
 import 'edit_account_screen.dart';
-import '../repositories/auth_repository.dart';
-import 'insta_help_screen.dart';
-import 'payment_history_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -392,10 +389,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildQuickActionButton(
                       context,
                       Icons.receipt_rounded,
-                      'Payment\nHistory',
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const PaymentHistoryScreen()),
+                      'My\nRefunds',
+                      () => ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No refunds yet')),
                       ),
                     ),
                     _buildQuickActionButton(
@@ -445,9 +441,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Icons.help_rounded,
                         'Help & Support',
                         'FAQ and support',
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const InstaHelpScreen()),
+                        () => ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Support coming soon')),
                         ),
                       ),
                       Divider(height: 1, color: Colors.grey.shade200),
@@ -486,8 +481,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onPressed: () async {
                               final prefs = await SharedPreferences.getInstance();
                               await prefs.clear();
-                              await SupabaseAuthRepository.setToken(null);
-                              if (!context.mounted) return;
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(builder: (context) => LoginScreen(

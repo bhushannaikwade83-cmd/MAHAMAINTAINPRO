@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_theme.dart';
-import '../repositories/auth_repository.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
   final int orderId;
@@ -32,9 +31,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       final url = Uri.parse(
         'https://digitrixmedia.com/mahamaintainpro/api/get-order-status.php?order_id=${widget.orderId}',
       );
-      final response = await http
-          .get(url, headers: SupabaseAuthRepository.staticAuthHeaders)
-          .timeout(const Duration(seconds: 15));
+      final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -198,36 +195,6 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                         style: TextStyle(color: Colors.grey.shade600),
                       ),
                     ),
-                  if (currentStatus == 'service_completed') ...[
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showRateDialog(widget.orderId),
-                            icon: Icon(Icons.star_outline, color: AppTheme.saffron),
-                            label: Text('Rate Service', style: TextStyle(color: AppTheme.saffron)),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: AppTheme.saffron),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showReopenDialog(widget.orderId),
-                            icon: const Icon(Icons.report_problem_outlined, color: Colors.red),
-                            label: const Text('Report Issue', style: TextStyle(color: Colors.red)),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.red),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -243,7 +210,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
     switch (status) {
       case 'requested':
-        icon = Icons.access_time_outlined;
+        icon = Icons.clock_outlined;
         break;
       case 'accepted':
         icon = Icons.check_circle_outline;
@@ -393,120 +360,6 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       'on_hold': 'Order is currently on hold.',
     };
     return descriptions[status] ?? 'No description available';
-  }
-
-  void _showRateDialog(int orderId) {
-    int rating = 5;
-    final commentController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('Rate this service'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) {
-                  return IconButton(
-                    onPressed: () => setDialogState(() => rating = i + 1),
-                    tooltip: 'Rate ${i + 1} star${i == 0 ? '' : 's'}',
-                    icon: Icon(
-                      i < rating ? Icons.star : Icons.star_border,
-                      color: Colors.amber,
-                    ),
-                  );
-                }),
-              ),
-              TextField(
-                controller: commentController,
-                decoration: const InputDecoration(hintText: 'Add a comment (optional)'),
-                maxLines: 2,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                await _submitRating(orderId, rating, commentController.text.trim());
-              },
-              child: const Text('Submit'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _submitRating(int orderId, int rating, String comment) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/rate-order.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-        body: jsonEncode({'order_id': orderId, 'rating': rating, 'comment': comment}),
-      );
-      final data = jsonDecode(response.body);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(data['message']?.toString() ?? (data['success'] == true ? 'Thanks!' : 'Could not submit rating'))),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Please try again.')));
-    }
-  }
-
-  void _showReopenDialog(int orderId) {
-    final reasonController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Report an issue'),
-        content: TextField(
-          controller: reasonController,
-          decoration: const InputDecoration(hintText: 'Describe the issue with this service'),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              final reason = reasonController.text.trim();
-              if (reason.isEmpty) return;
-              Navigator.pop(dialogContext);
-              await _submitReopen(orderId, reason);
-            },
-            child: const Text('Submit'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _submitReopen(int orderId, String reason) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/reopen-order.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-        body: jsonEncode({'order_id': orderId, 'reason': reason}),
-      );
-      final data = jsonDecode(response.body);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(data['message']?.toString() ?? 'Could not report issue')),
-      );
-      if (data['success'] == true) {
-        setState(() {
-          _orderStatusFuture = _fetchOrderStatus();
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Please try again.')));
-    }
   }
 
   String _formatDateTime(String dateTime) {

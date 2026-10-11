@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:convert';
@@ -70,7 +69,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
   late TextEditingController _pincodeController;
   late TextEditingController _labelController;
   late TextEditingController _instructionsController;
-  final _formKey = GlobalKey<FormState>();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   String? _latitude;
@@ -144,7 +142,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone_number': phoneNumber}),
       ).timeout(const Duration(seconds: 10));
 
@@ -301,11 +299,28 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
   }
 
   Future<void> _saveAddress() async {
-    // Real inline validation (red border + error text under each field) via
-    // the Form/TextFormField.validator wired above - this used to be a
-    // manual isEmpty chain that only ever showed a generic post-submit
-    // snackbar, with no per-field feedback while filling the form.
-    if (!(_formKey.currentState?.validate() ?? true)) {
+    // Validate mandatory fields
+    String? errorMessage;
+
+    if (_buildingController.text.trim().isEmpty) {
+      errorMessage = 'Building / Floor is mandatory *';
+    } else if (_pincodeController.text.trim().isEmpty) {
+      errorMessage = 'Pincode is mandatory *';
+    } else if (_labelController.text.trim().isEmpty) {
+      errorMessage = 'Save address as is mandatory *';
+    }
+
+    if (errorMessage != null) {
+      debugPrint('❌ Validation error: $errorMessage');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
       return;
     }
 
@@ -372,7 +387,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
 
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       ).timeout(const Duration(seconds: 10));
 
@@ -586,7 +601,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
                   ]),
                   const SizedBox(height: 20),
                   // Location Details
-                  Form(key: _formKey, child: _buildSection('Location Details', [
+                  _buildSection('Location Details', [
                     // Selected Address (Read-only) - from location picker
                     if (_latitude != null && _latitude!.isNotEmpty)
                       Container(
@@ -668,11 +683,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
                     ),
                     const SizedBox(height: 12),
                     // Building / Floor (Mandatory)
-                    _buildTextField(
-                      'Building / Floor *',
-                      _buildingController,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Building / Floor is mandatory' : null,
-                    ),
+                    _buildTextField('Building / Floor *', _buildingController),
                     const SizedBox(height: 10),
                     // Building Name (Optional)
                     _buildTextField('Building Name (Optional)', _buildingNameController),
@@ -681,27 +692,14 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
                     _buildTextField('Street (Optional)', _streetController),
                     const SizedBox(height: 10),
                     // Pincode (Mandatory)
-                    _buildTextField(
-                      'Pincode *',
-                      _pincodeController,
-                      validator: (v) {
-                        final value = v?.trim() ?? '';
-                        if (value.isEmpty) return 'Pincode is mandatory';
-                        if (!RegExp(r'^[0-9]{6}$').hasMatch(value)) return 'Enter a valid 6-digit pincode';
-                        return null;
-                      },
-                    ),
+                    _buildTextField('Pincode *', _pincodeController),
                     const SizedBox(height: 10),
                     // Area (Non-editable - from location picker)
                     _buildReadOnlyField('Area', _areaName),
                     const SizedBox(height: 10),
                     // Save address as (Mandatory)
-                    _buildTextField(
-                      'Save address as *',
-                      _labelController,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Save address as is mandatory' : null,
-                    ),
-                  ])),
+                    _buildTextField('Save address as *', _labelController),
+                  ]),
                   const SizedBox(height: 20),
                   // Delivery Instructions
                   _buildSection('Delivery Instructions (Recommended)', [
@@ -932,12 +930,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildTextField(String hint, TextEditingController controller, {int maxLines = 1, String? Function(String?)? validator}) {
-    return TextFormField(
+  Widget _buildTextField(String hint, TextEditingController controller, {int maxLines = 1}) {
+    return TextField(
       controller: controller,
       maxLines: maxLines,
-      validator: validator,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w500,

@@ -2,10 +2,6 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Admin-only: this is a one-time schema migration, not a resident-facing endpoint.
-require_once 'jwt-auth.php';
-requireAdminRole();
-
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
 $db_password = "maha_user@70";
@@ -102,7 +98,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     error_log("Migration error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

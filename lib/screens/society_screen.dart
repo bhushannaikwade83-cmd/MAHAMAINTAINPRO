@@ -127,7 +127,6 @@ class _SocietyScreenState extends State<SocietyScreen> {
         leading: Navigator.canPop(context)
             ? IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                tooltip: 'Back',
                 onPressed: () => Navigator.pop(context),
               )
             : null,

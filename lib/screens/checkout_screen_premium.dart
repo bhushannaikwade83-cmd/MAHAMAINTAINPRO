@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
-import '../repositories/order_repository.dart';
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,9 +72,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> with SingleTickerProvid
           ? 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php?phone_number=$userPhone'
           : 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php';
 
-      final response = await http
-          .get(Uri.parse(url), headers: SupabaseAuthRepository.staticAuthHeaders)
-          .timeout(const Duration(seconds: 10));
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
 
@@ -152,12 +148,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> with SingleTickerProvid
     final totalBeforeDiscount = cartService.totalPrice + 50;
     final finalTotal = totalBeforeDiscount - _discountAmount;
     final orderId = 'ORD${DateTime.now().millisecondsSinceEpoch}';
-    final orderRepository = OrderRepository();
 
     try {
       final orderResponse = await http.post(
         Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/create-order.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'order_id': orderId,
           'user_id': 'guest',
@@ -170,20 +165,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> with SingleTickerProvid
       ).timeout(const Duration(seconds: 10));
 
       if (orderResponse.statusCode != 200) throw Exception('Failed to create order');
-
-      // Save order items to database
-      final orderItems = cartService.items.map((item) => {
-        'service_id': item.serviceId,
-        'service_name': item.serviceName,
-        'category': item.categoryId,
-        'price': item.price,
-        'quantity': item.quantity,
-      }).toList();
-
-      await orderRepository.saveOrderItems(
-        orderId: orderId,
-        items: orderItems,
-      );
 
       var options = {
         'key': 'rzp_test_1DP5mmOlF5G0m1',
@@ -232,7 +213,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> with SingleTickerProvid
               addressLabel: selectedAddr['label'] ?? 'Home',
               addressText: '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['street'] ?? ''}, ${selectedAddr['area'] ?? ''}, ${selectedAddr['pincode'] ?? ''}',
               itemCount: cartService.items.length,
-              items: cartService.items.map((item) => item.serviceName).toList(),
             ),
           ),
         );

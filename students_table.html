@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Exam Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #4CAF50; color: white; padding: 12px; text-align: left; font-weight: bold; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        tr:hover { background: #f9f9f9; }
+        .status-ok { color: green; }
+        .status-missing { color: red; }
+        .small-text { font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Student Exam Data Table</h1>
+        <p><strong>Total Students:</strong> 89 fetched from Supabase</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Seat No</th>
+                    <th>Student Name</th>
+                    <th>Exam Date</th>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Entry Photo At</th>
+                    <th>Entry Photo URL</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1401160025</td>
+                    <td>THAKUR MANASI ARVIND</td>
+                    <td>2026-07-08</td>
+                    <td>English 40</td>
+                    <td>402</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="status-missing">Missing Photo</span></td>
+                </tr>
+                <tr>
+                    <td>1401160044</td>
+                    <td>GOREGAONKAR PRATIK SHANTARAM</td>
+                    <td>2026-07-08</td>
+                    <td>English 40</td>
+                    <td>403</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="status-missing">Missing Photo</span></td>
+                </tr>
+                <tr>
+                    <td>1401160074</td>
+                    <td>PATIL SUYOG CHANDRAKANT</td>
+                    <td>2026-07-08</td>
+                    <td>English 40</td>
+                    <td>404</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="status-missing">Missing Photo</span></td>
+                </tr>
+                <tr>
+                    <td>1401150344</td>
+                    <td>TEMKAR VIDIP NATHURAM</td>
+                    <td>2026-07-08</td>
+                    <td>English 30</td>
+                    <td>401</td>
+                    <td>2026-07-09 16:42:44</td>
+                    <td><span class="status-ok">✓</span></td>
+                    <td><span class="status-ok">Photo Found</span></td>
+                </tr>
+                <tr>
+                    <td>1513150163</td>
+                    <td>GONDHALI MANISH RAVINDRA</td>
+                    <td>2026-07-04</td>
+                    <td>English 30</td>
+                    <td>104</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="status-missing">Missing Photo</span></td>
+                </tr>
+                <tr>
+                    <td>1513150172</td>
+                    <td>KHADE NAMRATA HIRAMAN</td>
+                    <td>2026-07-04</td>
+                    <td>English 30</td>
+                    <td>104</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="status-missing">Missing Photo</span></td>
+                </tr>
+                <tr>
+                    <td>1503160121</td>
+                    <td>DHONE SHRAVANI PRAMOD</td>
+                    <td>2026-07-08</td>
+                    <td>English 40</td>
+                    <td>403</td>
+                    <td>2026-07-08 14:15:18</td>
+                    <td><span class="status-ok">✓</span></td>
+                    <td><span class="status-ok">Photo Found</span></td>
+                </tr>
+                <tr>
+                    <td>1504150374</td>
+                    <td>DALAL SNEHA PANDURANG</td>
+                    <td>2026-07-07</td>
+                    <td>English 30</td>
+                    <td>304</td>
+                    <td>2026-07-11 16:04:02</td>
+                    <td><span class="status-ok">✓</span></td>
+                    <td><span class="status-ok">Photo Found</span></td>
+                </tr>
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 20px; background: #f0f0f0;">
+                        ... and 81 more students
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 20px; padding: 10px; background: #e8f5e9; border-radius: 4px;">
+            <strong>Summary:</strong>
+            <ul>
+                <li>✅ Photos Found: ~30 students</li>
+                <li>❌ Missing Photos: ~59 students</li>
+                <li>📁 Data File: seat_numbers_data.json</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

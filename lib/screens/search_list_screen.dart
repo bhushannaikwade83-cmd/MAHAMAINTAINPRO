@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
-import '../widgets/error_retry_view.dart';
 import 'add_complaint_screen.dart';
 import 'announcements_screen.dart';
 import 'bills_maintenance_screen.dart';
@@ -44,7 +43,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
   String _query = '';
   List<_SearchEntry> _allEntries = [];
   bool _isLoading = true;
-  bool _hasError = false;
 
   @override
   void initState() {
@@ -53,10 +51,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
   }
 
   Future<void> _loadCategories() async {
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
     try {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
       final response = await http.get(url).timeout(const Duration(seconds: 20));
@@ -74,9 +68,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
             final services = (category['services'] as List<dynamic>?)
                 ?.map((s) => Map<String, dynamic>.from(s as Map))
                 .toList() ?? [];
-            final faqs = (category['faqs'] as List<dynamic>?)
-                ?.map((f) => Map<String, dynamic>.from(f as Map))
-                .toList() ?? [];
 
             entries.add(
               _SearchEntry(
@@ -89,9 +80,7 @@ class _SearchListScreenState extends State<SearchListScreen> {
                   categoryEmoji: emoji,
                   categoryImagePath: imagePath,
                   description: getCategoryDescription(categoryName),
-                  categoryId: '${category['id'] ?? 0}',
                   services: services,
-                  faqs: faqs,
                 ),
               ),
             );
@@ -141,25 +130,12 @@ class _SearchListScreenState extends State<SearchListScreen> {
               _isLoading = false;
             });
           }
-        } else if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _hasError = true;
-          });
         }
-      } else if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _hasError = true;
-        });
       }
     } catch (e) {
       debugPrint('❌ Error loading categories: $e');
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _hasError = true;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -192,9 +168,7 @@ class _SearchListScreenState extends State<SearchListScreen> {
           ? Center(
               child: CircularProgressIndicator(color: AppTheme.saffron),
             )
-          : _hasError
-              ? ErrorRetryView(onRetry: _loadCategories)
-              : SafeArea(
+          : SafeArea(
               child: Column(
                 children: [
                   Container(
@@ -252,7 +226,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
                                 ? null
                                 : IconButton(
                                     icon: Icon(Icons.close, color: Colors.grey.shade400),
-                                    tooltip: 'Clear search',
                                     onPressed: () {
                                       _searchController.clear();
                                       setState(() => _query = '');
@@ -352,8 +325,6 @@ class _SearchListScreenState extends State<SearchListScreen> {
                   width: 48,
                   height: 48,
                   fit: BoxFit.cover,
-                  cacheWidth: 96,
-                  cacheHeight: 96,
                   errorBuilder: (context, error, stackTrace) => Text(entry.emoji, style: const TextStyle(fontSize: 28)),
                 ),
               )

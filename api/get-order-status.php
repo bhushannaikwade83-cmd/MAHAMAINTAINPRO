@@ -2,15 +2,12 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-require_once 'jwt-auth.php';
-$token = verifyJWTToken();
 
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
@@ -18,11 +15,6 @@ $db_password = "maha_user@70";
 $database = "digitrix_maha_maintain_pro";
 
 $conn = new mysqli($servername, $db_username, $db_password, $database);
-
-require_once 'ensure-orders-schema.php';
-if (!$conn->connect_error) {
-    ensureOrdersSchema($conn);
-}
 
 if ($conn->connect_error) {
     http_response_code(500);
@@ -39,7 +31,7 @@ try {
     }
 
     // Get current order status
-    $getOrder = "SELECT id, phone_number, current_status, created_at FROM orders WHERE id = ?";
+    $getOrder = "SELECT id, current_status, created_at FROM orders WHERE id = ?";
     $stmt = $conn->prepare($getOrder);
     if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
     $stmt->bind_param('i', $orderId);
@@ -52,11 +44,6 @@ try {
     }
 
     $order = $orderResult->fetch_assoc();
-
-    if ($order['phone_number'] !== $token['phone_number']) {
-        http_response_code(403);
-        die(json_encode(['success' => false, 'message' => 'This order does not belong to you']));
-    }
 
     // Get status history
     $getHistory = "SELECT status, changed_by, remarks, changed_at FROM order_status WHERE order_id = ? ORDER BY changed_at ASC";
@@ -102,7 +89,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Get order status error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

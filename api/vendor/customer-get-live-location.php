@@ -2,12 +2,6 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
-// SECURITY: this streams live GPS coordinates for both the customer and
-// the assigned vendor - it must never be reachable without proving the
-// caller is one of those two people. Previously had zero auth at all.
-require_once __DIR__ . '/../jwt-auth.php';
-$authToken = verifyJWTToken();
-
 try {
     $pdo = new PDO("mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
         "digitrix_maha_user", "maha_user@70", [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -21,7 +15,7 @@ try {
 
     // Get request details
     $reqStmt = $pdo->prepare("
-        SELECT id, latitude, longitude, assigned_vendor_id, customer_id
+        SELECT id, latitude, longitude, assigned_vendor_id
         FROM service_requests
         WHERE id = ?
     ");
@@ -31,22 +25,6 @@ try {
     if (!$request) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Request not found']);
-        exit;
-    }
-
-    // Caller must be either the customer who placed this request, or the
-    // vendor assigned to it - never an arbitrary third party.
-    $isCustomer = false;
-    if ($request['customer_id']) {
-        $custStmt = $pdo->prepare('SELECT id FROM individuals WHERE id = ? AND phone_number = ?');
-        $custStmt->execute([$request['customer_id'], $authToken['phone_number']]);
-        $isCustomer = (bool)$custStmt->fetch();
-    }
-    $isAssignedVendor = isset($authToken['vendor_id']) && $request['assigned_vendor_id'] && (string)$authToken['vendor_id'] === (string)$request['assigned_vendor_id'];
-
-    if (!$isCustomer && !$isAssignedVendor) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'You are not part of this service request']);
         exit;
     }
 
@@ -98,8 +76,7 @@ try {
     ]);
 } catch (Exception $e) {
     http_response_code(500);
-    error_log('customer-get-live-location error: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 
 function calculateDistance($lat1, $lon1, $lat2, $lon2) {

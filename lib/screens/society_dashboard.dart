@@ -11,14 +11,6 @@ import 'bills_maintenance_screen.dart';
 import 'parking_management_screen.dart';
 import 'tenant_management_screen.dart';
 import 'visitor_gate_screen.dart';
-import 'buildings_flats_screen.dart';
-import 'manage_complaints_screen.dart';
-import 'society_vendors_screen.dart';
-import 'society_service_requests_screen.dart';
-import 'society_documents_screen.dart';
-import 'society_info_screen.dart';
-import 'manage_refunds_screen.dart';
-import '../repositories/auth_repository.dart';
 import 'photo_detail_screen.dart';
 import 'category_photos_screen.dart';
 
@@ -49,8 +41,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
   int? _userId;
   int? _societyId;
   bool _loadingMemberInfo = true;
-  List<dynamic> _notices = [];
-  bool _noticesLoading = true;
 
   late final List<String> tabs;
 
@@ -82,7 +72,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
       // Fetch member details
       final response = await http.get(
         Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-society-member.php?user_id=$userId'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -98,7 +87,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
           // Fetch society name
           if (_societyId != null) {
             await _fetchSocietyName(_societyId!);
-            _loadNotices(_societyId!);
           }
         }
       }
@@ -109,148 +97,37 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
     }
   }
 
-  Map<String, dynamic>? _dashboardStats;
-  bool _loadingStats = false;
-
-  /// Real notices from the same backend AnnouncementsScreen uses - this
-  /// tab previously showed 3 hardcoded fake notices ("Water Tank
-  /// Maintenance", "AGM Meeting", "Pool Maintenance") regardless of what
-  /// was actually posted.
-  Future<void> _loadNotices(int societyId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-society-notices.php?society_id=$societyId'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-      ).timeout(const Duration(seconds: 10));
-
-      if (!mounted) return;
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          setState(() {
-            _notices = data['notices'] as List? ?? [];
-            _noticesLoading = false;
-          });
-          return;
-        }
-      }
-      setState(() => _noticesLoading = false);
-    } catch (e) {
-      if (mounted) setState(() => _noticesLoading = false);
-    }
-  }
-
-  String _timeAgo(String? isoDate) {
-    if (isoDate == null) return '';
-    final date = DateTime.tryParse(isoDate);
-    if (date == null) return '';
-    final diff = DateTime.now().difference(date);
-    if (diff.inHours < 24) return 'Today';
-    if (diff.inDays == 1) return '1 day ago';
-    if (diff.inDays < 30) return '${diff.inDays} days ago';
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
   Future<void> _fetchSocietyName(int societyId) async {
     try {
       final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-society-details.php?id=$societyId'),
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/admin-get-societies.php'),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['success'] == true && data['society'] != null) {
-          final society = data['society'];
-          final name = society['name'] ?? 'Unknown';
-          final city = society['city'] ?? 'Unknown';
-          setState(() {
-            _societyName = '$name • $city';
-          });
+        if (data['success'] == true) {
+          final societies = data['societies'] as List;
+
+          Map<String, dynamic>? society;
+          for (var s in societies) {
+            if (s['id'].toString() == societyId.toString()) {
+              society = s;
+              break;
+            }
+          }
+
+          if (society != null) {
+            final name = society['name'] ?? 'Unknown';
+            final city = society['city'] ?? 'Unknown';
+            setState(() {
+              _societyName = '$name • $city';
+            });
+          }
         }
       }
     } catch (e) {
       // Silent fail - will show "Loading..." if error
     }
-
-    _fetchDashboardStats(societyId);
-  }
-
-  Future<void> _fetchDashboardStats(int societyId) async {
-    setState(() => _loadingStats = true);
-    try {
-      final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-society-dashboard-stats.php?society_id=$societyId'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          setState(() => _dashboardStats = data['stats']);
-        }
-      }
-    } catch (e) {
-      // Silent fail - stats section just stays hidden
-    } finally {
-      if (mounted) setState(() => _loadingStats = false);
-    }
-  }
-
-  Widget _buildDashboardStatsSection() {
-    if (_loadingStats) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    final stats = _dashboardStats;
-    if (stats == null) return const SizedBox.shrink();
-
-    final tiles = [
-      {'label': 'Total Flats', 'value': '${stats['total_flats'] ?? 0}', 'emoji': '🏠', 'color': const Color(0xFFE3F2FD)},
-      {'label': 'Occupied', 'value': '${stats['occupied'] ?? 0}', 'emoji': '✅', 'color': const Color(0xFFE8F5E9)},
-      {'label': 'Vacant', 'value': '${stats['vacant'] ?? 0}', 'emoji': '🔑', 'color': const Color(0xFFFFF3E0)},
-      {'label': 'Maintenance Due', 'value': '₹${(stats['maintenance_due'] ?? 0).toStringAsFixed(0)}', 'emoji': '🧾', 'color': const Color(0xFFFFEBEE)},
-      {'label': 'Collection (This Month)', 'value': '₹${(stats['collection_this_month'] ?? 0).toStringAsFixed(0)}', 'emoji': '💰', 'color': const Color(0xFFF3E5F5)},
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1.8,
-        children: tiles.map((t) {
-          return Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: t['color'] as Color,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(t['emoji'] as String, style: const TextStyle(fontSize: 18)),
-                const SizedBox(height: 4),
-                Text(
-                  t['value'] as String,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                ),
-                Text(
-                  t['label'] as String,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
   }
 
   @override
@@ -402,53 +279,15 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
   }
 
   Future<List<dynamic>> _loadRecentComplaints() async {
-    if (_userId == null) return [];
-    try {
-      final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-society-complaints.php?user_id=$_userId'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          final complaints = (data['complaints'] as List).take(3).map((c) => {
-                'title': c['category'] ?? 'Complaint',
-                'ticketNumber': 'CMP-${c['id']}',
-                'timestamp': c['created_at'],
-                'status': c['status'] == 'resolved' ? 'Resolved' : 'Open',
-              }).toList();
-          return complaints;
-        }
-      }
-    } catch (e) {
-      // Silent fail - section just shows empty state
-    }
-    return [];
+    final prefs = await SharedPreferences.getInstance();
+    final complaints = prefs.getStringList('complaints') ?? [];
+    return complaints.reversed.take(3).map((item) => jsonDecode(item)).toList();
   }
 
   Future<List<dynamic>> _loadRecentAnnouncements() async {
-    if (_societyId == null) return [];
-    try {
-      final response = await http.get(
-        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-society-notices.php?society_id=$_societyId'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          return (data['notices'] as List).take(2).map((n) => {
-                'title': n['title'],
-                'description': n['description'],
-                'timestamp': n['created_at'],
-              }).toList();
-        }
-      }
-    } catch (e) {
-      // Silent fail - section just shows empty state
-    }
-    return [];
+    final prefs = await SharedPreferences.getInstance();
+    final announcements = prefs.getStringList('announcements') ?? [];
+    return announcements.reversed.take(2).map((item) => jsonDecode(item)).toList();
   }
 
   String _formatTicketDate(String? timestamp) {
@@ -764,7 +603,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
             // Content based on selected tab
             if (_selectedTab == 0) ...[
               // Dashboard Tab Content
-              _buildDashboardStatsSection(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
@@ -790,19 +628,9 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
                     ),
                     const SizedBox(height: 12),
                     _buildMenuCard(
-                      '🏠',
-                      'Society Info',
-                      widget.isCommittee ? 'View & edit registration/contact details' : 'View society details',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SocietyInfoScreen(isCommittee: widget.isCommittee)),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildMenuCard(
                       '👥',
-                      'Owners & Tenants',
-                      'Register owners & tenants',
+                      'Tenant Management',
+                      'Register tenants',
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const TenantManagementScreen()),
@@ -828,60 +656,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
                         MaterialPageRoute(builder: (context) => AnnouncementsScreen(isCommittee: widget.isCommittee)),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildMenuCard(
-                      '📄',
-                      'Society Documents',
-                      widget.isCommittee ? 'Upload & manage documents' : 'View society documents',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SocietyDocumentsScreen(isCommittee: widget.isCommittee)),
-                      ),
-                    ),
-                    if (widget.isCommittee) ...[
-                      const SizedBox(height: 12),
-                      _buildMenuCard(
-                        '🏢',
-                        'Buildings & Flats',
-                        'Manage buildings, wings & flats',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const BuildingsFlatsScreen()),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildMenuCard(
-                        '📋',
-                        'Manage Complaints',
-                        'Review & resolve resident complaints',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ManageComplaintsScreen()),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    _buildMenuCard(
-                      '🧰',
-                      'Vendors',
-                      'Browse registered service vendors',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SocietyVendorsScreen()),
-                      ),
-                    ),
-                    if (_societyId != null) ...[
-                      const SizedBox(height: 12),
-                      _buildMenuCard(
-                        '🛎️',
-                        'Service Requests',
-                        'What residents have booked',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => SocietyServiceRequestsScreen(societyId: _societyId!)),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -1278,36 +1052,19 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
                 ),
                 const SizedBox(height: 16),
               ],
-              // Notices List - real data from get-society-notices.php
+              // Notices List with categories
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _noticesLoading
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : _notices.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 24),
-                            child: Center(
-                              child: Text('No notices yet', style: TextStyle(color: Colors.grey.shade600)),
-                            ),
-                          )
-                        : Column(
-                            children: [
-                              for (final notice in _notices) ...[
-                                _buildCategoryNotice(
-                                  'NOTICE',
-                                  '📢',
-                                  notice['title'] ?? '',
-                                  notice['description'] ?? '',
-                                  const Color(0xFF1ABC9C),
-                                  _timeAgo(notice['created_at']),
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                            ],
-                          ),
+                child: Column(
+                  children: [
+                    _buildCategoryNotice('URGENT NOTICE', '🔧', 'Water Tank Maintenance', 'Water supply will be off from 10 AM to 2 PM for tank cleaning.', Colors.orange, 'Today'),
+                    const SizedBox(height: 12),
+                    _buildCategoryNotice('EVENT', '🎉', 'AGM Meeting — 22 June 2026', 'Annual General Meeting at 7 PM in the clubhouse. All residents requested to attend...', const Color(0xFF1ABC9C), '2 days ago'),
+                    const SizedBox(height: 12),
+                    _buildCategoryNotice('AMENITY UPDATE', '🏊', 'Pool Maintenance Schedule', 'Pool will be closed on weekends for maintenance.', Colors.amber, '5 days ago'),
+                    const SizedBox(height: 12),
+                  ],
+                ),
               ),
               const SizedBox(height: 30),
             ] else if (widget.isCommittee && _selectedTab == 3) ...[
@@ -1325,35 +1082,10 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildCommitteeSection('👥', 'Owners & Tenants', 'Manage society members', Colors.blue,
-                        onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const TenantManagementScreen()),
-                            )),
+                    // Coming Soon Sections
+                    _buildCommitteeSection('👥', 'Members', 'Manage society members', Colors.blue),
                     const SizedBox(height: 12),
-                    _buildCommitteeSection('🏢', 'Buildings & Flats', 'Manage buildings, wings & flats', Colors.teal,
-                        onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const BuildingsFlatsScreen()),
-                            )),
-                    const SizedBox(height: 12),
-                    _buildCommitteeSection('📋', 'Complaints', 'Review & resolve resident complaints', Colors.green,
-                        onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ManageComplaintsScreen()),
-                            )),
-                    const SizedBox(height: 12),
-                    _buildCommitteeSection('📄', 'Documents', 'Society documents & bye-laws', Colors.indigo,
-                        onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const SocietyDocumentsScreen(isCommittee: true)),
-                            )),
-                    const SizedBox(height: 12),
-                    _buildCommitteeSection('💸', 'Refund Requests', 'Approve or reject maintenance refunds', Colors.redAccent,
-                        onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ManageRefundsScreen()),
-                            )),
+                    _buildCommitteeSection('✅', 'Approvals', 'Pending member & bill approvals', Colors.green),
                     const SizedBox(height: 12),
                     _buildCommitteeSection('📊', 'Statistics', 'Society stats & analytics', Colors.orange),
                     const SizedBox(height: 12),
@@ -1721,10 +1453,8 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
     );
   }
 
-  Widget _buildCommitteeSection(String emoji, String title, String subtitle, Color color, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+  Widget _buildCommitteeSection(String emoji, String title, String subtitle, Color color) {
+    return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
@@ -1767,7 +1497,6 @@ class _SocietyDashboardScreenState extends State<SocietyDashboardScreen> with Wi
           ),
           Icon(Icons.arrow_forward, color: color, size: 20),
         ],
-      ),
       ),
     );
   }

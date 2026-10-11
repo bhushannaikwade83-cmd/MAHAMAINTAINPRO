@@ -2,11 +2,6 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Admin-only: this dumps table schemas and row counts - a debugging aid,
-// not something that should ever be reachable by an unauthenticated caller.
-require_once 'jwt-auth.php';
-requireAdminRole();
-
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
 $db_password = "maha_user@70";

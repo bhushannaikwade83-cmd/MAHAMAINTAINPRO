@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../services/cart_service.dart';
@@ -70,9 +69,7 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
           ? 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php?phone_number=$userPhone'
           : 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php';
 
-      final response = await http
-          .get(Uri.parse(url), headers: SupabaseAuthRepository.staticAuthHeaders)
-          .timeout(const Duration(seconds: 10));
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -189,7 +186,6 @@ class _SlotCheckoutScreenState extends State<SlotCheckoutScreen> with SingleTick
                   addressText:
                       '${_selectedDate?.toLocal().toString().split(' ')[0]} at ${_selectedSlot!.label}',
                   itemCount: 1,
-                  items: [widget.serviceName],
                 ),
               ),
             );

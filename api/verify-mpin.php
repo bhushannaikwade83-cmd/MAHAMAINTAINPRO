@@ -9,22 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Rate limiting (this is a login endpoint - protect against 4-digit PIN brute force)
-require_once 'rate-limiter.php';
-
-// Issue tokens through the shared jwt-auth.php secret/signer - see
-// verify-otp.php for why a locally-hardcoded secret here breaks every
-// later authenticated request.
-require_once 'jwt-auth.php';
-
-function generateJWTTokenForMpin($phoneNumber) {
-    return generateJWT([
-        'phone_number' => $phoneNumber,
-        'type' => 'user_auth',
-        'role' => 'resident',
-    ], 86400);
-}
-
 try {
     $input = json_decode(file_get_contents('php://input'), true);
 
@@ -36,9 +20,6 @@ try {
 
     $phoneNumber = $input['phone_number'];
     $mpin = $input['mpin'];
-
-    // Max 5 attempts per 5 minutes per phone number
-    checkRateLimit('mpin_' . $phoneNumber, 5, 300);
 
     $conn = new mysqli('localhost', 'digitrix_maha_user', 'maha_user@70', 'digitrix_maha_maintain_pro');
 
@@ -75,14 +56,7 @@ try {
 
     // Verify the M-PIN using password_verify
     if (password_verify($mpin, $storedHash)) {
-        $jwtToken = generateJWTTokenForMpin($phoneNumber);
-        echo json_encode([
-            'success' => true,
-            'message' => 'M-PIN verified successfully',
-            'token' => $jwtToken,
-            'token_type' => 'Bearer',
-            'expires_in' => 86400
-        ]);
+        echo json_encode(['success' => true, 'message' => 'M-PIN verified successfully']);
     } else {
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Incorrect M-PIN']);
@@ -92,6 +66,6 @@ try {
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

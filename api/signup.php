@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Rollback on error
         $conn->rollback();
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
 
 } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {

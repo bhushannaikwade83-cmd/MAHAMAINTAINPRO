@@ -9,7 +9,6 @@ import '../config/app_theme.dart';
 import 'individual_signup_screen.dart';
 import 'profile_creation_screen.dart';
 import '../main.dart' show authRepositoryProvider;
-import '../repositories/auth_repository.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
@@ -152,7 +151,6 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
       if (response['success'] == true) {
         // Save phone for M-PIN setup
         await _saveLoginSession(widget.phoneNumber);
-        await SupabaseAuthRepository.setToken(response['token']);
 
         if (!mounted) return;
 

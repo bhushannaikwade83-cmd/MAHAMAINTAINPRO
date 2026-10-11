@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -46,17 +46,13 @@ try {
     // Fetch NEW JOBS (orders pending vendor response)
     $newJobsQuery = "
         SELECT
-            o.id,
+            o.order_id as id,
             o.order_id,
             o.phone_number,
             o.total_amount as amount,
             o.order_status,
             o.vendor_status,
             o.created_at,
-            o.before_photo_url,
-            o.after_photo_url,
-            o.payment_screenshot_url,
-            o.customer_signature_url,
             GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services,
             GROUP_CONCAT(oi.quantity SEPARATOR ', ') as quantities
         FROM orders o
@@ -71,7 +67,7 @@ try {
     if (!$stmt) {
         throw new Exception('Prepare failed: ' . $conn->error);
     }
-    $stmt->bind_param('i', $vendorId);
+    $stmt->bind_param('s', $vendorId);
     $stmt->execute();
     $newJobsResult = $stmt->get_result();
 
@@ -82,30 +78,19 @@ try {
     $stmt->close();
 
     // Fetch MY JOBS (orders vendor has accepted)
-    // Check both vendor_status and order_status columns for compatibility
     $myJobsQuery = "
         SELECT
-            o.id,
+            o.order_id as id,
             o.order_id,
             o.phone_number,
             o.total_amount as amount,
             o.order_status,
             o.vendor_status,
             o.created_at,
-            o.before_photo_url,
-            o.after_photo_url,
-            o.payment_screenshot_url,
-            o.customer_signature_url,
-            o.pincode,
-            a.full_address,
             GROUP_CONCAT(oi.service_name SEPARATOR ', ') as services
         FROM orders o
         LEFT JOIN order_items oi ON o.order_id = oi.order_id
-        LEFT JOIN addresses a ON o.address_id = a.id
-        WHERE o.vendor_id = ? AND (
-            o.vendor_status IN ('accepted', 'in_progress', 'completed')
-            OR o.order_status IN ('accepted', 'service_started', 'service_completed')
-        )
+        WHERE o.vendor_id = ? AND o.vendor_status IN ('accepted', 'in_progress', 'completed')
         GROUP BY o.order_id
         ORDER BY o.created_at DESC
         LIMIT 50
@@ -115,8 +100,7 @@ try {
     if (!$stmt) {
         throw new Exception('Prepare failed: ' . $conn->error);
     }
-    $vendorIdInt = (int)$vendorId;
-    $stmt->bind_param('i', $vendorIdInt);
+    $stmt->bind_param('s', $vendorId);
     $stmt->execute();
     $myJobsResult = $stmt->get_result();
 
@@ -125,35 +109,6 @@ try {
         $myJobs[] = $row;
     }
     $stmt->close();
-
-    // Convert relative photo URLs to absolute
-    function makeAbsoluteUrl($url) {
-        if (empty($url)) return null;
-        if (strpos($url, 'https://') === 0 || strpos($url, 'http://') === 0) {
-            return $url;
-        }
-        return 'https://' . $_SERVER['HTTP_HOST'] . $url;
-    }
-
-    function convertPhotoUrls(&$jobs) {
-        foreach ($jobs as &$job) {
-            if (isset($job['before_photo_url'])) {
-                $job['before_photo_url'] = makeAbsoluteUrl($job['before_photo_url']);
-            }
-            if (isset($job['after_photo_url'])) {
-                $job['after_photo_url'] = makeAbsoluteUrl($job['after_photo_url']);
-            }
-            if (isset($job['payment_screenshot_url'])) {
-                $job['payment_screenshot_url'] = makeAbsoluteUrl($job['payment_screenshot_url']);
-            }
-            if (isset($job['customer_signature_url'])) {
-                $job['customer_signature_url'] = makeAbsoluteUrl($job['customer_signature_url']);
-            }
-        }
-    }
-
-    convertPhotoUrls($newJobs);
-    convertPhotoUrls($myJobs);
 
     http_response_code(200);
     echo json_encode([
@@ -166,9 +121,8 @@ try {
 
 } catch (Exception $e) {
     http_response_code(400);
-    $errorMsg = $e->getMessage();
-    error_log("Get vendor jobs error: " . $errorMsg);
-    echo json_encode(['success' => false, 'error' => $errorMsg, 'debug' => $errorMsg]);
+    error_log("Get vendor jobs error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 
 $conn->close();

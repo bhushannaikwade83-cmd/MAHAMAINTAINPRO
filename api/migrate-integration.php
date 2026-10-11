@@ -9,10 +9,6 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
-// Admin-only: this is a one-time schema migration, not a resident-facing endpoint.
-require_once 'jwt-auth.php';
-requireAdminRole();
-
 try {
     $pdo = new PDO(
         "mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
@@ -197,7 +193,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'An internal error occurred. Please try again.',
+        'error' => $e->getMessage(),
         'timestamp' => date('Y-m-d H:i:s')
     ], JSON_PRETTY_PRINT);
 }

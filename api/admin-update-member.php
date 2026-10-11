@@ -2,17 +2,13 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-
-// Admin authentication (real JWT + role check)
-require_once 'jwt-auth.php';
-requireAdminRole();
 try {
     $pdo = new PDO(
         "mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
@@ -63,18 +59,6 @@ try {
         }
     }
 
-    // Handle member_type (owner/tenant)
-    if (isset($data['member_type']) && in_array($data['member_type'], ['owner', 'tenant'], true)) {
-        $updates[] = 'member_type = ?';
-        $params[] = $data['member_type'];
-    }
-
-    // Handle flat_id (re-)assignment
-    if (array_key_exists('flat_id', $data)) {
-        $updates[] = 'flat_id = ?';
-        $params[] = $data['flat_id'] !== null && $data['flat_id'] !== '' ? (int)$data['flat_id'] : null;
-    }
-
     if (empty($updates)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'No fields to update']);
@@ -104,6 +88,6 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

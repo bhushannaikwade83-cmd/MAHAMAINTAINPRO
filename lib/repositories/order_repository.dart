@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'auth_repository.dart';
 
 class OrderResult {
   final bool success;
@@ -19,13 +17,11 @@ class PaymentResult {
   final bool success;
   final String? razorpayOrderId;
   final String? error;
-  final int? amountPaise; // server-verified amount actually charged (paise)
 
   PaymentResult({
     required this.success,
     this.razorpayOrderId,
     this.error,
-    this.amountPaise,
   });
 }
 
@@ -39,22 +35,13 @@ class OrderRepository {
     required String addressId,
     required double totalAmount,
     required int serviceCount,
-    DateTime? scheduledDate,
-    String? scheduledTimeSlot,
-    String? couponCode,
   }) async {
     try {
       final orderId = 'ORD${DateTime.now().millisecondsSinceEpoch}';
-      final headers = SupabaseAuthRepository.staticAuthHeaders;
-
-      debugPrint('🟠 [createOrder] token present: ${SupabaseAuthRepository.currentToken != null}');
-      debugPrint('🟠 [createOrder] token value (first 20 chars): ${SupabaseAuthRepository.currentToken?.substring(0, SupabaseAuthRepository.currentToken!.length > 20 ? 20 : SupabaseAuthRepository.currentToken!.length)}...');
-      debugPrint('🟠 [createOrder] headers being sent: $headers');
-      debugPrint('🟠 [createOrder] request body: order_id=$orderId, address_id=$addressId, total=$totalAmount');
 
       final response = await http.post(
         Uri.parse('$API_BASE_URL/create-order.php'),
-        headers: headers,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'order_id': orderId,
           'user_id': userId,
@@ -62,14 +49,8 @@ class OrderRepository {
           'address_id': addressId,
           'total_amount': totalAmount,
           'service_count': serviceCount,
-          if (scheduledDate != null) 'scheduled_date': scheduledDate.toIso8601String().split('T').first,
-          if (scheduledTimeSlot != null) 'scheduled_time': scheduledTimeSlot,
-          if (couponCode != null) 'coupon_code': couponCode,
         }),
       ).timeout(const Duration(seconds: 10));
-
-      debugPrint('🟠 [createOrder] response status: ${response.statusCode}');
-      debugPrint('🟠 [createOrder] response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -87,11 +68,10 @@ class OrderRepository {
       } else {
         return OrderResult(
           success: false,
-          error: 'Server error: ${response.statusCode} - ${response.body}',
+          error: 'Server error: ${response.statusCode}',
         );
       }
     } catch (e) {
-      debugPrint('🔴 [createOrder] exception: $e');
       return OrderResult(
         success: false,
         error: 'Error creating order: $e',
@@ -132,7 +112,7 @@ class OrderRepository {
     try {
       final response = await http.post(
         Uri.parse('$API_BASE_URL/assign-vendor-to-order.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'order_id': orderId,
           if (vendorId != null) 'vendor_id': vendorId,
@@ -149,11 +129,9 @@ class OrderRepository {
     }
   }
 
-  /// Step 2: Create Razorpay order. The amount is never sent from here -
-  /// the server recomputes it from orderId's real order_items/coupon (see
-  /// create-razorpay-order.php) so the app can't manipulate what's charged.
+  /// Step 2: Create Razorpay order
   Future<PaymentResult> createRazorpayOrder({
-    required String orderId,
+    required double amount,
     String? receipt,
   }) async {
     try {
@@ -161,8 +139,8 @@ class OrderRepository {
         Uri.parse('$API_BASE_URL/create-razorpay-order.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'order_id': orderId,
-          'receipt': receipt ?? orderId,
+          'amount': amount,
+          'receipt': receipt ?? 'rcpt_${DateTime.now().millisecondsSinceEpoch}',
         }),
       ).timeout(const Duration(seconds: 15));
 
@@ -172,7 +150,6 @@ class OrderRepository {
           return PaymentResult(
             success: true,
             razorpayOrderId: data['order_id'],
-            amountPaise: data['amount'],
           );
         } else {
           return PaymentResult(
@@ -198,20 +175,16 @@ class OrderRepository {
   Future<OrderResult> verifyPayment({
     required String orderId,
     required String paymentId,
-    String? razorpayOrderId,
     String? signature,
-    String? method,
   }) async {
     try {
       final response = await http.post(
         Uri.parse('$API_BASE_URL/verify-payment.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'order_id': orderId,
           'payment_id': paymentId,
-          'razorpay_order_id': razorpayOrderId,
           'signature': signature,
-          'method': method,
         }),
       ).timeout(const Duration(seconds: 10));
 

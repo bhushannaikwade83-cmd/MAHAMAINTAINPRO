@@ -2,17 +2,12 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-// JWT Authentication (Security Layer)
-require_once 'jwt-auth.php';
-$token = verifyJWTToken(); // This exits if invalid
-$phoneFromToken = $token['phone_number']; // Get phone from secure JWT
 
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
@@ -21,11 +16,6 @@ $database = "digitrix_maha_maintain_pro";
 
 $conn = new mysqli($servername, $db_username, $db_password, $database);
 
-require_once 'ensure-orders-schema.php';
-if (!$conn->connect_error) {
-    ensureOrdersSchema($conn);
-}
-
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);
@@ -33,8 +23,12 @@ if ($conn->connect_error) {
 }
 
 try {
-    // Use phone_number from JWT token (secure), not from request
-    $phone = $phoneFromToken;
+    $userId = $_GET['user_id'] ?? $_POST['user_id'] ?? null;
+    $phone = $_GET['phone_number'] ?? $_POST['phone_number'] ?? null;
+
+    if (!$userId && !$phone) {
+        throw new Exception('user_id or phone_number required');
+    }
 
     // Create orders table if not exists
     $createTable = "CREATE TABLE IF NOT EXISTS orders (
@@ -112,8 +106,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Get orders error: " . $e->getMessage());
-    // TEMP DEBUG: revert to the generic message once the cause is found.
-    echo json_encode(['success' => false, 'message' => 'DEBUG: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

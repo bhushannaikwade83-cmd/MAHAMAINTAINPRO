@@ -9,10 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Any logged-in user can upload (e.g. profile picture) - just not an anonymous caller.
-require_once 'jwt-auth.php';
-verifyJWTToken();
-
 try {
     // Check if file uploaded
     if (!isset($_FILES['image'])) {
@@ -81,6 +77,6 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     error_log($e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

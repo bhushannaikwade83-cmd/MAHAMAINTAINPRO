@@ -9,48 +9,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-require_once 'jwt-auth.php';
-$authToken = verifyJWTToken();
-
 try {
     require 'config.php';
 
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (!isset($data['contacts'])) {
-        throw new Exception('Missing contacts');
+    if (!isset($data['user_phone']) || !isset($data['contacts'])) {
+        throw new Exception('Missing user_phone or contacts');
     }
 
-    // Identity from the verified JWT, not the client - an SOS alert must
-    // reliably say who actually triggered it.
-    $userPhone = $authToken['phone_number'];
+    $userPhone = $data['user_phone'];
     $userName = $data['user_name'] ?? 'User';
     $location = $data['location'] ?? 'Unknown location';
-    $latitude = isset($data['latitude']) ? (float) $data['latitude'] : null;
-    $longitude = isset($data['longitude']) ? (float) $data['longitude'] : null;
     $contacts = $data['contacts'] ?? [];
     $fcmTokens = $data['fcm_tokens'] ?? []; // Array of emergency contact FCM tokens
     $userFcmToken = $data['user_fcm_token'] ?? null;
 
-    // Self-heal: real GPS coordinates predate this table's original schema
-    // (which only stored a free-text location string).
-    foreach (['latitude' => 'DECIMAL(10,7) NULL', 'longitude' => 'DECIMAL(10,7) NULL'] as $col => $def) {
-        $checkCol = $pdo->query("SHOW COLUMNS FROM sos_alerts LIKE '$col'");
-        if ($checkCol->rowCount() === 0) {
-            $pdo->exec("ALTER TABLE sos_alerts ADD COLUMN $col $def");
-        }
-    }
-
     // Save SOS alert to database with all details
-    $stmt = $pdo->prepare("INSERT INTO sos_alerts (user_phone, user_name, user_fcm_token, location, latitude, longitude, contacts, emergency_fcm_tokens, status)
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')");
+    $stmt = $pdo->prepare("INSERT INTO sos_alerts (user_phone, user_name, user_fcm_token, location, contacts, emergency_fcm_tokens, status)
+                          VALUES (?, ?, ?, ?, ?, ?, 'active')");
     $stmt->execute([
         $userPhone,
         $userName,
         $userFcmToken,
         $location,
-        $latitude,
-        $longitude,
         json_encode($contacts),
         json_encode($fcmTokens)
     ]);
@@ -91,16 +73,13 @@ try {
                     'alert_id' => (string)$alertId,
                     'user_phone' => $userPhone,
                     'user_name' => $userName,
-                    'location' => $location,
-                    'latitude' => $latitude !== null ? (string)$latitude : '',
-                    'longitude' => $longitude !== null ? (string)$longitude : '',
+                    'location' => $location
                 ]
             ]
         ];
 
-        if (sendFCMNotification($projectId, $accessToken, $message)) {
-            $sentCount++;
-        }
+        sendFCMNotification($projectId, $accessToken, $message);
+        $sentCount++;
     }
 
     echo json_encode([
@@ -112,7 +91,7 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 
 function getFirebaseAccessToken($keyData) {
@@ -152,7 +131,7 @@ function getFirebaseAccessToken($keyData) {
     return $response['access_token'] ?? null;
 }
 
-function sendFCMNotification($projectId, $accessToken, $message): bool {
+function sendFCMNotification($projectId, $accessToken, $message) {
     $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
 
     $ch = curl_init();
@@ -165,14 +144,7 @@ function sendFCMNotification($projectId, $accessToken, $message): bool {
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($message));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_exec($ch);
     curl_close($ch);
-
-    if ($httpCode !== 200) {
-        error_log('SOS FCM push failed: ' . $response);
-        return false;
-    }
-    return true;
 }
 ?>

@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_theme.dart';
-import '../repositories/auth_repository.dart';
-
-const String _apiBaseUrl = 'https://digitrixmedia.com/mahamaintainpro/api';
 
 class TenantManagementScreen extends StatefulWidget {
   const TenantManagementScreen({Key? key}) : super(key: key);
@@ -21,7 +17,6 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
   final _phoneController = TextEditingController();
   DateTime? _agreementValidTill;
   bool _isSaving = false;
-  String _memberType = 'tenant'; // 'tenant' or 'owner'
 
   Future<void> _pickAgreementValidTill() async {
     final picked = await showDatePicker(
@@ -41,38 +36,10 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
     }
   }
 
-  Future<int> _societyId() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('societyId') ?? 1;
-  }
-
   Future<List<dynamic>> _loadTenants() async {
-    final societyId = await _societyId();
-    try {
-      final response = await http.get(
-        Uri.parse('$_apiBaseUrl/admin-get-members.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          final members = (data['members'] as List)
-              .where((m) => m['society_id'].toString() == societyId.toString() && m['member_type'] == _memberType)
-              .toList();
-          return members.map((m) => {
-                'id': m['id'],
-                'name': m['secretary_name'],
-                'flatNumber': m['flat_number'] ?? '',
-                'phone': m['phone'],
-                'timestamp': m['created_at'],
-              }).toList();
-        }
-      }
-    } catch (e) {
-      // Silent fail - list just shows empty
-    }
-    return [];
+    final prefs = await SharedPreferences.getInstance();
+    final tenants = prefs.getStringList('tenants') ?? [];
+    return tenants.map((item) => jsonDecode(item)).toList();
   }
 
   Future<void> _addTenant() async {
@@ -84,7 +51,7 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
       );
       return;
     }
-    if (_memberType == 'tenant' && _agreementValidTill == null) {
+    if (_agreementValidTill == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select the agreement valid till date!')),
       );
@@ -94,58 +61,19 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final societyId = await _societyId();
-      final flatNumber = _flatNumberController.text.trim();
+      final prefs = await SharedPreferences.getInstance();
+      final tenants = prefs.getStringList('tenants') ?? [];
 
-      // Ensure the flat exists (create it if this is the first time it's used).
-      int? flatId;
-      final flatsResponse = await http.get(
-        Uri.parse('$_apiBaseUrl/get-flats.php?society_id=$societyId'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-      ).timeout(const Duration(seconds: 10));
-      if (flatsResponse.statusCode == 200) {
-        final flatsData = jsonDecode(flatsResponse.body);
-        if (flatsData['success'] == true) {
-          for (final f in flatsData['flats'] as List) {
-            if (f['flat_number'].toString().toLowerCase() == flatNumber.toLowerCase()) {
-              flatId = f['id'];
-              break;
-            }
-          }
-        }
-      }
+      final newTenant = jsonEncode({
+        'name': _tenantNameController.text,
+        'flatNumber': _flatNumberController.text,
+        'phone': _phoneController.text,
+        'agreementValidTill': _agreementValidTill!.toIso8601String(),
+        'timestamp': DateTime.now().toString(),
+      });
 
-      if (flatId == null) {
-        final createFlatResponse = await http.post(
-          Uri.parse('$_apiBaseUrl/add-flat.php'),
-          headers: SupabaseAuthRepository.staticAuthHeaders,
-          body: jsonEncode({'society_id': societyId, 'flat_number': flatNumber}),
-        ).timeout(const Duration(seconds: 10));
-        final createFlatData = jsonDecode(createFlatResponse.body);
-        if (createFlatResponse.statusCode == 200 && createFlatData['success'] == true) {
-          flatId = createFlatData['flat_id'];
-        }
-      }
-
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/admin-add-member.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-        body: jsonEncode({
-          'society_id': societyId,
-          'secretary_name': _tenantNameController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'member_type': _memberType,
-          'designation': _memberType == 'owner' ? 'OWNER' : 'TENANT',
-          if (flatId != null) 'flat_id': flatId,
-          if (_agreementValidTill != null)
-            'agreement_valid_till': _agreementValidTill!.toIso8601String().split('T').first,
-        }),
-      ).timeout(const Duration(seconds: 10));
-
-      final data = jsonDecode(response.body);
-      if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(data['error'] ?? 'Failed to register tenant');
-      }
+      tenants.add(newTenant);
+      await prefs.setStringList('tenants', tenants);
 
       _tenantNameController.clear();
       _flatNumberController.clear();
@@ -154,8 +82,8 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${_memberType == 'owner' ? 'Owner' : 'Tenant'} registered successfully!'),
+          const SnackBar(
+            content: Text('Tenant registered successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -173,29 +101,11 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
   }
 
   Future<void> _deleteTenant(int index) async {
-    final tenants = await _loadTenants();
-    if (index >= tenants.length) return;
-    final id = tenants[index]['id'];
-
-    try {
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/admin-update-member.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
-        body: jsonEncode({'id': id, 'is_enabled': 0}),
-      ).timeout(const Duration(seconds: 10));
-
-      final data = jsonDecode(response.body);
-      if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(data['error'] ?? 'Failed to remove tenant');
-      }
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final tenants = prefs.getStringList('tenants') ?? [];
+    tenants.removeAt(index);
+    await prefs.setStringList('tenants', tenants);
+    setState(() {});
   }
 
   @override
@@ -211,7 +121,7 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppTheme.saffron,
-        title: const Text('👥 Owners & Tenants'),
+        title: const Text('👥 Tenant Management'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -219,20 +129,9 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'tenant', label: Text('Tenants'), icon: Icon(Icons.key)),
-                ButtonSegment(value: 'owner', label: Text('Owners'), icon: Icon(Icons.home)),
-              ],
-              selected: {_memberType},
-              onSelectionChanged: (selection) {
-                setState(() => _memberType = selection.first);
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _memberType == 'owner' ? 'Register Owner' : 'Register Tenant',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Text(
+              'Register Tenant',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Card(
@@ -241,44 +140,42 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTextField(_memberType == 'owner' ? 'Owner Name' : 'Tenant Name', _tenantNameController, Icons.person),
+                    _buildTextField('Tenant Name', _tenantNameController, Icons.person),
                     const SizedBox(height: 12),
                     _buildTextField('Flat Number', _flatNumberController, Icons.home, hintText: 'A-101, B-205'),
                     const SizedBox(height: 12),
                     _buildTextField('Phone Number', _phoneController, Icons.phone, keyboardType: TextInputType.phone),
-                    if (_memberType == 'tenant') ...[
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Agreement Valid Till',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                      ),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: _isSaving ? null : _pickAgreementValidTill,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade400),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.event, color: AppTheme.saffron, size: 20),
-                              const SizedBox(width: 10),
-                              Text(
-                                _agreementValidTill != null
-                                    ? DateFormat('d MMM yyyy').format(_agreementValidTill!)
-                                    : 'Select date',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: _agreementValidTill != null ? Colors.black87 : Colors.grey.shade500,
-                                ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Agreement Valid Till',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _isSaving ? null : _pickAgreementValidTill,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.event, color: AppTheme.saffron, size: 20),
+                            const SizedBox(width: 10),
+                            Text(
+                              _agreementValidTill != null
+                                  ? DateFormat('d MMM yyyy').format(_agreementValidTill!)
+                                  : 'Select date',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _agreementValidTill != null ? Colors.black87 : Colors.grey.shade500,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _isSaving ? null : _addTenant,
@@ -295,9 +192,9 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : Text(
-                              _memberType == 'owner' ? 'Register Owner' : 'Register Tenant',
-                              style: const TextStyle(color: Colors.white, fontSize: 16),
+                          : const Text(
+                              'Register Tenant',
+                              style: TextStyle(color: Colors.white, fontSize: 16),
                             ),
                     ),
                   ],
@@ -305,9 +202,9 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              _memberType == 'owner' ? 'Registered Owners' : 'Registered Tenants',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Text(
+              'Registered Tenants',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             FutureBuilder<List<dynamic>>(

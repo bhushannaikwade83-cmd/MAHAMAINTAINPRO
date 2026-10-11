@@ -9,13 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// SECURITY: vendor_phone was previously trusted straight from the client -
-// any vendor could submit a completion report (and additional_charges!)
-// under another vendor's phone number. It's now derived from the caller's
-// own JWT.
-require_once __DIR__ . '/../jwt-auth.php';
-$authToken = requireVendorRole();
-
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
 $db_password = "maha_user@70";
@@ -33,7 +26,7 @@ try {
     $input = json_decode(file_get_contents('php://input'), true);
 
     $orderId = $input['order_id'] ?? null;
-    $vendorPhone = $authToken['phone_number'];
+    $vendorPhone = $input['vendor_phone'] ?? null;
     $beforePhoto = $input['before_photo'] ?? null;
     $afterPhoto = $input['after_photo'] ?? null;
     $workDescription = $input['work_description'] ?? null;
@@ -41,7 +34,7 @@ try {
     $additionalCharges = floatval($input['additional_charges'] ?? 0);
     $remarks = $input['remarks'] ?? null;
 
-    if (!$orderId || !$beforePhoto || !$afterPhoto) {
+    if (!$orderId || !$vendorPhone || !$beforePhoto || !$afterPhoto) {
         throw new Exception('Missing required fields');
     }
 
@@ -115,22 +108,6 @@ try {
     $stmt->execute();
     $stmt->close();
 
-    $phoneStmt = $conn->prepare('SELECT phone_number FROM orders WHERE id = ?');
-    $phoneStmt->bind_param('i', $orderId);
-    $phoneStmt->execute();
-    $customerRow = $phoneStmt->get_result()->fetch_assoc();
-    $phoneStmt->close();
-    if ($customerRow && !empty($customerRow['phone_number'])) {
-        require_once __DIR__ . '/../push-notification-helper.php';
-        sendPushToPhone(
-            $conn,
-            $customerRow['phone_number'],
-            'Service completed',
-            'Your service has been completed. Thank you for using MahaMaintain Pro!',
-            ['type' => 'service_completed', 'order_id' => (string)$orderId]
-        );
-    }
-
     http_response_code(200);
     echo json_encode([
         'success' => true,
@@ -142,7 +119,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Complete job error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

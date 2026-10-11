@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -14,18 +13,10 @@ class NotificationService {
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
   GlobalKey<NavigatorState>? navigatorKey;
 
   Future<void> init(GlobalKey<NavigatorState> key) async {
     navigatorKey = key;
-
-    await _localNotifications.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-        iOS: DarwinInitializationSettings(),
-      ),
-    );
 
     // Request notification permissions (iOS)
     await _firebaseMessaging.requestPermission(
@@ -94,21 +85,9 @@ class NotificationService {
     required String body,
     required Map<String, dynamic> data,
   }) {
-    _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'maha_maintain_default',
-          'Maha Maintain Pro',
-          channelDescription: 'Order, payment, complaint and society updates',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
-    );
+    // Local notification handling
+    // You can integrate with flutter_local_notifications for native notifications
+    print('Notification - Title: $title, Body: $body');
   }
 
   void _navigateToRequest(int requestId, String? notificationType) {

@@ -37,7 +37,7 @@ try {
     ], JSON_PRETTY_PRINT);
 
 } catch (Exception $e) {
-    echo json_encode(['error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['error' => $e->getMessage()]);
 }
 
 $conn->close();

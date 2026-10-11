@@ -5,21 +5,24 @@ import 'config/app_theme.dart';
 import 'config/app_router.dart';
 import 'config/supabase_config.dart';
 import 'repositories/auth_repository.dart';
+import 'screens/splash_screen.dart';
 import 'services/cart_service.dart';
 import 'services/firebase_service.dart';
-import 'widgets/offline_banner.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // These three don't depend on each other - run them concurrently instead
-  // of one after another, so startup only takes as long as the slowest one
-  // rather than the sum of all three.
-  await Future.wait([
-    SupabaseConfig.initialize().catchError((e) => print('Supabase init error: $e')),
-    FirebaseService().initialize().catchError((e) => print('Firebase init error: $e')),
-    SupabaseAuthRepository.restoreToken(),
-  ]);
+  try {
+    await SupabaseConfig.initialize();
+  } catch (e) {
+    print('Supabase init error: $e');
+  }
+
+  try {
+    await FirebaseService().initialize();
+  } catch (e) {
+    print('Firebase init error: $e');
+  }
 
   runApp(
     const ProviderScope(
@@ -38,14 +41,17 @@ class MahaMaintainApp extends ConsumerStatefulWidget {
 }
 
 class _MahaMaintainAppState extends ConsumerState<MahaMaintainApp> {
-  late CartService _cartService;
+  bool _showSplash = true;
 
   @override
   void initState() {
     super.initState();
-    _cartService = CartService();
-    // Load persisted cart from SharedPreferences
-    _cartService.loadCart();
+    // Hide splash after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() => _showSplash = false);
+      }
+    });
   }
 
   @override
@@ -55,7 +61,7 @@ class _MahaMaintainAppState extends ConsumerState<MahaMaintainApp> {
 
     return provider_pkg.MultiProvider(
       providers: [
-        provider_pkg.ChangeNotifierProvider.value(value: _cartService),
+        provider_pkg.ChangeNotifierProvider(create: (_) => CartService()),
       ],
       child: MaterialApp.router(
         title: 'MahaMaintain Pro',
@@ -64,7 +70,6 @@ class _MahaMaintainAppState extends ConsumerState<MahaMaintainApp> {
         themeMode: ThemeMode.light,
         debugShowCheckedModeBanner: false,
         routerConfig: router,
-        builder: (context, child) => OfflineBanner(child: child ?? const SizedBox.shrink()),
       ),
     );
   }

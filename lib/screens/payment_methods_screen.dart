@@ -137,7 +137,6 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete, color: Colors.red),
-                                    tooltip: 'Delete payment method',
                                     onPressed: () => _showDeleteConfirmation(index),
                                   ),
                                 ],
@@ -175,7 +174,6 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete, color: Colors.red),
-                                    tooltip: 'Delete payment method',
                                     onPressed: () => _showDeleteConfirmation(index),
                                   ),
                                 ],

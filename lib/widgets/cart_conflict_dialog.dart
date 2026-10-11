@@ -108,7 +108,6 @@ void handleAddToCart(
   required CartItem newItem,
   required String newServiceName,
 }) async {
-  // Check if cart has a different category (enforces single category per cart)
   if (cartService.hasDifferentCategory(newItem.categoryId)) {
     final shouldClearAndAdd = await showCartConflictDialog(
       context,
@@ -121,13 +120,12 @@ void handleAddToCart(
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Cart cleared. New service added.'),
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: _AppColors.success,
           duration: const Duration(seconds: 2),
         ),
       );
     }
   } else {
-    // Same service or cart is empty - add item (or replace if different service)
     cartService.addItem(newItem);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -138,3 +136,5 @@ void handleAddToCart(
     );
   }
 }
+
+const Color success = Color(0xFF10B981);

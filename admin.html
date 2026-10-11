@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maha Maintain Pro - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-logo h2 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin: 0;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: #666;
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sidebar-menu a:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .sidebar-menu a.active {
+            background: #f0f4ff;
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .members-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table-header h2 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .toggle-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-enabled {
+            background: #10b981;
+            color: white;
+        }
+
+        .toggle-enabled:hover {
+            background: #059669;
+        }
+
+        .toggle-disabled {
+            background: #ef4444;
+            color: white;
+        }
+
+        .toggle-disabled:hover {
+            background: #dc2626;
+        }
+
+        .toggle-committee {
+            padding: 6px 12px;
+            border: 1px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-committee.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .toggle-committee:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #10b981;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .societies-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .society-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .society-item:last-child {
+            border-bottom: none;
+        }
+
+        .society-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .society-info p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .society-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <h2>🏢 Maha Admin</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a class="nav-link active" onclick="switchSection('dashboard')" data-section="dashboard">📊 Dashboard</a></li>
+            <li><a class="nav-link" onclick="switchSection('societies')" data-section="societies">🏘️ Add Societies</a></li>
+            <li><a class="nav-link" onclick="switchSection('members')" data-section="members">👥 Members</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div id="messageContainer"></div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <div class="header">
+                    <h1>🏢 Maha Maintain Pro - Admin Panel</h1>
+                    <p>Manage society members, approvals, and committee assignments</p>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalMembers">0</div>
+                            <div class="stat-label">Total Members</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="enabledMembers">0</div>
+                            <div class="stat-label">Enabled</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="committeeMembers">0</div>
+                            <div class="stat-label">Committee Members</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="pendingApprovals">0</div>
+                            <div class="stat-label">Pending Approvals</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Societies Section -->
+            <div id="societies" class="section">
+                <div class="form-card">
+                    <div class="form-title">➕ Add New Society</div>
+                    <form id="societiesForm">
+                        <div class="form-group">
+                            <label>Society Name *</label>
+                            <input type="text" id="societyName" placeholder="e.g., Shree Heights Apartments" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Address *</label>
+                            <textarea id="societyAddress" placeholder="e.g., 123 Main Street, Building A" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>City *</label>
+                            <input type="text" id="societyCity" placeholder="e.g., Pune" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Postal Code</label>
+                            <input type="text" id="societyPostalCode" placeholder="e.g., 411001">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Society</button>
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <div class="header" style="background: white; padding: 20px;">
+                        <h2 style="font-size: 18px; margin-bottom: 15px;">📋 All Societies</h2>
+                    </div>
+                    <div id="societiesListContainer" class="societies-list"></div>
+                </div>
+            </div>
+
+            <!-- Members Section -->
+            <div id="members" class="section">
+                <div class="header">
+                    <h1>👥 Society Members</h1>
+                    <p>Manage member approvals and committee assignments</p>
+                </div>
+                <div class="members-table">
+                    <div class="table-header">
+                        <h2>Member List</h2>
+                    </div>
+                    <div id="tableContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://digitrixmedia.com/mahamaintainpro/api';
+
+        // Section switching
+        function switchSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Add active class to clicked nav link
+            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+            // Load data for selected section
+            if (sectionId === 'members') {
+                loadMembers();
+            } else if (sectionId === 'societies') {
+                loadSocieties();
+            } else if (sectionId === 'dashboard') {
+                loadMembers();
+            }
+        }
+
+        // Load members
+        async function loadMembers() {
+            try {
+                const response = await fetch(`${API_BASE}/admin-get-members.php`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    showMessage('Error loading members: ' + data.error, 'error');
+                    return;
+                }
+
+                renderMembers(data.members);
+                updateStats(data.members);
+            } catch (error) {
+                showMessage('Failed to load members: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        // Load societies
+        async function loadSocieties() {
+            try {
+                const response = await fetch(`${API_BASE}/admin-get-societies.php`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    showMessage('Error loading societies: ' + data.error, 'error');
+                    return;
+                }
+
+                renderSocieties(data.societies || []);
+            } catch (error) {
+                showMessage('Failed to load societies: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        // Render societies list
+        function renderSocieties(societies) {
+            const container = document.getElementById('societiesListContainer');
+
+            if (societies.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No societies added yet</p></div>';
+                return;
+            }
+
+            let html = '';
+            societies.forEach(society => {
+                html += `
+                    <div class="society-item">
+                        <div class="society-info">
+                            <h3>${society.name}</h3>
+                            <p>📍 ${society.address}, ${society.city}</p>
+                            <p style="font-size: 12px; color: #999;">ID: ${society.id}</p>
+                        </div>
+                        <div class="society-actions">
+                            <button class="btn-small btn-edit" onclick="editSociety(${society.id})">Edit</button>
+                            <button class="btn-small btn-delete" onclick="deleteSociety(${society.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderMembers(members) {
+            const container = document.getElementById('tableContainer');
+
+            if (members.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No members found</p></div>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Approval</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            members.forEach(member => {
+                const enabledBtn = member.is_enabled
+                    ? '<button class="toggle-btn toggle-enabled" onclick="toggleMember(' + member.user_id + ', \'is_enabled\', 0)">✓ Enabled</button>'
+                    : '<button class="toggle-btn toggle-disabled" onclick="toggleMember(' + member.user_id + ', \'is_enabled\', 1)">✗ Disabled</button>';
+
+                const committeeBtn = member.is_committee
+                    ? '<button class="toggle-committee active" onclick="toggleMember(' + member.user_id + ', \'is_committee\', 0)">👥 Committee</button>'
+                    : '<button class="toggle-committee" onclick="toggleMember(' + member.user_id + ', \'is_committee\', 1)">👤 Individual</button>';
+
+                const statusBadge = member.approval_status === 'approved'
+                    ? '<span class="status-badge status-approved">✓ Approved</span>'
+                    : '<span class="status-badge status-pending">⏳ Pending</span>';
+
+                html += `
+                    <tr>
+                        <td>${member.user_id}</td>
+                        <td>${member.secretary_name}</td>
+                        <td>${member.phone}</td>
+                        <td>${enabledBtn}</td>
+                        <td>${statusBadge}</td>
+                        <td>${committeeBtn}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function updateStats(members) {
+            const total = members.length;
+            const enabled = members.filter(m => m.is_enabled === 1).length;
+            const committee = members.filter(m => m.is_committee === 1).length;
+            const pending = members.filter(m => m.approval_status !== 'approved').length;
+
+            document.getElementById('totalMembers').textContent = total;
+            document.getElementById('enabledMembers').textContent = enabled;
+            document.getElementById('committeeMembers').textContent = committee;
+            document.getElementById('pendingApprovals').textContent = pending;
+        }
+
+        async function toggleMember(userId, field, value) {
+            try {
+                const response = await fetch(`${API_BASE}/admin-update-member.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        field: field,
+                        value: value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showMessage('Error: ' + data.error, 'error');
+                    return;
+                }
+
+                showMessage('✓ ' + data.message, 'success');
+                loadMembers(); // Reload to refresh UI
+            } catch (error) {
+                showMessage('Failed to update member: ' + error.message, 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const div = document.createElement('div');
+            div.className = type === 'error' ? 'error' : 'success';
+            div.textContent = message;
+            container.innerHTML = '';
+            container.appendChild(div);
+
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        // Add society form submission
+        document.getElementById('societiesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('societyName').value,
+                address: document.getElementById('societyAddress').value,
+                city: document.getElementById('societyCity').value,
+                postal_code: document.getElementById('societyPostalCode').value || null
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/admin-add-society.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showMessage('Error: ' + data.error, 'error');
+                    return;
+                }
+
+                showMessage('✓ Society added successfully!', 'success');
+                document.getElementById('societiesForm').reset();
+                loadSocieties();
+            } catch (error) {
+                showMessage('Failed to add society: ' + error.message, 'error');
+            }
+        });
+
+        async function editSociety(societyId) {
+            const name = prompt('Enter society name:');
+            if (!name) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin-update-society.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: societyId,
+                        name: name
+                    })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    showMessage('Error: ' + data.error, 'error');
+                    return;
+                }
+
+                showMessage('✓ Society updated!', 'success');
+                loadSocieties();
+            } catch (error) {
+                showMessage('Failed to update society: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteSociety(societyId) {
+            if (!confirm('Are you sure you want to delete this society?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin-delete-society.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: societyId })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    showMessage('Error: ' + data.error, 'error');
+                    return;
+                }
+
+                showMessage('✓ Society deleted!', 'success');
+                loadSocieties();
+            } catch (error) {
+                showMessage('Failed to delete society: ' + error.message, 'error');
+            }
+        }
+
+        // Load on page load
+        window.addEventListener('load', () => {
+            loadMembers();
+        });
+    </script>
+</body>
+</html>

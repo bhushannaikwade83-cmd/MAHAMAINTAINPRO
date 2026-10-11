@@ -9,23 +9,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Any authenticated user can see the active-alerts feed - this is what a
-// security guard/committee view polls for incoming emergencies, and this
-// codebase has no separate guard-role JWT claim yet to restrict it further
-// to (see security_guard_dashboard_screen.dart, which has no role check of
-// its own either). "My alerts" is always scoped to the caller's own phone
-// from the token, never a client-supplied phone - previously this endpoint
-// had no auth at all, so anyone could pull every resident's SOS history,
-// live location and emergency contacts by querying with no id/phone.
-require_once 'jwt-auth.php';
-$authToken = verifyJWTToken();
-
 try {
     require 'config.php';
 
     $alertId = $_GET['id'] ?? ($_POST['id'] ?? null);
-    $wantsOwn = isset($_GET['mine']) || isset($_POST['mine']);
-    $userPhone = $wantsOwn ? $authToken['phone_number'] : null;
+    $userPhone = $_GET['user_phone'] ?? ($_POST['user_phone'] ?? null);
     $status = $_GET['status'] ?? 'active';
 
     if ($alertId) {
@@ -91,6 +79,6 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

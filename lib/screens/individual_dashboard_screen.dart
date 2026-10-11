@@ -15,7 +15,6 @@ import 'society_dashboard.dart';
 import 'approval_pending_screen.dart';
 import 'bookings_screen.dart';
 import 'profile_screen.dart';
-import '../repositories/auth_repository.dart';
 
 /// Resolves which Society screen to show for tab 3.
 ///
@@ -100,7 +99,6 @@ class _SocietyTabRootState extends State<_SocietyTabRoot> with WidgetsBindingObs
 
       final response = await http.get(
         Uri.parse(url),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
       ).timeout(const Duration(seconds: 20));
 
 

@@ -39,23 +39,12 @@ try {
         service_id INT,
         service_name VARCHAR(255),
         category VARCHAR(100),
-        category_id INT,
         price DECIMAL(10, 2),
         quantity INT DEFAULT 1,
         subtotal DECIMAL(10, 2),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
     )";
-
-    if ($conn->query($createTable) === FALSE) {
-        throw new Exception("Table creation failed: " . $conn->error);
-    }
-
-    // Add category_id column if it doesn't exist
-    $checkCol = $conn->query("SHOW COLUMNS FROM order_items LIKE 'category_id'");
-    if ($checkCol->num_rows === 0) {
-        $conn->query("ALTER TABLE order_items ADD COLUMN category_id INT AFTER category");
-    }
 
     if (!$conn->query($createTable)) {
         throw new Exception("Table creation failed: " . $conn->error);
@@ -72,8 +61,8 @@ try {
     $deleteStmt->close();
 
     // Insert each item
-    $query = "INSERT INTO order_items (order_id, service_id, service_name, category, category_id, price, quantity, subtotal)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO order_items (order_id, service_id, service_name, category, price, quantity, subtotal)
+              VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($query);
     if (!$stmt) {
@@ -82,15 +71,14 @@ try {
 
     $itemCount = 0;
     foreach ($items as $item) {
-        $serviceId = intval($item['service_id'] ?? 0);
+        $serviceId = $item['service_id'] ?? null;
         $serviceName = $item['service_name'] ?? 'Unknown Service';
         $category = $item['category'] ?? 'General';
-        $categoryId = intval($item['category_id'] ?? 0);
         $price = floatval($item['price'] ?? 0);
         $quantity = intval($item['quantity'] ?? 1);
         $subtotal = $price * $quantity;
 
-        $stmt->bind_param("sisiidid", $orderId, $serviceId, $serviceName, $category, $categoryId, $price, $quantity, $subtotal);
+        $stmt->bind_param("ssissdd", $orderId, $serviceId, $serviceName, $category, $price, $quantity, $subtotal);
 
         if (!$stmt->execute()) {
             throw new Exception("Execute failed for item: " . $stmt->error);
@@ -111,7 +99,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Order items save error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

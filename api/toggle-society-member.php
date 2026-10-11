@@ -2,16 +2,12 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-// Only an approved society secretary can toggle member status/committee flags
-require_once 'jwt-auth.php';
-requireSecretaryRole();
 
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
@@ -72,7 +68,7 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Toggle member error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

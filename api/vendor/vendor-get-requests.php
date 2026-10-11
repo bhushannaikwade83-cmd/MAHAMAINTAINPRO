@@ -2,18 +2,19 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
-// vendor_id is taken from the vendor's own JWT, never trusted from the
-// client - otherwise any vendor could list any other vendor's job queue.
-require_once __DIR__ . '/../jwt-auth.php';
-$authToken = requireVendorRole();
-$vendor_id = $authToken['vendor_id'];
-
 try {
     $pdo = new PDO("mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
         "digitrix_maha_user", "maha_user@70", [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
+    $vendor_id = $_GET['vendor_id'] ?? null;
     $booking_type = $_GET['booking_type'] ?? null;
     $status = $_GET['status'] ?? null;
+
+    if (!$vendor_id) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'vendor_id required']);
+        exit;
+    }
 
     $query = "
         SELECT sr.*, s.name as service_name, sc.name as category_name
@@ -52,7 +53,6 @@ try {
     ]);
 } catch (Exception $e) {
     http_response_code(500);
-    error_log('vendor-get-requests error: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

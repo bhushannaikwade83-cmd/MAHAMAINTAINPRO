@@ -105,7 +105,6 @@ class _MpinLoginScreenState extends ConsumerState<MpinLoginScreen> {
                   IconButton(
                     onPressed: widget.onBackPress,
                     icon: const Icon(Icons.arrow_back),
-                    tooltip: 'Back',
                   ),
                 ],
               ),
@@ -150,7 +149,6 @@ class _MpinLoginScreenState extends ConsumerState<MpinLoginScreen> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   suffixIcon: IconButton(
                     icon: Icon(_obscurePin ? Icons.visibility_off : Icons.visibility),
-                    tooltip: _obscurePin ? 'Show M-PIN' : 'Hide M-PIN',
                     onPressed: () => setState(() => _obscurePin = !_obscurePin),
                   ),
                 ),

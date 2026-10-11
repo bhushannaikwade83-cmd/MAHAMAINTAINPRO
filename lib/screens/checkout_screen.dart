@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/cart_service.dart';
 import '../repositories/order_repository.dart';
-import '../config/app_theme.dart';
 import 'order_confirmation_screen.dart';
 import 'payment_options_screen.dart';
-import 'add_address_screen.dart';
 
 class _AppColors {
   static const brand = Color(0xFFFF9A4D);
@@ -45,8 +42,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   bool _loadingAddresses = true;
   double _discountAmount = 0;
   late OrderRepository _orderRepository;
-  DateTime? _selectedDate;
-  String? _selectedSlot;
 
   @override
   void initState() {
@@ -66,17 +61,10 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     try {
       final prefs = await SharedPreferences.getInstance();
       final userPhone = prefs.getString('userPhone');
-      if (userPhone == null) return;
-
-      final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
-      final response = await http
-          .post(
-            url,
-            headers: SupabaseAuthRepository.staticAuthHeaders,
-            body: jsonEncode({'phone_number': userPhone}),
-          )
-          .timeout(const Duration(seconds: 10));
-
+      final url = userPhone != null
+          ? 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php?phone_number=$userPhone'
+          : 'https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php';
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
       if (!mounted) return;
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -91,7 +79,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         setState(() => _loadingAddresses = false);
       }
     } catch (e) {
-      debugPrint('❌ Error loading addresses: $e');
       if (mounted) setState(() => _loadingAddresses = false);
     }
   }
@@ -104,66 +91,18 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     super.dispose();
   }
 
-  bool _applyingCoupon = false;
-
-  Future<void> _applyCoupon(double cartTotal) async {
+  void _applyCoupon(double cartTotal) {
     final code = _couponCtrl.text.trim().toUpperCase();
     if (code.isEmpty) return;
+    setState(() => _appliedCoupon = code);
+    _discountAmount = 285;
     FocusScope.of(context).unfocus();
-
-    setState(() => _applyingCoupon = true);
-    try {
-      final response = await http
-          .post(
-            Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/apply-coupon.php'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'code': code, 'cart_total': cartTotal}),
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (!mounted) return;
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        setState(() {
-          _appliedCoupon = code;
-          _discountAmount = (data['discount_amount'] as num).toDouble();
-          _applyingCoupon = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Coupon applied! You saved ₹${_discountAmount.toStringAsFixed(0)}')),
-        );
-      } else {
-        setState(() => _applyingCoupon = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Invalid coupon code')),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _applyingCoupon = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not apply coupon. Please try again.')),
-      );
-    }
   }
 
   void _startPayment(double total) async {
     if (_selectedAddressId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an address')),
-      );
-      return;
-    }
-    if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a date')),
-      );
-      return;
-    }
-    if (_selectedSlot == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a time slot')),
       );
       return;
     }
@@ -175,16 +114,12 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     final userPhone = prefs.getString('userPhone') ?? 'guest';
 
     // Step 1: Create order in database
-    final firstItem = cartService.items.isNotEmpty ? cartService.items.first : null;
     final orderResult = await _orderRepository.createOrder(
       userId: userPhone,
       phoneNumber: userPhone,
       addressId: _selectedAddressId!,
       totalAmount: total,
       serviceCount: cartService.items.length,
-      scheduledDate: firstItem?.selectedDate,
-      scheduledTimeSlot: firstItem?.selectedTimeSlot,
-      couponCode: _appliedCoupon,
     );
 
     if (!mounted) return;
@@ -235,15 +170,11 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   }
 
   void _handlePaymentSuccess(Map<String, dynamic> result, String orderId) async {
-    final cartService = Provider.of<CartService>(context, listen: false);
-
     // Step 3: Verify payment with backend
     final verifyResult = await _orderRepository.verifyPayment(
       orderId: orderId,
       paymentId: result['paymentId'] ?? '',
-      razorpayOrderId: result['razorpayOrderId'],
       signature: result['signature'],
-      method: result['method'],
     );
 
     if (!mounted) return;
@@ -255,13 +186,15 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       return;
     }
 
+    // Save order to local bookings for quick access
+    _saveToLocalBookings(orderId, result);
+
+    final cartService = Provider.of<CartService>(context, listen: false);
     final selectedAddr = _addresses.isNotEmpty && _selectedAddressId != null
         ? _addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => <String, dynamic>{})
         : <String, dynamic>{};
 
     final finalAmount = result['amount'] ?? ((cartService.totalPrice + 50) - _discountAmount);
-
-    debugPrint('💾 BEFORE CONFIRMATION - CartService has ${cartService.items.length} items: ${cartService.items.map((i) => i.serviceName).toList()}');
 
     Navigator.pushReplacement(
       context,
@@ -270,13 +203,39 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           orderId: orderId,
           totalAmount: finalAmount,
           addressLabel: selectedAddr['label'] ?? 'Home',
-          addressText: selectedAddr['full_address'] ?? '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['area'] ?? ''}, ${selectedAddr['pincode'] ?? ''}',
+          addressText: '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['area'] ?? ''}, ${selectedAddr['pincode'] ?? ''}',
           itemCount: cartService.items.length,
-          items: cartService.items.map((item) => item.serviceName).toList(),
         ),
       ),
     );
     cartService.clearCart();
+  }
+
+  void _saveToLocalBookings(String orderId, Map<String, dynamic> paymentResult) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cartService = Provider.of<CartService>(context, listen: false);
+
+      final booking = {
+        'id': orderId,
+        'paymentId': paymentResult['paymentId'] ?? '',
+        'totalAmount': paymentResult['amount'] ?? 0,
+        'status': 'completed',
+        'createdAt': DateTime.now().toIso8601String(),
+        'serviceCount': cartService.items.length,
+      };
+
+      List<dynamic> bookings = [];
+      final saved = prefs.getString('bookings');
+      if (saved != null) {
+        bookings = jsonDecode(saved);
+      }
+
+      bookings.add(booking);
+      await prefs.setString('bookings', jsonEncode(bookings));
+    } catch (e) {
+      debugPrint('Error saving booking: $e');
+    }
   }
 
   void _onPayError(PaymentFailureResponse r) {}
@@ -292,9 +251,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               builder: (context, cartService, _) {
                 final itemTotal = cartService.totalPrice;
                 final visitFee = 50.0;
-                final gstAmount = itemTotal * 0.18;
                 final discount = _appliedCoupon == null ? 0.0 : _discountAmount;
-                final total = itemTotal + visitFee + gstAmount - discount;
+                final total = itemTotal + visitFee - discount;
 
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
@@ -305,19 +263,16 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     const SizedBox(height: 14),
                     _Reveal(_stagger, 0.16, child: _servicesCard(cartService)),
                     const SizedBox(height: 14),
-                    _Reveal(_stagger, 0.24, child: _dateTimeCard()),
-                    const SizedBox(height: 14),
                     _Reveal(_stagger, 0.30, child: _couponCard(itemTotal + visitFee)),
                     const SizedBox(height: 14),
-                    _Reveal(_stagger, 0.38, child: _billCard(itemTotal, visitFee, gstAmount, discount, total)),
+                    _Reveal(_stagger, 0.38, child: _billCard(itemTotal, visitFee, discount, total)),
                   ],
                 );
               },
             ),
       bottomNavigationBar: Consumer<CartService>(
         builder: (context, cartService, _) {
-          final gst = cartService.totalPrice * 0.18;
-          final total = (cartService.totalPrice + 50 + gst) - _discountAmount;
+          final total = (cartService.totalPrice + 50) - _discountAmount;
           return _payBar(total);
         },
       ),
@@ -424,55 +379,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     ]);
   }
 
-  void _showAddressPicker() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Select address', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                ..._addresses.map((addr) {
-                  final id = addr['id'].toString();
-                  return RadioListTile<String>(
-                    value: id,
-                    groupValue: _selectedAddressId,
-                    activeColor: _AppColors.brandDeep,
-                    title: Text('${addr['building_name'] ?? ''}, ${addr['area'] ?? ''}'),
-                    subtitle: Text('PIN ${addr['pincode'] ?? ''}'),
-                    onChanged: (value) {
-                      setState(() => _selectedAddressId = value);
-                      Navigator.pop(sheetContext);
-                    },
-                  );
-                }),
-                const Divider(),
-                ListTile(
-                  leading: Icon(Icons.add_location_alt_outlined, color: _AppColors.brandDeep),
-                  title: const Text('Add new address'),
-                  onTap: () async {
-                    Navigator.pop(sheetContext);
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AddAddressScreen()),
-                    );
-                    _loadAddresses();
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _addressCard() {
     final addr = _selectedAddressId != null && _addresses.isNotEmpty
         ? _addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => <String, dynamic>{})
@@ -500,22 +406,19 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                addr['full_address']?.toString() ?? 'Address not available',
+                '${addr['building_name'] ?? ''}, ${addr['area'] ?? ''}',
                 style: const TextStyle(
-                    fontSize: 13, height: 1.5, fontWeight: FontWeight.w500, color: _AppColors.ink),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+                    fontSize: 14, height: 1.3, fontWeight: FontWeight.w600, color: _AppColors.ink),
               ),
-              const SizedBox(height: 6),
               Text(
-                'Phone: ${addr['phone_number'] ?? ''}',
+                'PIN ${addr['pincode'] ?? ''}',
                 style: const TextStyle(fontSize: 12, color: _AppColors.inkSoft),
               ),
             ]),
           ),
           const SizedBox(width: 10),
           TextButton(
-            onPressed: _showAddressPicker,
+            onPressed: () {},
             style: TextButton.styleFrom(
               backgroundColor: _AppColors.brandSoft,
               foregroundColor: _AppColors.brandDeep,
@@ -588,130 +491,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         ),
       ),
     ]);
-  }
-
-  Widget _dateTimeCard() {
-    final now = DateTime.now();
-    final isToday = _selectedDate != null &&
-        _selectedDate!.year == now.year &&
-        _selectedDate!.month == now.month &&
-        _selectedDate!.day == now.day;
-
-    return _Card(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const _SectionTitle(icon: Icons.calendar_today_rounded, text: 'Schedule'),
-        const SizedBox(height: 14),
-        // Date selector
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(30, (index) {
-              final date = DateTime.now().add(Duration(days: index));
-              final isSelected = _selectedDate != null &&
-                  _selectedDate!.year == date.year &&
-                  _selectedDate!.month == date.month &&
-                  _selectedDate!.day == date.day;
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: GestureDetector(
-                  onTap: () => setState(() => _selectedDate = date),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected ? _AppColors.brandDeep : _AppColors.muted,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? _AppColors.brandDeep : _AppColors.line,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          index == 0 ? 'Today' : '${date.day}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : _AppColors.ink,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1],
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: isSelected ? Colors.white : _AppColors.inkSoft,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-        if (_selectedDate != null) ...[
-          const SizedBox(height: 14),
-          const Divider(color: _AppColors.line, height: 1),
-          const SizedBox(height: 14),
-          // Time slots
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _getTimeSlots(isToday).map((slot) {
-                final isSelected = _selectedSlot == slot;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedSlot = slot),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? _AppColors.brandDeep : _AppColors.muted,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected ? _AppColors.brandDeep : _AppColors.line,
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
-                      child: Text(
-                        slot,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : _AppColors.ink,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ]),
-    );
-  }
-
-  List<String> _getTimeSlots(bool isToday) {
-    final slots = <String>[];
-    final now = DateTime.now();
-    final startHour = isToday ? (now.hour + 1).clamp(8, 20) : 8;
-    final endHour = 20;
-
-    for (int hour = startHour; hour < endHour; hour++) {
-      final displayHour = hour > 12 ? (hour - 12).toString() : (hour == 0 ? '12' : hour.toString());
-      final period = hour >= 12 ? 'PM' : 'AM';
-      final nextHour = hour + 1 > 12 ? ((hour + 1) - 12).toString() : ((hour + 1) == 0 ? '12' : (hour + 1).toString());
-      final nextPeriod = (hour + 1) >= 12 ? 'PM' : 'AM';
-      slots.add('$displayHour:00 $period - $nextHour:00 $nextPeriod');
-    }
-
-    return slots;
   }
 
   Widget _couponCard(double cartTotal) {
@@ -801,7 +580,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     );
   }
 
-  Widget _billCard(double itemTotal, double visitFee, double gstAmount, double discount, double total) {
+  Widget _billCard(double itemTotal, double visitFee, double discount, double total) {
     Widget row(String label, String value, {bool accent = false}) => Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -822,7 +601,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         const SizedBox(height: 14),
         row('Item total', '₹${itemTotal.toStringAsFixed(2)}'),
         row('Visit & service fee', '₹${visitFee.toStringAsFixed(2)}'),
-        row('GST (18%)', '₹${gstAmount.toStringAsFixed(2)}'),
         if (_appliedCoupon != null) row('Discount', '-₹${discount.toStringAsFixed(2)}', accent: true),
         const _DashedDivider(),
         const SizedBox(height: 14),
@@ -838,8 +616,6 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   }
 
   Widget _payBar(double total) {
-    final canProceed = _selectedAddressId != null && _selectedDate != null && _selectedSlot != null;
-
     return Container(
       decoration: const BoxDecoration(
         color: _AppColors.card,
@@ -852,91 +628,21 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       child: SafeArea(
         top: false,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          // Validation warnings
-          if (!canProceed)
-            Column(
-              children: [
-                if (_selectedAddressId == null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info, size: 14, color: Colors.orange),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Please select delivery location',
-                          style: TextStyle(fontSize: 12, color: Colors.orange),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (_selectedDate == null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info, size: 14, color: Colors.orange),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Please select a date',
-                          style: TextStyle(fontSize: 12, color: Colors.orange),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (_selectedSlot == null && _selectedDate != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info, size: 14, color: Colors.orange),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Please select time slot',
-                          style: TextStyle(fontSize: 12, color: Colors.orange),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 8),
-              ],
-            ),
           _Breathe(
             child: SizedBox(
               width: double.infinity,
               height: 56,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: canProceed
-                      ? const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [_AppColors.brand, _AppColors.brandDeep],
-                        )
-                      : LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Colors.grey.shade300, Colors.grey.shade400],
-                        ),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [_AppColors.brand, _AppColors.brandDeep],
+                  ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                        color: (canProceed ? _AppColors.brandDeep : Colors.grey.shade400).withOpacity(0.35),
+                        color: _AppColors.brandDeep.withOpacity(0.35),
                         blurRadius: 22,
                         offset: const Offset(0, 10)),
                   ],
@@ -945,7 +651,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(18),
-                    onTap: (_paying || !canProceed) ? null : () => _startPayment(total),
+                    onTap: _paying ? null : () => _startPayment(total),
                     child: Center(
                       child: _paying
                           ? const SizedBox(

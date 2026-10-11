@@ -2,17 +2,13 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-
-// Admin authentication (real JWT + role check)
-require_once 'jwt-auth.php';
-requireAdminRole();
 try {
     $servername = "localhost";
     $db_username = "digitrix_maha_user";
@@ -25,7 +21,7 @@ try {
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
 
-    $query = "SELECT id, name, address, city, postal_code, registration_number, registration_date, contact_phone, contact_email, created_at FROM societies ORDER BY created_at DESC";
+    $query = "SELECT id, name, address, city, postal_code, created_at FROM societies ORDER BY created_at DESC";
     $result = $conn->query($query);
 
     if (!$result) {
@@ -41,10 +37,11 @@ try {
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
-    error_log('admin-get-societies error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
     echo json_encode([
         'success' => false,
-        'error' => 'An internal error occurred. Please try again.',
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine()
     ]);
 }
 ?>

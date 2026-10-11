@@ -1,26 +1,15 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
-import '../services/cart_service.dart';
-import 'cart_screen.dart';
 
-/// Full detail view for a single service: name, image, description,
-/// price, what's included/excluded, estimated time, warranty, FAQ and
-/// related services from the same category. All content comes from the
-/// live API response (get-services.php) - nothing here is fabricated
-/// (no fake review counts, no simulated live tracking).
 class ServiceDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> service;
-  final String categoryName;
-  final String categoryEmoji;
-  final List<Map<String, dynamic>> relatedServices;
-  final List<Map<String, dynamic>> faqs;
+  final String serviceName;
+  final String serviceEmoji;
+  final String description;
 
   const ServiceDetailScreen({
-    required this.service,
-    required this.categoryName,
-    required this.categoryEmoji,
-    this.relatedServices = const [],
-    this.faqs = const [],
+    required this.serviceName,
+    required this.serviceEmoji,
+    required this.description,
     Key? key,
   }) : super(key: key);
 
@@ -29,361 +18,271 @@ class ServiceDetailScreen extends StatefulWidget {
 }
 
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
-  int _quantity = 1;
+  late List<Map<String, dynamic>> services;
 
-  int get _priceValue => (widget.service['price'] as num?)?.toInt() ?? 0;
-
-  List<String> _splitLines(dynamic value) {
-    if (value == null) return [];
-    return value
-        .toString()
-        .split('\n')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
+  @override
+  void initState() {
+    super.initState();
+    services = [
+      {'name': 'Hair Cut & Styling (Women)', 'emoji': '✂️', 'duration': '45-60 min', 'rating': 4.9, 'price': 399, 'quantity': 0},
+      {'name': 'Facial (Basic / D-Tan)', 'emoji': '🧴', 'duration': '60 min', 'rating': 4.8, 'price': 499, 'quantity': 0},
+      {'name': 'Full Body Waxing', 'emoji': '✨', 'duration': '90 min', 'rating': 4.7, 'price': 799, 'quantity': 0},
+      {'name': 'Head Massage', 'emoji': '💆‍♀️', 'duration': '30 min', 'rating': 4.9, 'price': 299, 'quantity': 0},
+      {'name': 'Manicure & Pedicure', 'emoji': '💅', 'duration': '60 min', 'rating': 4.8, 'price': 599, 'quantity': 0},
+    ];
   }
 
-  void _addToCartAndCheckout() async {
-    final service = widget.service;
-    final cartService = CartService();
-
-    // ✅ CRITICAL: Load cart from storage first before checking category
-    await cartService.loadCart();
-
-    final serviceId = '${service['id']}';
-    final serviceCategoryId = '${service['category_id'] ?? ''}';
-
-    final cartItem = CartItem(
-      id: serviceId,
-      serviceName: service['name'] ?? 'Service',
-      serviceId: serviceId,
-      categoryId: serviceCategoryId,
-      price: '₹${service['price'] ?? 0}',
-      description: service['description'] ?? '',
-      duration: service['duration'] ?? '',
-      serviceIcon: service['emoji'] ?? widget.categoryEmoji,
-      imagePath: service['image_path'],
-      quantity: _quantity,
-    );
-
-    // Check if trying to add from DIFFERENT CATEGORY
-    if (cartService.hasDifferentCategory(serviceCategoryId)) {
-      // Show conflict dialog
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Different Category'),
-          content: const Text('Your cart has items from a different category.\n\nWould you like to replace them with this service?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                await cartService.replaceCart(cartItem);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CartScreen()),
-                );
-              },
-              child: const Text('Replace Cart'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Same category - just add
-      await cartService.addItem(cartItem);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const CartScreen()),
-      );
-    }
-  }
+  int get totalPrice => services.fold(0, (sum, item) => sum + ((item['price'] as int) * (item['quantity'] as int)));
+  int get totalServices => services.fold(0, (sum, item) => sum + (item['quantity'] as int));
 
   @override
   Widget build(BuildContext context) {
-    final service = widget.service;
-    final included = _splitLines(service['whats_included']);
-    final notIncluded = _splitLines(service['whats_not_included']);
-    final warranty = service['warranty_text'] as String?;
-    final imagePath = service['image_path'] as String?;
-
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-        title: Text(
-          service['name'] ?? 'Service',
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Service image
-            Container(
-              width: double.infinity,
-              height: 200,
-              color: Colors.grey.shade100,
-              child: imagePath != null && imagePath.isNotEmpty
-                  ? Image.network(
-                      imagePath,
-                      fit: BoxFit.cover,
-                      cacheWidth: 800,
-                      errorBuilder: (c, e, st) => Center(
-                        child: Text(widget.categoryEmoji, style: const TextStyle(fontSize: 64)),
-                      ),
-                    )
-                  : Center(child: Text(widget.categoryEmoji, style: const TextStyle(fontSize: 64))),
+      body: Column(
+        children: [
+          // Header
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppTheme.saffron, AppTheme.saffronDark],
+              ),
             ),
-
-            Padding(
-              padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 0,
+              right: 0,
+              bottom: 20,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name + price
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          service['name'] ?? 'Service',
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        '₹$_priceValue',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.saffron),
-                      ),
-                    ],
+                  // Back Button
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(Icons.arrow_back, size: 24, color: Colors.white),
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  if (service['duration'] != null && service['duration'].toString().isNotEmpty)
-                    Row(
+                  const SizedBox(height: 12),
+                  // Title with emoji
+                  RichText(
+                    text: TextSpan(
                       children: [
-                        Icon(Icons.timer_outlined, size: 14, color: Colors.grey.shade600),
-                        const SizedBox(width: 4),
-                        Text(service['duration'], style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                        TextSpan(
+                          text: widget.serviceName,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' ${widget.serviceEmoji}',
+                          style: const TextStyle(fontSize: 28),
+                        ),
                       ],
                     ),
-
-                  const SizedBox(height: 16),
-
-                  // Description
-                  Text(
-                    service['description'] ?? '',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade800, height: 1.5),
                   ),
-
-                  if (warranty != null && warranty.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD4EDDA),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.verified_rounded, size: 16, color: Color(0xFF28A745)),
-                          const SizedBox(width: 6),
-                          Text(
-                            warranty,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF28A745)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  if (included.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    const Text("What's included", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    ...included.map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(Icons.check_circle, size: 16, color: Color(0xFF28A745)),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text(item, style: const TextStyle(fontSize: 13))),
-                            ],
-                          ),
-                        )),
-                  ],
-
-                  if (notIncluded.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    const Text("What's not included", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    ...notIncluded.map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(Icons.cancel_outlined, size: 16, color: Colors.redAccent),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text(item, style: const TextStyle(fontSize: 13))),
-                            ],
-                          ),
-                        )),
-                  ],
-
-                  const SizedBox(height: 20),
-
-                  // Quantity selector
-                  const Text('Quantity', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
+                  Text(
+                    widget.description,
+                    style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.9)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Services List
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: List.generate(services.length, (index) => _buildServiceCard(index)),
+              ),
+            ),
+          ),
+
+          // Bottom Action Bar
+          if (totalServices > 0)
+            Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+                top: 16,
+              ),
+              child: Column(
+                children: [
+                  // Summary
                   Container(
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.saffron, width: 1.5),
-                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
-                          onPressed: () => setState(() => _quantity = (_quantity - 1).clamp(1, 10)),
-                          tooltip: 'Decrease quantity',
-                          icon: Icon(Icons.remove, color: AppTheme.saffron),
-                        ),
-                        Text('$_quantity', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        IconButton(
-                          onPressed: () => setState(() => _quantity = (_quantity + 1).clamp(1, 10)),
-                          tooltip: 'Increase quantity',
-                          icon: Icon(Icons.add, color: AppTheme.saffron),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  if (widget.faqs.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    const Text('Frequently Asked Questions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    ...widget.faqs.map((faq) => ExpansionTile(
-                          tilePadding: EdgeInsets.zero,
-                          title: Text(
-                            faq['q']?.toString() ?? '',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                faq['a']?.toString() ?? '',
-                                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                            Text(
+                              '$totalServices ${totalServices == 1 ? 'Service' : 'Services'} Selected',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '₹$totalPrice',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
                             ),
                           ],
-                        )),
-                  ],
-
-                  if (widget.relatedServices.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    const Text('Related services', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    ...widget.relatedServices.map((related) {
-                      final relPrice = (related['price'] as num?)?.toInt();
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ServiceDetailScreen(
-                                  service: related,
-                                  categoryName: widget.categoryName,
-                                  categoryEmoji: widget.categoryEmoji,
-                                  relatedServices: widget.relatedServices,
-                                  faqs: widget.faqs,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade200),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    related['name'] ?? '',
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                if (relPrice != null)
-                                  Text(
-                                    '₹$relPrice',
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.saffron),
-                                  ),
-                              ],
-                            ),
-                          ),
                         ),
-                      );
-                    }),
-                  ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Book Now Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Booking $totalServices service(s) for ₹$totalPrice'),
+                            backgroundColor: AppTheme.saffron,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.saffron,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text(
+                        'Book Now',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
+            ),
+        ],
+      ),
+    );
+  }
 
-                  const SizedBox(height: 80),
+  Widget _buildServiceCard(int index) {
+    final service = services[index];
+    final isSelected = service['quantity'] > 0;
+
+    return GestureDetector(
+      onTap: () => setState(() => service['quantity']++),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.saffron.withOpacity(0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppTheme.saffron : Colors.grey.shade200,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Emoji
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(child: Text(service['emoji'], style: const TextStyle(fontSize: 28))),
+            ),
+            const SizedBox(width: 12),
+            // Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    service['name'],
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '⏱️ ${service['duration']}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '⭐ ${service['rating']}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '₹${service['price']}',
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.saffron),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Quantity Selector
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (service['quantity'] > 0) service['quantity']--;
+                      });
+                    },
+                    child: Text('−', style: TextStyle(fontSize: 16, color: AppTheme.saffron, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('${service['quantity']}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => setState(() => service['quantity']++),
+                    child: Text('+', style: TextStyle(fontSize: 16, color: AppTheme.saffron, fontWeight: FontWeight.bold)),
+                  ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-      bottomSheet: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 16, offset: const Offset(0, -4))],
-        ),
-        padding: const EdgeInsets.all(16),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Total Amount', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    Text(
-                      '₹${_priceValue * _quantity}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.saffron),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _addToCartAndCheckout,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.saffron,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Book Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

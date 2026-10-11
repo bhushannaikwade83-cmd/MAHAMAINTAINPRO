@@ -9,26 +9,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Issue tokens through the shared jwt-auth.php secret/signer - see
-// verify-otp.php for why a locally-hardcoded secret here breaks every
-// later authenticated request.
-require_once 'jwt-auth.php';
+// JWT Secret Key (should be in environment variable in production)
+define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your-super-secret-jwt-key-change-in-production');
 define('JWT_EXPIRY', 86400); // 24 hours
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);
 
     $phoneNumber = $input['phone_number'] ?? null;
+    $mpin = $input['mpin'] ?? null;
 
     if (!$phoneNumber) {
         throw new Exception('Phone number required');
     }
 
-    $jwt = generateJWT([
+    // Create JWT Token
+    $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
+    $payload = json_encode([
         'phone_number' => $phoneNumber,
-        'type' => 'user_auth',
-        'role' => 'resident',
-    ], JWT_EXPIRY);
+        'iat' => time(),
+        'exp' => time() + JWT_EXPIRY,
+        'type' => 'user_auth'
+    ]);
+
+    $base64Header = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
+    $base64Payload = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
+
+    $signature = hash_hmac('sha256', "$base64Header.$base64Payload", JWT_SECRET, true);
+    $base64Signature = rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
+
+    $jwt = "$base64Header.$base64Payload.$base64Signature";
 
     http_response_code(200);
     echo json_encode([
@@ -42,6 +52,6 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("JWT generation error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

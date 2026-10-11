@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
 
@@ -162,7 +161,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
 
       final response = await http.post(
         updateUrl,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(updateData),
       ).timeout(const Duration(seconds: 10));
 

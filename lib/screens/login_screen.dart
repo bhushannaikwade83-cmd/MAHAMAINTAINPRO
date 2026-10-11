@@ -69,12 +69,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     try {
       final phoneNumber = _phoneController.text.trim();
 
-      debugPrint('🔐 === LOGIN DEBUG ===');
-      debugPrint('📱 Phone entered: $phoneNumber');
-
       // Validate phone
       if (!_isValidPhone(phoneNumber)) {
-        debugPrint('❌ Phone validation failed: invalid format');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please enter a valid 10-digit phone number'),
@@ -84,29 +80,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         return;
       }
 
-      debugPrint('✅ Phone validation passed');
-      debugPrint('🔄 Calling authRepository.sendOtp()...');
-
       final authRepository = ref.read(authRepositoryProvider);
       final result = await authRepository.sendOtp(phoneNumber);
-
-      debugPrint('📦 OTP Response type: ${result.runtimeType}');
-      debugPrint('📋 Response: $result');
 
       if (!mounted) return;
 
       if (result is AuthRequiresMpin) {
-        debugPrint('➡️ Result: AuthRequiresMpin - going to M-PIN login');
         // M-PIN exists → Go to M-PIN login (silent)
         widget.onOtpPhoneChange(phoneNumber);
         context.go('/mpin-login');
       } else if (result is AuthSuccess) {
-        debugPrint('➡️ Result: AuthSuccess - going to OTP verification');
         // M-PIN doesn't exist → Go to OTP screen (silent)
         widget.onOtpPhoneChange(phoneNumber);
         context.go('/otp');
       } else if (result is AuthError) {
-        debugPrint('❌ Result: AuthError - ${result.message}');
         // Show error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -116,8 +103,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         );
       }
     } catch (e) {
-      debugPrint('❌ Exception caught: $e');
-      debugPrint('🔍 Stack trace: ${StackTrace.current}');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

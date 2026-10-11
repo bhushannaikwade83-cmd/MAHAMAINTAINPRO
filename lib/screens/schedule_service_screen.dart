@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
@@ -54,7 +53,7 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone_number': phoneNumber}),
       ).timeout(const Duration(seconds: 10));
 
@@ -389,16 +388,25 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
               GestureDetector(
                 onTap: selectedTime.isNotEmpty
                     ? () {
-                        // Update selected date and time for all cart items
+                        // Add all selected services to cart
                         final cartService = Provider.of<CartService>(context, listen: false);
 
                         for (var service in widget.selectedServices) {
-                          cartService.updateItemDetails(
-                            '${service['id'] ?? 1}',
-                            date: selectedDate,
-                            timeSlot: selectedTime,
+                          final cartItem = CartItem(
+                            id: '${service['name']}_${DateTime.now().millisecondsSinceEpoch}',
+                            serviceName: service['name'] ?? 'Service',
+                            serviceId: '${service['id'] ?? 1}',
+                            categoryId: '${service['category_id'] ?? 1}',
+                            price: '₹${service['price'] ?? 0}',
+                            description: service['description'] ?? '',
+                            duration: service['duration'] ?? '',
+                            serviceIcon: service['emoji'] ?? '🔧',
+                            quantity: 1,
+                            selectedDate: selectedDate,
+                            selectedTimeSlot: selectedTime,
                           );
-                          debugPrint('✅ [Schedule] Updated date/time for: ${service['name']}');
+                          cartService.addItem(cartItem);
+                          debugPrint('✅ [Schedule] Added to cart: ${service['name']}');
                         }
 
                         // Navigate to checkout

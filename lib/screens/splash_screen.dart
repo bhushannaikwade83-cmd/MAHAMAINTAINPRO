@@ -27,11 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Brief brand flash only - by the time this screen appears, main()
-    // has already awaited Supabase/Firebase init and JWT restore, so
-    // there's no real loading work left to mask. The previous 3.5s wait
-    // was pure dead time on every single app open.
-    Timer(const Duration(milliseconds: 1200), () {
+    Timer(const Duration(milliseconds: 3500), () {
       widget.onSplashComplete?.call();
     });
   }

@@ -4,7 +4,6 @@ import 'dart:convert';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
 import '../utils/constants.dart';
-import '../widgets/error_retry_view.dart';
 import 'service_category_screen.dart';
 
 /// Full list of service categories, reached via "See all" on the home screen.
@@ -18,7 +17,6 @@ class AllCategoriesScreen extends StatefulWidget {
 class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   late List<Map<String, dynamic>> _categories = [];
   bool _isLoading = true;
-  bool _hasError = false;
 
   @override
   void initState() {
@@ -27,10 +25,6 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   }
 
   Future<void> _loadCategories() async {
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
     try {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
       final response = await http.get(url).timeout(const Duration(seconds: 20));
@@ -53,24 +47,11 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
               debugPrint('   ⚠️ Missing image for $name');
             }
           }
-        } else {
-          setState(() {
-            _isLoading = false;
-            _hasError = true;
-          });
         }
-      } else {
-        setState(() {
-          _isLoading = false;
-          _hasError = true;
-        });
       }
     } catch (e) {
       debugPrint('❌ Error loading categories: $e');
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -90,9 +71,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
           ? Center(
               child: CircularProgressIndicator(color: AppTheme.saffron),
             )
-          : _hasError
-              ? ErrorRetryView(onRetry: _loadCategories)
-              : GridView.builder(
+          : GridView.builder(
         padding: EdgeInsets.all(isSmall ? 12 : 16),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -114,9 +93,6 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
               final services = (category['services'] as List<dynamic>?)
                   ?.map((s) => Map<String, dynamic>.from(s as Map))
                   .toList() ?? [];
-              final faqs = (category['faqs'] as List<dynamic>?)
-                  ?.map((f) => Map<String, dynamic>.from(f as Map))
-                  .toList() ?? [];
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -125,9 +101,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                     categoryEmoji: emoji,
                     categoryImagePath: imagePath,
                     description: getCategoryDescription(name),
-                    categoryId: '${category['id'] ?? 0}',
                     services: services,
-                    faqs: faqs,
                   ),
                 ),
               );
@@ -154,7 +128,6 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                           imagePath ?? '',
                           fit: BoxFit.cover,
                           filterQuality: FilterQuality.high,
-                          cacheWidth: 300,
                         ),
                         Positioned(
                           left: 0,

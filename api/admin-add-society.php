@@ -2,17 +2,13 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-
-// Admin authentication (real JWT + role check)
-require_once 'jwt-auth.php';
-requireAdminRole();
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
 $db_password = "maha_user@70";
@@ -43,18 +39,14 @@ $name = $data['name'];
 $address = $data['address'];
 $city = $data['city'];
 $postal_code = $data['postal_code'] ?? null;
-$registration_number = $data['registration_number'] ?? null;
-$registration_date = $data['registration_date'] ?? null;
-$contact_phone = $data['contact_phone'] ?? null;
-$contact_email = $data['contact_email'] ?? null;
 
 try {
     $stmt = $pdo->prepare('
-        INSERT INTO societies (name, address, city, postal_code, registration_number, registration_date, contact_phone, contact_email, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        INSERT INTO societies (name, address, city, postal_code, created_at, updated_at)
+        VALUES (?, ?, ?, ?, NOW(), NOW())
     ');
 
-    $stmt->execute([$name, $address, $city, $postal_code, $registration_number, $registration_date, $contact_phone, $contact_email]);
+    $stmt->execute([$name, $address, $city, $postal_code]);
     $societyId = $pdo->lastInsertId();
 
     echo json_encode([
@@ -64,6 +56,6 @@ try {
     ]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

@@ -74,7 +74,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     error_log("Order status table error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();

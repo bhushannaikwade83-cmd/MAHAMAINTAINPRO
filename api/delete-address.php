@@ -2,16 +2,12 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-// JWT Authentication (Security Layer)
-require_once 'jwt-auth.php';
-$token = verifyJWTToken();
 
 // Database connection
 $servername = "localhost";
@@ -31,12 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
 
     $address_id = $data['address_id'] ?? null;
-    // phone_number from verified JWT, not client input
-    $phone_number = $token['phone_number'];
+    $phone_number = $data['phone_number'] ?? null;
 
-    if (!$address_id) {
+    if (!$address_id || !$phone_number) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Address ID is required']);
+        echo json_encode(['success' => false, 'message' => 'Address ID and phone number are required']);
         exit();
     }
 

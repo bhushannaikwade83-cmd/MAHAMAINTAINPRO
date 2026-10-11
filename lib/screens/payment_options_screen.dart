@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../repositories/order_repository.dart';
 
 class _AppColors {
@@ -55,22 +58,16 @@ class _PaymentOptionsScreenState extends State<PaymentOptionsScreen> {
     Navigator.pop(context, {
       'success': true,
       'paymentId': response.paymentId,
-      'razorpayOrderId': response.orderId,
+      'orderId': response.orderId,
       'signature': response.signature,
-      'method': _selectedPayment == 'card' ? 'CARD' : 'UPI',
+      'method': _selectedPayment,
       'amount': widget.totalAmount,
     });
   }
 
   void _onPaymentError(PaymentFailureResponse response) {
-    if (!mounted) return;
-    setState(() => _processing = false);
-
-    if (response.code == Razorpay.PAYMENT_CANCELLED) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment cancelled'), backgroundColor: Colors.grey),
-      );
-    } else {
+    if (mounted) {
+      setState(() => _processing = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Payment failed: ${response.message}'),
@@ -85,29 +82,64 @@ class _PaymentOptionsScreenState extends State<PaymentOptionsScreen> {
 
     setState(() => _processing = true);
 
-    if (_selectedPayment == 'googlepay' || _selectedPayment == 'phonepe' || _selectedPayment == 'bhim' || _selectedPayment == 'card') {
-      // All digital methods (including UPI) go through the same Razorpay
-      // checkout, which shows UPI apps/UPI ID entry natively - this is what
-      // actually gets a verifiable signature back. A raw upi://pay deep
-      // link (the previous approach) has no way to confirm the payment
-      // really succeeded before this screen reports success.
-      _processRazorpayPayment();
+    if (_selectedPayment == 'googlepay') {
+      _launchUPI('googlepay');
+    } else if (_selectedPayment == 'phonepe') {
+      _launchUPI('phonepe');
+    } else if (_selectedPayment == 'bhim') {
+      _launchUPI('bhim');
+    } else if (_selectedPayment == 'card') {
+      _processCardPayment();
     } else if (_selectedPayment == 'cod') {
       Navigator.pop(context, {
         'success': true,
         'paymentId': widget.orderId,
+        'orderId': widget.orderId,
         'method': 'COD',
         'amount': widget.totalAmount,
       });
     }
   }
 
-  Future<void> _processRazorpayPayment() async {
+  Future<void> _launchUPI(String app) async {
+    final upi = 'upi://pay?pa=mahamaintainpro@upi&pn=MahaMaintain%20Pro&am=${widget.totalAmount}&tn=Service%20Booking&tr=${widget.orderId}';
+
+    late String url;
+    if (app == 'googlepay') {
+      url = 'https://pay.google.com/gp/p/u/0/pay?$upi';
+    } else if (app == 'phonepe') {
+      url = 'phonepe://pay?$upi';
+    } else if (app == 'bhim') {
+      url = 'upi://pay?pa=mahamaintainpro@upi&pn=MahaMaintain%20Pro&am=${widget.totalAmount}&tn=Service%20Booking&tr=${widget.orderId}';
+    }
+
     try {
-      // Step 1: Create Razorpay order - server recomputes the real amount
-      // from order_items, ignoring whatever total this screen was passed.
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url));
+
+        // Save order to database
+        await _saveOrderToDatabase(app.toUpperCase());
+
+        Navigator.pop(context, {
+          'success': true,
+          'paymentId': widget.orderId,
+          'orderId': widget.orderId,
+          'method': app.toUpperCase(),
+          'amount': widget.totalAmount,
+        });
+      } else {
+        setState(() => _processing = false);
+      }
+    } catch (e) {
+      setState(() => _processing = false);
+    }
+  }
+
+  Future<void> _processCardPayment() async {
+    try {
+      // Step 1: Create Razorpay order
       final paymentResult = await _orderRepository.createRazorpayOrder(
-        orderId: widget.orderId,
+        amount: widget.totalAmount,
         receipt: widget.orderId,
       );
 
@@ -121,10 +153,10 @@ class _PaymentOptionsScreenState extends State<PaymentOptionsScreen> {
         return;
       }
 
-      // Step 2: Open Razorpay with real order ID and server-verified amount
+      // Step 2: Open Razorpay with real order ID
       var options = {
         'key': 'rzp_live_TUUuGaHfai8zhj',
-        'amount': paymentResult.amountPaise ?? (widget.totalAmount * 100).toInt(),
+        'amount': (widget.totalAmount * 100).toInt(),
         'name': 'MahaMaintain Pro',
         'description': 'Home Service Booking',
         'order_id': paymentResult.razorpayOrderId,
@@ -140,6 +172,24 @@ class _PaymentOptionsScreenState extends State<PaymentOptionsScreen> {
           SnackBar(content: Text('Error: ${e.toString()}')),
         );
       }
+    }
+  }
+
+  Future<void> _saveOrderToDatabase(String method) async {
+    try {
+      await http.post(
+        Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/create-order.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'order_id': widget.orderId,
+          'user_id': 'guest',
+          'total_amount': widget.totalAmount,
+          'payment_method': method,
+          'payment_status': 'completed',
+        }),
+      );
+    } catch (e) {
+      debugPrint('Error saving order: $e');
     }
   }
 

@@ -4,20 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'dart:async';
 import 'dart:convert';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
 import '../services/cart_service.dart';
 import 'add_complaint_screen.dart';
-import 'bills_maintenance_screen.dart';
 import 'address_settings_screen.dart';
 import 'all_categories_screen.dart';
 import 'cart_screen.dart';
 import 'live_tracking_screen.dart';
 import 'parking_management_screen.dart';
-import 'notifications_screen.dart';
 import 'search_list_screen.dart';
 import 'service_category_screen.dart';
 import 'society_screen.dart';
@@ -41,10 +38,9 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
   late Timer _bannerTimer;
   late ScrollController _scrollController;
   bool isDarkMode = false;
-  int notificationCount = 0;
+  int notificationCount = 3;
   int _currentBannerIndex = 0;
-  List<Map<String, dynamic>> _coupons = [];
-  int get _totalBanners => _coupons.isEmpty ? 3 : _coupons.length;
+  final int _totalBanners = 3;
   final int _bannerSlideDelay = 4;
   bool _showButtons = true;
   double _lastScrollPosition = 0;
@@ -52,20 +48,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
   String _buildingName = '';
   String _locationInfo = '';
   List<Map<String, dynamic>> _services = [];
-
-  /// Indexes into [_services], sorted by real declared rating (descending),
-  /// showing the top few as "Popular Services". Not fabricated data - just
-  /// a ranking of what's already returned by get-services.php.
-  List<int> get _popularServiceIndexes {
-    if (_services.isEmpty) return [];
-    final indexed = List<int>.generate(_services.length, (i) => i);
-    indexed.sort((a, b) {
-      final ratingA = double.tryParse(_services[a]['rating']?.toString() ?? '0') ?? 0;
-      final ratingB = double.tryParse(_services[b]['rating']?.toString() ?? '0') ?? 0;
-      return ratingB.compareTo(ratingA);
-    });
-    return indexed.take(6).toList();
-  }
   List<Map<String, dynamic>> _categoriesWithServices = [];
   bool _loadingServices = true;
   late Timer _liveRefreshTimer;
@@ -82,71 +64,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     _loadUserName();
     _loadAddressDetails();
     _loadServices();
-    _loadCoupons();
-    _loadNotificationCount();
     _startLiveRefresh();
-  }
-
-  Future<void> _loadNotificationCount() async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-notifications.php'),
-            headers: SupabaseAuthRepository.staticAuthHeaders,
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (!mounted || response.statusCode != 200) return;
-
-      final data = jsonDecode(response.body);
-      if (data['success'] == true) {
-        setState(() {
-          notificationCount = data['unread_count'] ?? 0;
-        });
-      }
-    } catch (e) {
-      // Keep the last known count on failure
-    }
-  }
-
-  Future<void> _loadCoupons() async {
-    try {
-      final response = await http
-          .get(Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-coupons.php'))
-          .timeout(const Duration(seconds: 10));
-
-      if (!mounted || response.statusCode != 200) return;
-
-      final data = jsonDecode(response.body);
-      if (data['success'] == true && data['coupons'] is List) {
-        setState(() {
-          _coupons = List<Map<String, dynamic>>.from(data['coupons']);
-          if (_currentBannerIndex >= _totalBanners) {
-            _currentBannerIndex = 0;
-          }
-        });
-      }
-    } catch (e) {
-      // Keep showing the static fallback banners on failure
-    }
-  }
-
-  void _copyCouponCode(String code) {
-    Clipboard.setData(ClipboardData(text: code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Coupon code "$code" copied! Apply it at checkout.')),
-    );
-  }
-
-  String _formatCouponSubtitle(Map<String, dynamic> coupon) {
-    final type = coupon['discount_type'];
-    final value = coupon['discount_value'];
-    final minAmount = coupon['min_amount'];
-    final discountText = type == 'percentage' ? '${value}% off' : '₹$value off';
-    final minText = (minAmount != null && double.tryParse(minAmount.toString()) != null && double.parse(minAmount.toString()) > 0)
-        ? ' on orders above ₹$minAmount'
-        : '';
-    return 'Use code ${coupon['code']} - $discountText$minText';
   }
 
   void _startLiveRefresh() {
@@ -154,7 +72,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
       if (mounted) {
         _loadServices();
         _loadAddressDetails();
-        _loadNotificationCount();
       }
     });
   }
@@ -231,7 +148,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone_number': phoneNumber}),
       ).timeout(const Duration(seconds: 10));
 
@@ -315,6 +232,19 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
           }
           debugPrint('✅ Services loaded from database: ${homeServices.length} categories found');
 
+          // Debug: Check image paths for each category
+          for (var category in categoriesData) {
+            final name = category['name'] ?? 'Unknown';
+            final imagePath = category['image_path'];
+            final serviceCount = (category['services'] as List?)?.length ?? 0;
+            debugPrint('📸 [$name] image_path: $imagePath | Services: $serviceCount');
+
+            if (imagePath == null || imagePath.toString().isEmpty) {
+              debugPrint('⚠️ WARNING: Empty image_path for $name');
+            } else {
+              debugPrint('🖼️ URL for $name: $imagePath');
+            }
+          }
         } else {
           debugPrint('❌ API success=false or no categories');
         }
@@ -597,12 +527,14 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                         children: [
                           // Notification Button
                           GestureDetector(
-                            onTap: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('You have $notificationCount new notifications'),
+                                  backgroundColor: AppTheme.saffron,
+                                  duration: const Duration(seconds: 2),
+                                ),
                               );
-                              _loadNotificationCount();
                             },
                             child: Stack(
                               children: [
@@ -877,52 +809,33 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                       onPageChanged: (index) {
                         setState(() => _currentBannerIndex = index);
                       },
-                      children: _coupons.isNotEmpty
-                          ? _coupons.asMap().entries.map((entry) {
-                              final palette = [
-                                const [Color(0xFFE8F4F8), Color(0xFF2C5F7F)],
-                                const [Color(0xFFF0E8F8), Color(0xFF5F2C7F)],
-                                const [Color(0xFFF8E8E8), Color(0xFF7F2C2C)],
-                              ];
-                              final colors = palette[entry.key % palette.length];
-                              final coupon = entry.value;
-                              return _buildHeroBanner(
-                                title: (coupon['description'] as String?)?.isNotEmpty == true
-                                    ? coupon['description']
-                                    : 'Special Offer',
-                                subtitle: _formatCouponSubtitle(coupon),
-                                bgColor: colors[0],
-                                textColor: colors[1],
-                                onTap: () => _copyCouponCode(coupon['code'] as String),
-                              );
-                            }).toList()
-                          : [
-                              _buildHeroBanner(
-                                title: '50% Off Cleaning Services',
-                                subtitle: 'Limited time offer',
-                                bgColor: const Color(0xFFE8F4F8),
-                                textColor: const Color(0xFF2C5F7F),
-                              ),
-                              _buildHeroBanner(
-                                title: 'Book Expert Plumber',
-                                subtitle: '24/7 Emergency Service',
-                                bgColor: const Color(0xFFF0E8F8),
-                                textColor: const Color(0xFF5F2C7F),
-                              ),
-                              _buildHeroBanner(
-                                title: 'Free AC Maintenance Check',
-                                subtitle: 'This month only',
-                                bgColor: const Color(0xFFF8E8E8),
-                                textColor: const Color(0xFF7F2C2C),
-                              ),
-                            ],
+                      children: [
+                        _buildHeroBanner(
+                          title: '50% Off Cleaning Services',
+                          subtitle: 'Limited time offer',
+                          bgColor: const Color(0xFFE8F4F8),
+                          textColor: const Color(0xFF2C5F7F),
+                        ),
+                        _buildHeroBanner(
+                          title: 'Book Expert Plumber',
+                          subtitle: '24/7 Emergency Service',
+                          bgColor: const Color(0xFFF0E8F8),
+                          textColor: const Color(0xFF5F2C7F),
+                        ),
+                        _buildHeroBanner(
+                          title: 'Free AC Maintenance Check',
+                          subtitle: 'This month only',
+                          bgColor: const Color(0xFFF8E8E8),
+                          textColor: const Color(0xFF7F2C2C),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: isSmall ? 8 : 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _totalBanners,
+                      3,
                       (index) => Container(
                         width: _currentBannerIndex == index ? 28 : 8,
                         height: 8,
@@ -940,51 +853,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
               ),
             ),
             const SizedBox(height: 24),
-
-            // Popular Services - top rated categories from the live catalog
-            if (_popularServiceIndexes.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
-                child: Text(
-                  '🔥 Popular Services',
-                  style: TextStyle(
-                    fontSize: isSmall ? 17 : 20,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-              ),
-              SizedBox(height: isSmall ? 10 : 12),
-              SizedBox(
-                height: isSmall ? 150 : 170,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
-                  itemCount: _popularServiceIndexes.length,
-                  separatorBuilder: (_, __) => SizedBox(width: isSmall ? 10 : 12),
-                  itemBuilder: (context, i) {
-                    final index = _popularServiceIndexes[i];
-                    final service = _services[index];
-                    return SizedBox(
-                      width: isSmall ? 130 : 150,
-                      child: _buildServiceCard(
-                        index: index,
-                        emoji: service['emoji'],
-                        imagePath: service['image_path'],
-                        name: service['name'],
-                        hindi: service['hindi'] ?? '',
-                        time: service['time'] ?? '',
-                        price: service['price'] ?? 0,
-                        rating: service['rating'] ?? '0',
-                        bgColor: service['color'],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: isSmall ? 20 : 26),
-            ],
 
             // Personal Services
             Padding(
@@ -1097,7 +965,11 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => widget.onNavigateToTab?.call(3),
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Opening Full Dashboard...')),
+                          );
+                        },
                         child: Text(
                           'Dashboard →',
                           style: TextStyle(
@@ -1204,10 +1076,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                         emoji: '🧾',
                         title: 'View Bill',
                         badge: null,
-                        onTap: () => _runIfSocietyMember(() => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const BillsMaintenanceScreen()),
-                            )),
+                        onTap: () => _runIfSocietyMember(_showViewBillSheet),
                       ),
                       _buildActionCard(
                         emoji: '✍️',
@@ -1288,9 +1157,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
 
         // Get image_path from categoriesData
         final categoryImagePath = fullCategory['image_path'];
-        final faqs = ((fullCategory['faqs'] as List?)?.map((f) =>
-          Map<String, dynamic>.from(f as Map)
-        ).toList() ?? []);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -1299,9 +1165,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
               categoryEmoji: emoji,
               categoryImagePath: categoryImagePath,
               description: getCategoryDescription(name),
-              categoryId: '${fullCategory['id'] ?? index}',
               services: dbServices,
-              faqs: faqs,
             ),
           ),
         );
@@ -1449,6 +1313,8 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     required String time,
     required bool isSmall,
   }) {
+    debugPrint('🎨 Building image card for $name: $imagePath');
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Stack(
@@ -1459,7 +1325,6 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             imagePath,
             fit: BoxFit.cover,
             filterQuality: FilterQuality.high,
-            cacheWidth: 500,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
               return Center(
@@ -1546,6 +1411,138 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
       ),
     );
   }
+
+  void _openWhatsAppComplaint() {
+    final message = Uri.encodeComponent('Hi, I have a complaint regarding our society.');
+    final whatsappUrl = 'https://wa.me/919876543210?text=$message';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening WhatsApp...'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 1),
+      ),
+    );
+    // In a real app, you would use: launchUrl(Uri.parse(whatsappUrl))
+    // For now, just show the message
+  }
+
+  Widget _buildSocietyCard({
+    required String emoji,
+    required String name,
+    required Color bgColor,
+    String? badge,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 380;
+    return GestureDetector(
+      onTap: () {
+        if (name == 'Complaint') {
+          _openWhatsAppComplaint();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Opening $name...')),
+          );
+        }
+      },
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [bgColor, bgColor.withOpacity(0.7)],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.4),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: bgColor.withOpacity(0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: bgColor.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(isSmall ? 10 : 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        emoji,
+                        style: TextStyle(fontSize: isSmall ? 42 : 56),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 12, vertical: isSmall ? 10 : 12),
+                  child: Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: isSmall ? 11 : 13,
+                      fontWeight: FontWeight.w700,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                      letterSpacing: 0.2,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (badge != null)
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.neonGreen, Color(0xFF00FF00)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.neonGreen.withOpacity(0.6),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  badge,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildActionCard({
     required String emoji,
@@ -1692,6 +1689,116 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     );
   }
 
+  /// Shows outstanding maintenance bills (uploaded by the society admin)
+  /// with a Pay Now button. NOTE: this opens Razorpay's site as a
+  /// placeholder redirect - a real checkout for the exact bill amount
+  /// needs a Razorpay merchant account wired up to a backend, which
+  /// doesn't exist yet.
+  Future<void> _showViewBillSheet() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bills = (prefs.getStringList('bills') ?? [])
+        .map((e) => jsonDecode(e) as Map<String, dynamic>)
+        .toList();
+    final pending = bills.where((b) => b['status'] == 'Pending').toList();
+    double total = 0;
+    for (final b in pending) {
+      total += double.tryParse(b['amount'].toString()) ?? 0;
+    }
+
+    if (!mounted) return;
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('🧾 Maintenance Bill', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(
+                'Uploaded and updated by your society admin',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 16),
+              if (pending.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text('No pending bills 🎉', style: TextStyle(color: Colors.grey.shade600)),
+                  ),
+                )
+              else ...[
+                ...pending.map((b) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              b['description'] ?? '',
+                              style: const TextStyle(fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text('₹${b['amount']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
+                    )),
+                const Divider(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total Outstanding', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(
+                      '₹${total.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.saffron, fontSize: 18),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _payViaRazorpay,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.saffron,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Pay Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _payViaRazorpay() async {
+    final uri = Uri.parse('https://razorpay.com/payment-link/');
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open Razorpay')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open Razorpay: $e')),
+        );
+      }
+    }
+  }
+
   /// The one cross-account link in this app: a security guard captures a
   /// visitor and it shows up here for the resident to approve/deny. Until
   /// a real guard-submitted request exists (same local storage, so this
@@ -1800,16 +1907,18 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     );
   }
 
-  Future<void> _openWhatsApp() async {
+  void _openWhatsApp() {
     final message = Uri.encodeComponent('Hi! I need help with a service.');
-    final whatsappUrl = Uri.parse('https://wa.me/919876543210?text=$message');
+    final whatsappUrl = 'https://wa.me/919876543210?text=$message';
 
-    final launched = await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-    if (!launched && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open WhatsApp')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening WhatsApp...'),
+        backgroundColor: Color(0xFF25D366),
+        duration: Duration(seconds: 1),
+      ),
+    );
+    // In production: launchUrl(Uri.parse(whatsappUrl))
   }
 
   void _navigateToSocietyDashboard() {
@@ -1899,8 +2008,10 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             onPressed: () {
               Navigator.pop(context);
               final message = Uri.encodeComponent('Emergency: Need immediate assistance');
-              final whatsappUrl = Uri.parse('https://wa.me/919876543210?text=$message');
-              launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+              final whatsappUrl = 'https://wa.me/919876543210?text=$message';
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Opening WhatsApp...')),
+              );
             },
             child: const Text('📱 WhatsApp', style: TextStyle(color: Color(0xFF25D366))),
           ),
@@ -1918,15 +2029,13 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     required String subtitle,
     required Color bgColor,
     required Color textColor,
-    VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap: onTap ??
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Opening $title...')),
-            );
-          },
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Opening $title...')),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: bgColor,

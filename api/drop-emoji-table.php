@@ -1,10 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-// Admin-only: this drops and rebuilds tables - destructive, not resident-facing.
-require_once 'jwt-auth.php';
-requireAdminRole();
-
 try {
     $pdo = new PDO(
         "mysql:host=localhost;dbname=digitrix_maha_maintain_pro;charset=utf8mb4",
@@ -71,7 +67,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'An internal error occurred. Please try again.'
+        'error' => $e->getMessage()
     ]);
 }
 ?>

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
 
@@ -334,7 +333,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
 
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'phone_number': widget.phoneNumber,
           'full_name': name,

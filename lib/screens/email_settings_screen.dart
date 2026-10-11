@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
 
@@ -94,7 +93,7 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/save-profile.php');
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'phone_number': phoneNumber,
           'full_name': userName,
@@ -149,7 +148,6 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
       ),

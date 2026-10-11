@@ -1,6 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 
 class CartItem {
   final String id;
@@ -11,7 +9,6 @@ class CartItem {
   final String description;
   final String duration;
   final String serviceIcon;
-  final String? imagePath;
   int quantity;
   DateTime? selectedDate;
   String? selectedTimeSlot;
@@ -26,7 +23,6 @@ class CartItem {
     required this.description,
     required this.duration,
     required this.serviceIcon,
-    this.imagePath,
     this.quantity = 1,
     this.selectedDate,
     this.selectedTimeSlot,
@@ -38,47 +34,10 @@ class CartItem {
     final priceValue = double.tryParse(cleanPrice) ?? 0;
     return priceValue * quantity;
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'serviceName': serviceName,
-      'serviceId': serviceId,
-      'categoryId': categoryId,
-      'price': price,
-      'description': description,
-      'duration': duration,
-      'serviceIcon': serviceIcon,
-      'imagePath': imagePath,
-      'quantity': quantity,
-      'selectedDate': selectedDate?.toIso8601String(),
-      'selectedTimeSlot': selectedTimeSlot,
-      'specialRequests': specialRequests,
-    };
-  }
-
-  factory CartItem.fromJson(Map<String, dynamic> json) {
-    return CartItem(
-      id: json['id'] ?? '',
-      serviceName: json['serviceName'] ?? '',
-      serviceId: json['serviceId'] ?? '',
-      categoryId: json['categoryId'] ?? '',
-      price: json['price'] ?? '',
-      description: json['description'] ?? '',
-      duration: json['duration'] ?? '',
-      serviceIcon: json['serviceIcon'] ?? '',
-      imagePath: json['imagePath'],
-      quantity: json['quantity'] ?? 1,
-      selectedDate: json['selectedDate'] != null ? DateTime.parse(json['selectedDate']) : null,
-      selectedTimeSlot: json['selectedTimeSlot'],
-      specialRequests: json['specialRequests'],
-    );
-  }
 }
 
 class CartService with ChangeNotifier {
   static final CartService _instance = CartService._internal();
-  static const String _cartStorageKey = 'maha_cart_items';
 
   factory CartService() {
     return _instance;
@@ -87,7 +46,6 @@ class CartService with ChangeNotifier {
   CartService._internal();
 
   final List<CartItem> _items = [];
-  bool _isInitialized = false;
 
   List<CartItem> get items => _items;
 
@@ -101,118 +59,35 @@ class CartService with ChangeNotifier {
     return _items.isNotEmpty ? _items.first.categoryId : null;
   }
 
-  // ✅ Check if trying to add DIFFERENT SERVICE (by SERVICE NAME, not ID)
-  bool hasDifferentServiceByName(String serviceName) {
-    final isDifferent = _items.isNotEmpty && _items.first.serviceName != serviceName;
-    debugPrint('🔍 hasDifferentServiceByName check:');
-    debugPrint('   Cart items: ${_items.length}');
-    if (_items.isNotEmpty) {
-      debugPrint('   First item serviceName: "${_items.first.serviceName}"');
-      debugPrint('   New item serviceName: "$serviceName"');
-      debugPrint('   Names match? ${_items.first.serviceName == serviceName}');
-      debugPrint('   Is different? $isDifferent');
-
-      // Print each character to check for hidden spaces/differences
-      if (_items.first.serviceName != serviceName) {
-        debugPrint('   First item chars: ${_items.first.serviceName.split('').map((c) => "'$c' (${c.codeUnitAt(0)})").join(', ')}');
-        debugPrint('   New item chars: ${serviceName.split('').map((c) => "'$c' (${c.codeUnitAt(0)})").join(', ')}');
-      }
-    }
-    return isDifferent;
-  }
-
-  bool hasDifferentService(String serviceId) {
-    // Deprecated: Use hasDifferentServiceByName instead
-    return false;
-  }
-
   bool hasDifferentCategory(String categoryId) {
-    // ✅ CATEGORY-BASED enforcement: Only same category allowed
-    final isDifferent = _items.isNotEmpty && _items.first.categoryId != categoryId;
-    debugPrint('🔍 hasDifferentCategory check:');
-    debugPrint('   Cart items: ${_items.length}');
-    if (_items.isNotEmpty) {
-      debugPrint('   First item categoryId: ${_items.first.categoryId}');
-      debugPrint('   New item categoryId: $categoryId');
-      debugPrint('   Is different category? $isDifferent');
-    }
-    return isDifferent;
+    return _items.isNotEmpty && _items.first.categoryId != categoryId;
   }
 
-  Future<void> loadCart() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cartJson = prefs.getString(_cartStorageKey);
+  void addItem(CartItem item) {
+    final existingIndex = _items.indexWhere((i) => i.id == item.id);
 
-      // Always clear and reload - don't use _isInitialized flag
-      _items.clear();
-
-      if (cartJson != null) {
-        final List<dynamic> decoded = jsonDecode(cartJson);
-        for (var item in decoded) {
-          _items.add(CartItem.fromJson(item));
-        }
-        debugPrint('✅ Cart loaded: ${_items.length} items');
-      } else {
-        debugPrint('✅ Cart empty: no saved items');
-      }
-      _isInitialized = true;
-      notifyListeners();
-    } catch (e) {
-      debugPrint('❌ Error loading cart: $e');
-      _isInitialized = true;
-    }
-  }
-
-  Future<void> _saveCart() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cartJson = jsonEncode(_items.map((item) => item.toJson()).toList());
-      await prefs.setString(_cartStorageKey, cartJson);
-    } catch (e) {
-      debugPrint('Error saving cart: $e');
-    }
-  }
-
-  // ✅ ENFORCES SINGLE CATEGORY ONLY - Changed from serviceId to categoryId
-  Future<void> addItem(CartItem item) async {
-    debugPrint('📥 addItem() called: ${item.serviceName} | Current cart size: ${_items.length}');
-    if (_items.isEmpty || _items.first.categoryId == item.categoryId) {
-      final existingIndex = _items.indexWhere((i) => i.id == item.id);
-
-      if (existingIndex >= 0) {
-        _items[existingIndex].quantity += item.quantity;
-      } else {
-        _items.add(item);
-      }
+    if (existingIndex >= 0) {
+      _items[existingIndex].quantity += item.quantity;
     } else {
-      // Different category - replace entire cart
-      _items.clear();
       _items.add(item);
     }
-    await _saveCart();  // ✅ NOW AWAITED
-    debugPrint('✅ Item added & saved: ${item.serviceName} (Category: ${item.categoryId})');
     notifyListeners();
   }
 
-  Future<void> replaceCart(CartItem item) async {
+  void replaceCart(CartItem item) {
     _items.clear();
     _items.add(item);
-    await _saveCart();  // ✅ NOW AWAITED
-    debugPrint('✅ Cart replaced with: ${item.serviceName} (Category: ${item.categoryId})');
     notifyListeners();
   }
 
   void removeItem(String itemId) {
     _items.removeWhere((item) => item.id == itemId);
-    _saveCart();
     notifyListeners();
   }
 
   void updateQuantity(String itemId, int quantity) {
     final item = _items.firstWhere((i) => i.id == itemId);
     item.quantity = quantity.clamp(1, 10);
-    _saveCart();
     notifyListeners();
   }
 
@@ -221,13 +96,11 @@ class CartService with ChangeNotifier {
     if (date != null) item.selectedDate = date;
     if (timeSlot != null) item.selectedTimeSlot = timeSlot;
     if (requests != null) item.specialRequests = requests;
-    _saveCart();
     notifyListeners();
   }
 
   void clearCart() {
     _items.clear();
-    _saveCart();
     notifyListeners();
   }
 }

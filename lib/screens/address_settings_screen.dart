@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../repositories/auth_repository.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:convert';
 import '../config/app_theme.dart';
@@ -39,7 +38,7 @@ class _AddressSettingsScreenState extends State<AddressSettingsScreen> {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-addresses.php');
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone_number': phoneNumber}),
       ).timeout(const Duration(seconds: 10));
 
@@ -203,7 +202,7 @@ class _AddressSettingsScreenState extends State<AddressSettingsScreen> {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/delete-address.php');
       final response = await http.post(
         url,
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'address_id': address['id'] ?? '',
           'phone_number': phoneNumber,
