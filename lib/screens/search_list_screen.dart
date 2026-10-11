@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_theme.dart';
 import '../data/service_catalog.dart';
+import '../data/service_keywords.dart';
 import 'add_complaint_screen.dart';
 import 'announcements_screen.dart';
 import 'bills_maintenance_screen.dart';
@@ -28,13 +29,7 @@ class _SearchEntry {
     required this.subtitle,
     required this.builder,
     List<String>? keywords,
-  }) : keywords = keywords ?? _extractKeywords(title);
-
-  static List<String> _extractKeywords(String title) {
-    final titleLower = title.toLowerCase();
-    final words = titleLower.split(RegExp(r'[\s&\-]+'));
-    return words.where((w) => w.isNotEmpty).toList();
-  }
+  }) : keywords = keywords ?? getServiceKeywords(title);
 }
 
 class SearchListScreen extends StatefulWidget {
