@@ -778,13 +778,16 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                     },
                     decoration: InputDecoration(
                       hintText: '🔍 Search services...',
-                      hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                      hintStyle: TextStyle(
+                        color: isDarkMode ? Colors.grey.shade500 : Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDarkMode ? const Color(0xFF3A3A3A) : Colors.white,
                       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 12),
@@ -872,9 +875,10 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                               style: TextStyle(
                                 fontSize: isSmall ? 17 : 20,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.black,
+                                color: textColor,
                                 letterSpacing: -0.4,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             SizedBox(height: isSmall ? 3 : 4),
                             Container(
@@ -921,9 +925,9 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
-                        crossAxisSpacing: isSmall ? 8 : 12,
-                        mainAxisSpacing: isSmall ? 12 : 14,
-                        childAspectRatio: 0.95,
+                        crossAxisSpacing: isSmall ? 6 : 12,
+                        mainAxisSpacing: isSmall ? 10 : 14,
+                        childAspectRatio: isSmall ? 0.85 : 0.95,
                       ),
                       itemCount: _services.length,
                       itemBuilder: (context, index) {
@@ -955,13 +959,16 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Society Actions',
-                        style: TextStyle(
-                          fontSize: isSmall ? 18 : 24,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                          letterSpacing: -0.5,
+                      Flexible(
+                        child: Text(
+                          'Society Actions',
+                          style: TextStyle(
+                            fontSize: isSmall ? 18 : 24,
+                            fontWeight: FontWeight.w900,
+                            color: textColor,
+                            letterSpacing: -0.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       GestureDetector(
@@ -1014,13 +1021,16 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                         children: [
                           Text('🆘', style: TextStyle(fontSize: isSmall ? 24 : 28)),
                           SizedBox(width: isSmall ? 10 : 12),
-                          Text(
-                            'SOS Emergency',
-                            style: TextStyle(
-                              fontSize: isSmall ? 18 : 21,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 0.3,
+                          Flexible(
+                            child: Text(
+                              'SOS Emergency',
+                              style: TextStyle(
+                                fontSize: isSmall ? 18 : 21,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 0.3,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -1068,9 +1078,9 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                     crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: isSmall ? 12 : 14,
-                    mainAxisSpacing: isSmall ? 12 : 14,
-                    childAspectRatio: 0.95,
+                    crossAxisSpacing: isSmall ? 10 : 14,
+                    mainAxisSpacing: isSmall ? 10 : 14,
+                    childAspectRatio: isSmall ? 0.75 : 0.95,
                     children: [
                       _buildActionCard(
                         emoji: '🧾',
@@ -1208,18 +1218,21 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                   ),
                   SizedBox(height: isSmall ? 8 : 12),
                   Flexible(
-                    child: Text(
-                      name,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: isSmall ? 11 : 13,
-                        fontWeight: FontWeight.bold,
-                        color: displayTextColor,
-                        height: 1.2,
-                        letterSpacing: 0.2,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        name,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isSmall ? 11 : 13,
+                          fontWeight: FontWeight.bold,
+                          color: displayTextColor,
+                          height: 1.2,
+                          letterSpacing: 0.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (hindi.isNotEmpty)
@@ -1364,18 +1377,21 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  name,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: isSmall ? 11 : 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
-                    letterSpacing: 0.2,
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: isSmall ? 11 : 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.2,
+                      letterSpacing: 0.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 if (time.isNotEmpty) ...[
                   SizedBox(height: isSmall ? 4 : 6),
@@ -1563,11 +1579,11 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
       child: Container(
         padding: EdgeInsets.all(isSmall ? 12 : 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
           borderRadius: BorderRadius.circular(isSmall ? 24 : 28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.08),
               blurRadius: 14,
               offset: const Offset(0, 3),
             ),
@@ -1602,8 +1618,8 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: isSmall ? 11 : 13,
-                    color: Colors.black87,
+                    fontSize: isSmall ? 10 : 13,
+                    color: isDarkMode ? Colors.white : Colors.black87,
                     letterSpacing: 0.2,
                   ),
                   maxLines: 2,
