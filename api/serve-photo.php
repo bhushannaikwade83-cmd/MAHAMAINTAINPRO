@@ -43,15 +43,21 @@ try {
         exit();
     }
 
-    // Get MIME type
-    $mime = 'image/jpeg'; // Default to JPEG
-    if (function_exists('finfo_open')) {
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $detectedMime = finfo_file($finfo, $filepath);
-        finfo_close($finfo);
-        if ($detectedMime) {
-            $mime = $detectedMime;
-        }
+    // Get MIME type from file extension (finfo not available on all servers)
+    $ext = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
+    $mime = 'image/jpeg'; // Default
+
+    $mimeTypes = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+        'bmp' => 'image/bmp'
+    ];
+
+    if (isset($mimeTypes[$ext])) {
+        $mime = $mimeTypes[$ext];
     }
 
     error_log("serve-photo.php - MIME type: $mime, File size: " . filesize($filepath));
