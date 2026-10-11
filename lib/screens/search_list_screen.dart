@@ -18,6 +18,7 @@ class _SearchEntry {
   final String title;
   final String subtitle;
   final WidgetBuilder builder;
+  final List<String> keywords;
 
   _SearchEntry({
     required this.emoji,
@@ -26,7 +27,14 @@ class _SearchEntry {
     required this.title,
     required this.subtitle,
     required this.builder,
-  });
+    List<String>? keywords,
+  }) : keywords = keywords ?? _extractKeywords(title);
+
+  static List<String> _extractKeywords(String title) {
+    final titleLower = title.toLowerCase();
+    final words = titleLower.split(RegExp(r'[\s&\-]+'));
+    return words.where((w) => w.isNotEmpty).toList();
+  }
 }
 
 class SearchListScreen extends StatefulWidget {
@@ -140,6 +148,21 @@ class _SearchListScreenState extends State<SearchListScreen> {
     }
   }
 
+  bool _fuzzyMatch(String query, String text) {
+    final q = query.toLowerCase();
+    final t = text.toLowerCase();
+
+    if (t.contains(q)) return true;
+
+    int qIndex = 0;
+    for (int i = 0; i < t.length && qIndex < q.length; i++) {
+      if (t[i] == q[qIndex]) {
+        qIndex++;
+      }
+    }
+    return qIndex == q.length;
+  }
+
   List<_SearchEntry> get _filteredEntries {
     if (_query.trim().isEmpty) return _allEntries;
     final query = _query.trim().toLowerCase();
@@ -148,15 +171,26 @@ class _SearchListScreenState extends State<SearchListScreen> {
       final titleLower = entry.title.toLowerCase();
       final subtitleLower = entry.subtitle.toLowerCase();
 
-      // Direct match
+      // Exact substring match
       if (titleLower.contains(query) || subtitleLower.contains(query)) {
         return true;
       }
 
-      // Keyword matching - split title into words and check each word
-      final titleWords = titleLower.split(RegExp(r'[\s&]+'));
-      for (final word in titleWords) {
-        if (word.contains(query) || query.contains(word)) {
+      // Keyword matching - check each keyword
+      for (final keyword in entry.keywords) {
+        if (keyword.contains(query) || query.contains(keyword)) {
+          return true;
+        }
+      }
+
+      // Fuzzy matching - character-by-character matching
+      if (_fuzzyMatch(query, titleLower) || _fuzzyMatch(query, subtitleLower)) {
+        return true;
+      }
+
+      // Check if query or keyword starts with the other
+      for (final keyword in entry.keywords) {
+        if (keyword.startsWith(query) || query.startsWith(keyword)) {
           return true;
         }
       }
