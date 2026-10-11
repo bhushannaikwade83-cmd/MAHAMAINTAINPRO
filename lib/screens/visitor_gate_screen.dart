@@ -60,6 +60,32 @@ Widget _buildDefaultAvatar(double size) {
   );
 }
 
+Widget _buildTappableAvatar(BuildContext context, Map visitor, {double size = 40}) {
+  final photoUrl = visitor['photo_url'] as String?;
+  final visitorName = visitor['name'] as String? ?? 'Visitor';
+
+  final avatar = _buildVisitorAvatar(visitor, size: size);
+
+  if (photoUrl != null && photoUrl.isNotEmpty && photoUrl.startsWith('http')) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PhotoViewerScreen(
+              photoUrl: photoUrl,
+              visitorName: visitorName,
+            ),
+          ),
+        );
+      },
+      child: avatar,
+    );
+  }
+
+  return avatar;
+}
+
 Widget? _buildStatusBadge(Map visitor) {
   final status = visitor['status'] as String?;
   if (status == null || status == 'pending') return null;
@@ -443,7 +469,7 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                               padding: const EdgeInsets.all(12),
                               child: Row(
                                 children: [
-                                  _buildVisitorAvatar(visitor),
+                                  _buildTappableAvatar(context, visitor),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
@@ -534,7 +560,7 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildVisitorAvatar(visitor, size: 48),
+                                    _buildTappableAvatar(context, visitor, size: 48),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
