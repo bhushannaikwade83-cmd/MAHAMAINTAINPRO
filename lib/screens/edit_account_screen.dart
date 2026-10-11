@@ -118,20 +118,24 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
       // Check if value already exists in database
       final prefs = await SharedPreferences.getInstance();
       final phoneNumber = prefs.getString('userPhone');
+      final userId = prefs.getInt('userId');
 
       if (phoneNumber == null) {
         throw Exception('Phone number not found');
+      }
+      if (userId == null) {
+        throw Exception('User ID not found');
       }
 
       // Check for duplicates
       final checkUrl = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-user.php');
       final checkResponse = await http.post(
         checkUrl,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $phoneNumber',
-        },
-        body: jsonEncode({'phone_number': phoneNumber}),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phone_number': phoneNumber,
+          'user_id': userId,
+        }),
       ).timeout(const Duration(seconds: 10));
 
       if (checkResponse.statusCode == 200) {
@@ -157,6 +161,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
       final updateUrl = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/save-profile.php');
 
       final updateData = {
+        'user_id': userId,
         'phone_number': phoneNumber,
         'full_name': fieldName == 'Name' ? newValue : _nameController.text,
         'email': fieldName == 'Email Address' ? newValue : _emailController.text,
@@ -164,10 +169,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
 
       final response = await http.post(
         updateUrl,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $phoneNumber',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(updateData),
       ).timeout(const Duration(seconds: 10));
 
