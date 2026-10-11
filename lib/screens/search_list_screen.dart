@@ -143,11 +143,26 @@ class _SearchListScreenState extends State<SearchListScreen> {
   List<_SearchEntry> get _filteredEntries {
     if (_query.trim().isEmpty) return _allEntries;
     final query = _query.trim().toLowerCase();
-    return _allEntries
-        .where((entry) =>
-            entry.title.toLowerCase().contains(query) ||
-            entry.subtitle.toLowerCase().contains(query))
-        .toList();
+
+    return _allEntries.where((entry) {
+      final titleLower = entry.title.toLowerCase();
+      final subtitleLower = entry.subtitle.toLowerCase();
+
+      // Direct match
+      if (titleLower.contains(query) || subtitleLower.contains(query)) {
+        return true;
+      }
+
+      // Keyword matching - split title into words and check each word
+      final titleWords = titleLower.split(RegExp(r'[\s&]+'));
+      for (final word in titleWords) {
+        if (word.contains(query) || query.contains(word)) {
+          return true;
+        }
+      }
+
+      return false;
+    }).toList();
   }
 
   @override
