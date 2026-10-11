@@ -1395,28 +1395,34 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                 ),
                 if (time.isNotEmpty) ...[
                   SizedBox(height: isSmall ? 4 : 6),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 10, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppTheme.neonGreen.withOpacity(0.25),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppTheme.neonGreen, width: 1),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('⚡', style: TextStyle(fontSize: isSmall ? 8 : 10)),
-                        SizedBox(width: isSmall ? 2 : 4),
-                        Text(
-                          time,
-                          style: TextStyle(
-                            fontSize: isSmall ? 8 : 10,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: isSmall ? 70 : 100),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: isSmall ? 6 : 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.neonGreen.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppTheme.neonGreen, width: 1),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('⚡', style: TextStyle(fontSize: isSmall ? 8 : 10)),
+                          SizedBox(width: isSmall ? 2 : 3),
+                          Flexible(
+                            child: Text(
+                              time,
+                              style: TextStyle(
+                                fontSize: isSmall ? 8 : 10,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
