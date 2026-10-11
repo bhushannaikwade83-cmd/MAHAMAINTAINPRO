@@ -60,6 +60,24 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
   static const String API_BASE_URL = 'https://digitrixmedia.com/mahamaintainpro/api';
 
   Future<List<dynamic>> _loadVisitors() async {
+    try {
+      // Try to load from API first
+      final response = await http.get(
+        Uri.parse('$API_BASE_URL/get-visitors.php'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['visitors'] ?? [];
+        }
+      }
+    } catch (e) {
+      debugPrint('API load error: $e, using local storage');
+    }
+
+    // Fallback to SharedPreferences if API fails
     final prefs = await SharedPreferences.getInstance();
     final visitors = prefs.getStringList('visitors') ?? [];
     return visitors.map((item) => jsonDecode(item)).toList();
