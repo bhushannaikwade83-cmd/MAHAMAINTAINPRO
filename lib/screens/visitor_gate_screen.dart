@@ -136,11 +136,16 @@ class _VisitorGateScreenState extends State<VisitorGateScreen> {
         'photoBase64': photoBase64,
       };
 
+      debugPrint('📤 Sending visitor to API: ${payload['name']}');
+
       final response = await http.post(
         Uri.parse('$API_BASE_URL/save-visitor.php'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
-      ).timeout(const Duration(seconds: 45));
+      ).timeout(const Duration(seconds: 60));
+
+      debugPrint('📡 API Response Status: ${response.statusCode}');
+      debugPrint('📄 Response Body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
