@@ -12,10 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// JWT Authentication (Security Layer)
-require_once 'jwt-auth.php';
-$token = verifyJWTToken();
-
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
 $db_password = "maha_user@70";
@@ -32,8 +28,7 @@ if ($conn->connect_error) {
 try {
     $input = json_decode(file_get_contents('php://input'), true);
 
-    // phone_number from verified JWT, not client input
-    $phoneNumber = $token['phone_number'];
+    $phoneNumber = $input['phone_number'] ?? null;
     $fullAddress = $input['full_address'] ?? null;
     $pincode = $input['pincode'] ?? null;
     $latitude = $input['latitude'] ?? null;
@@ -103,11 +98,11 @@ try {
 } catch (Exception $e) {
     http_response_code(400);
     error_log("Save address error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.', 'error_type' => 'Exception']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage(), 'error_type' => 'Exception']);
 } catch (Throwable $t) {
     http_response_code(500);
     error_log("Save address fatal error: " . $t->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An internal error occurred. Please try again.', 'error_type' => 'Fatal']);
+    echo json_encode(['success' => false, 'message' => $t->getMessage(), 'error_type' => 'Fatal']);
 }
 
 if (isset($conn)) {

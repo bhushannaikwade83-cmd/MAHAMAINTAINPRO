@@ -9,30 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Get phone number from JWT OR from query parameter (fallback for mobile app)
-$phone_number = null;
-
-// Try JWT first
-require_once 'jwt-auth.php';
-try {
-    $token = verifyJWTToken();
-    $phone_number = $token['phone_number'] ?? null;
-    error_log("✅ [get-addresses] JWT verified for phone: " . $phone_number);
-} catch (Exception $e) {
-    error_log("⚠️ [get-addresses] JWT verification failed: " . $e->getMessage());
-    // Fall back to query parameter
-    $phone_number = $_GET['phone_number'] ?? null;
-    if ($phone_number) {
-        error_log("✅ [get-addresses] Using phone from query parameter: " . $phone_number);
-    }
-}
-
-if (!$phone_number) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Phone number required']);
-    exit();
-}
-
 // Database connection
 $servername = "localhost";
 $db_username = "digitrix_maha_user";
@@ -48,33 +24,47 @@ if ($conn->connect_error) {
 }
 
 try {
-    error_log("🔍 [get-addresses] Fetching addresses for phone: " . $phone_number);
+    $phone_number = null;
 
-    // Fetch this user's addresses only
-    $query = "SELECT id, full_address, pincode, latitude, longitude, label, created_at
-              FROM addresses WHERE phone_number = ? ORDER BY created_at DESC LIMIT 10";
-
-    $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
+    // Get phone number from POST or GET
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $phone_number = $data['phone_number'] ?? null;
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $phone_number = $_GET['phone_number'] ?? null;
     }
 
-    $stmt->bind_param("s", $phone_number);
+    // If phone_number provided, fetch specific user's addresses
+    if ($phone_number) {
+        $query = "SELECT id, address_type, full_address, building, building_name, street,
+                  pincode, area, latitude, longitude,
+                  label, delivery_instructions, created_at
+                  FROM addresses WHERE phone_number = ? ORDER BY created_at DESC LIMIT 10";
 
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("s", $phone_number);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $addresses = [];
+        while ($row = $result->fetch_assoc()) {
+            $addresses[] = $row;
+        }
+
+        $stmt->close();
+    } else {
+        // If no phone number, fetch latest addresses (for testing)
+        $query = "SELECT id, address_type, full_address, building, building_name, street,
+                  pincode, area, latitude, longitude,
+                  label, delivery_instructions, created_at
+                  FROM addresses ORDER BY created_at DESC LIMIT 10";
+
+        $result = $conn->query($query);
+        $addresses = [];
+        while ($row = $result->fetch_assoc()) {
+            $addresses[] = $row;
+        }
     }
-
-    $result = $stmt->get_result();
-
-    $addresses = [];
-    while ($row = $result->fetch_assoc()) {
-        $addresses[] = $row;
-    }
-
-    $stmt->close();
-
-    error_log("✅ [get-addresses] Found " . count($addresses) . " addresses for phone: " . $phone_number);
 
     http_response_code(200);
     echo json_encode([
@@ -84,13 +74,9 @@ try {
     ]);
 
 } catch (Exception $e) {
-    error_log("❌ [get-addresses] Error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'An internal error occurred. Please try again.',
-        'error_debug' => $e->getMessage()
-    ]);
+    error_log("Address fetch error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 $conn->close();
