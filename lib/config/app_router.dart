@@ -56,6 +56,11 @@ class AppRouter {
             final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
             final isAuthenticated = authRepository.isAuthenticated();
 
+            // Keep the role used by DashboardScreen in sync with the saved session
+            if ((isLoggedIn || isAuthenticated) && state.matchedLocation == '/dashboard') {
+              setUserRole(prefs.getString('userType') ?? 'individual');
+            }
+
             // Redirect to dashboard if user is logged in
             if ((isLoggedIn || isAuthenticated) && state.matchedLocation != '/dashboard') {
               return '/dashboard';
