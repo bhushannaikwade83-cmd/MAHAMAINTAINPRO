@@ -392,8 +392,10 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
                         final cartService = Provider.of<CartService>(context, listen: false);
 
                         for (var service in widget.selectedServices) {
+                          // Same id the category screen uses, so this updates
+                          // the existing cart line instead of adding a second one.
                           final cartItem = CartItem(
-                            id: '${service['name']}_${DateTime.now().millisecondsSinceEpoch}',
+                            id: '${service['id']}',
                             serviceName: service['name'] ?? 'Service',
                             serviceId: '${service['id'] ?? 1}',
                             categoryId: '${service['category_id'] ?? 1}',
@@ -401,11 +403,11 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
                             description: service['description'] ?? '',
                             duration: service['duration'] ?? '',
                             serviceIcon: service['emoji'] ?? '🔧',
-                            quantity: 1,
+                            quantity: (service['quantity'] as int?) ?? 1,
                             selectedDate: selectedDate,
                             selectedTimeSlot: selectedTime,
                           );
-                          cartService.addItem(cartItem);
+                          cartService.setItem(cartItem);
                           debugPrint('✅ [Schedule] Added to cart: ${service['name']}');
                         }
 

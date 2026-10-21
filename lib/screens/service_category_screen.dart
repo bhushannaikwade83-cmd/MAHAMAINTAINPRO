@@ -357,6 +357,13 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       setState(() {
                         if (service['quantity'] > 0) service['quantity']--;
                       });
+                      final cartService = CartService();
+                      final cartId = '${service['id']}';
+                      if (service['quantity'] == 0) {
+                        cartService.removeItem(cartId);
+                      } else if (cartService.items.any((i) => i.id == cartId)) {
+                        cartService.updateQuantity(cartId, service['quantity']);
+                      }
                     },
                     child: Text(
                       '−',
@@ -376,7 +383,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   GestureDetector(
                     onTap: () {
                     setState(() => service['quantity']++);
-                    CartService().addItem(CartItem(
+                    CartService().setItem(CartItem(
                       id: '${service['id']}',
                       serviceName: service['name'] ?? 'Service',
                       serviceId: '${service['id']}',
@@ -385,7 +392,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       description: service['duration'] ?? '',
                       duration: '30 min',
                       serviceIcon: 'assets/images/logo.png',
-                      quantity: 1,
+                      quantity: service['quantity'],
                     ));
                   },
                     child: Text(

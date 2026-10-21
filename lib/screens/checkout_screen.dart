@@ -74,6 +74,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             if (_addresses.isNotEmpty) _selectedAddressId = _addresses[0]['id'].toString();
             _loadingAddresses = false;
           });
+        } else {
+          setState(() => _loadingAddresses = false);
         }
       } else {
         setState(() => _loadingAddresses = false);
@@ -203,7 +205,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           orderId: orderId,
           totalAmount: finalAmount,
           addressLabel: selectedAddr['label'] ?? 'Home',
-          addressText: '${selectedAddr['building_name'] ?? ''}, ${selectedAddr['area'] ?? ''}, ${selectedAddr['pincode'] ?? ''}',
+          addressText: _addressLine(selectedAddr),
           itemCount: cartService.items.length,
         ),
       ),
@@ -379,6 +381,16 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     ]);
   }
 
+  // Addresses saved by save-address.php only store full_address, pincode and
+  // label, so building_name and area are often empty.
+  String _addressLine(Map<String, dynamic> addr) {
+    final full = addr['full_address']?.toString().trim() ?? '';
+    if (full.isNotEmpty) return full;
+    return [addr['building_name'], addr['area'], addr['pincode']]
+        .where((part) => part != null && part.toString().trim().isNotEmpty)
+        .join(', ');
+  }
+
   Widget _addressCard() {
     final addr = _selectedAddressId != null && _addresses.isNotEmpty
         ? _addresses.firstWhere((a) => a['id'].toString() == _selectedAddressId, orElse: () => <String, dynamic>{})
@@ -406,7 +418,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                '${addr['building_name'] ?? ''}, ${addr['area'] ?? ''}',
+                addr.isEmpty ? 'No address added yet' : _addressLine(addr),
                 style: const TextStyle(
                     fontSize: 14, height: 1.3, fontWeight: FontWeight.w600, color: _AppColors.ink),
               ),

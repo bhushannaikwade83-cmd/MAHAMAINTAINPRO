@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_theme.dart';
 import '../data/booking_store.dart';
 import 'live_tracking_screen.dart';
@@ -15,11 +18,15 @@ class BookingsScreen extends StatefulWidget {
 class _BookingsScreenState extends State<BookingsScreen> {
   List<Map<String, dynamic>> _bookings = [];
   Timer? _refreshTimer;
+  // Only set when the logged-in user is a society member; the header is hidden otherwise.
+  String? _societyName;
+  String? _societyCity;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _loadSociety();
     // Refresh periodically so the live status (Confirmed -> Provider
     // Assigned -> On the Way -> Arrived) actually visibly ticks forward
     // while this screen is open.
@@ -32,6 +39,37 @@ class _BookingsScreenState extends State<BookingsScreen> {
     final bookings = await loadBookings();
     if (!mounted) return;
     setState(() => _bookings = bookings);
+  }
+
+  // Looks up the logged-in user's society so the header shows the real one.
+  Future<void> _loadSociety() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+      if (userId == null || userId <= 0) return;
+
+      final membershipResponse = await http
+          .get(Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/check-society-member.php?user_id=$userId'))
+          .timeout(const Duration(seconds: 20));
+      if (!mounted || membershipResponse.statusCode != 200) return;
+      final membership = jsonDecode(membershipResponse.body);
+      final member = membership['member'];
+      if (membership['success'] != true || membership['exists'] != true || member == null) return;
+
+      final societyResponse = await http
+          .get(Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-society-details.php?id=${member['society_id']}'))
+          .timeout(const Duration(seconds: 20));
+      if (!mounted || societyResponse.statusCode != 200) return;
+      final society = jsonDecode(societyResponse.body)['society'];
+      if (society == null) return;
+
+      setState(() {
+        _societyName = society['name']?.toString();
+        _societyCity = society['city']?.toString();
+      });
+    } catch (e) {
+      // Header stays hidden if the lookup fails
+    }
   }
 
   @override
@@ -132,8 +170,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   ),
                   const SizedBox(height: 16),
                   // Society Name
+                  if (_societyName != null) ...[
                   Text(
-                    'Shri Ramdev Park',
+                    _societyName!,
                     style: TextStyle(
                       fontSize: isSmall ? 22 : 28,
                       fontWeight: FontWeight.bold,
@@ -142,10 +181,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
+                  if (_societyCity != null) Row(
                     children: [
                       Text(
-                        'CHS, Mira Road',
+                        _societyCity!,
                         style: TextStyle(
                           fontSize: isSmall ? 13 : 15,
                           color: Colors.white,
@@ -157,6 +196,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  ],
                   // Search Bar
                   TextField(
                     readOnly: true,

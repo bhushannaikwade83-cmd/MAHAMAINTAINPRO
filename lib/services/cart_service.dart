@@ -74,6 +74,23 @@ class CartService with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Sets the quantity of an existing line instead of adding a second line
+  /// for the same service. Schedule details already on the line are kept
+  /// unless the new item supplies its own.
+  void setItem(CartItem item) {
+    final existingIndex = _items.indexWhere((i) => i.id == item.id);
+
+    if (existingIndex < 0) {
+      _items.add(item);
+    } else {
+      final existing = _items[existingIndex];
+      existing.quantity = item.quantity;
+      existing.selectedDate = item.selectedDate ?? existing.selectedDate;
+      existing.selectedTimeSlot = item.selectedTimeSlot ?? existing.selectedTimeSlot;
+    }
+    notifyListeners();
+  }
+
   void replaceCart(CartItem item) {
     _items.clear();
     _items.add(item);
