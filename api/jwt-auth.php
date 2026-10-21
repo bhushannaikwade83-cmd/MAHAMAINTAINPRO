@@ -4,7 +4,26 @@
  * Include this in all protected API endpoints
  */
 
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your-super-secret-jwt-key-change-in-production');
+// The signing key must come from the server environment. There is deliberately
+// no default: a public fallback would let anyone forge a token.
+function jwtSecret() {
+    $secret = getenv('JWT_SECRET');
+    if (!$secret || strlen($secret) < 32) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Server authentication is not configured']);
+        exit();
+    }
+    return $secret;
+}
+
+// Issues a signed token. Only call this after OTP or M-PIN verification.
+function generateJWT(array $claims, int $ttlSeconds = 86400) {
+    $now = time();
+    $header = rtrim(strtr(base64_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT'])), '+/', '-_'), '=');
+    $payload = rtrim(strtr(base64_encode(json_encode($claims + ['iat' => $now, 'exp' => $now + $ttlSeconds])), '+/', '-_'), '=');
+    $signature = rtrim(strtr(base64_encode(hash_hmac('sha256', "$header.$payload", jwtSecret(), true)), '+/', '-_'), '=');
+    return "$header.$payload.$signature";
+}
 
 function verifyJWTToken() {
     // Get token from Authorization header
@@ -37,7 +56,7 @@ function verifyJWTToken() {
     list($header, $payload, $signature) = $parts;
 
     // Verify signature
-    $expectedSignature = rtrim(strtr(base64_encode(hash_hmac('sha256', "$header.$payload", JWT_SECRET, true)), '+/', '-_'), '=');
+    $expectedSignature = rtrim(strtr(base64_encode(hash_hmac('sha256', "$header.$payload", jwtSecret(), true)), '+/', '-_'), '=');
 
     if ($signature !== $expectedSignature) {
         http_response_code(401);

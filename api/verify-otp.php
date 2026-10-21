@@ -76,12 +76,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $delete_sql = "DELETE FROM otp_storage WHERE phone_number = '$phone_number'";
     $conn->query($delete_sql);
 
-    // Generate session token or return success
+    // OTP proves the caller owns this number, so issue a session token
+    require_once 'jwt-auth.php';
+    $token = generateJWT(['phone_number' => $phone_number, 'type' => 'user_auth']);
+
     http_response_code(200);
     echo json_encode([
         'success' => true,
         'message' => 'OTP verified successfully',
-        'phone_number' => $phone_number
+        'phone_number' => $phone_number,
+        'token' => $token,
+        'token_type' => 'Bearer'
     ]);
 
 } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {

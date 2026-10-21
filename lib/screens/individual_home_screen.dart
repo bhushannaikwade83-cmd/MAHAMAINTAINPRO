@@ -14,6 +14,7 @@ import 'address_settings_screen.dart';
 import 'all_categories_screen.dart';
 import 'cart_screen.dart';
 import 'live_tracking_screen.dart';
+import 'notifications_screen.dart';
 import 'parking_management_screen.dart';
 import 'search_list_screen.dart';
 import 'service_category_screen.dart';
@@ -528,12 +529,9 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                           // Notification Button
                           GestureDetector(
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('You have $notificationCount new notifications'),
-                                  backgroundColor: AppTheme.saffron,
-                                  duration: const Duration(seconds: 2),
-                                ),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
                               );
                             },
                             child: Stack(

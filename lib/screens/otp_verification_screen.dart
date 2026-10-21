@@ -150,7 +150,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
 
       if (response['success'] == true) {
         // Save phone for M-PIN setup
-        await _saveLoginSession(widget.phoneNumber);
+        await _saveLoginSession(widget.phoneNumber, response['token'] as String?);
 
         if (!mounted) return;
 
@@ -222,11 +222,12 @@ Future<Map<String, dynamic>> _sendOtpApi(String phoneNumber) async {
     }
   }
 
-Future<void> _saveLoginSession(String phoneNumber) async {
+Future<void> _saveLoginSession(String phoneNumber, String? token) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
       await prefs.setString('userPhone', phoneNumber);
+      if (token != null) await prefs.setString('authToken', token);
       await prefs.setString('userType', 'individual');
       await prefs.setString('loginTime', DateTime.now().toIso8601String());
       debugPrint('✅ Login session saved');

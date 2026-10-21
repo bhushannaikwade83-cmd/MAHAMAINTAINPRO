@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_theme.dart';
-import '../repositories/auth_repository.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -13,6 +13,17 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   static const String _apiBase = 'https://digitrixmedia.com/mahamaintainpro/api';
+
+  // get-notifications.php and mark-notifications-read.php require the token
+  // issued at OTP or M-PIN login. Logged-out or older sessions get 401.
+  Future<Map<String, String>> _authHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('authToken');
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = true;
@@ -33,7 +44,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       final response = await http
           .get(
             Uri.parse('$_apiBase/get-notifications.php'),
-            headers: SupabaseAuthRepository.staticAuthHeaders,
+            headers: await _authHeaders(),
           )
           .timeout(const Duration(seconds: 10));
 
@@ -68,7 +79,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await http.post(
         Uri.parse('$_apiBase/mark-notifications-read.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: await _authHeaders(),
         body: jsonEncode({'id': id}),
       );
     } catch (_) {
@@ -85,7 +96,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await http.post(
         Uri.parse('$_apiBase/mark-notifications-read.php'),
-        headers: SupabaseAuthRepository.staticAuthHeaders,
+        headers: await _authHeaders(),
         body: jsonEncode({}),
       );
     } catch (_) {}

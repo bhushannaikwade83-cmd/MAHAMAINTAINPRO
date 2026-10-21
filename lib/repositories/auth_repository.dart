@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../config/supabase_config.dart';
 
@@ -255,6 +256,11 @@ class SupabaseAuthRepository {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           _currentPhoneNumber = phoneNumber; // Store phone for session
+          final token = data['token'];
+          if (token is String) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('authToken', token);
+          }
           return const AuthSuccess();
         } else {
           return AuthError(data['error'] ?? 'M-PIN verification failed');
