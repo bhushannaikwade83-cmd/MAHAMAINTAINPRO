@@ -4,11 +4,14 @@
  * Include this in all protected API endpoints
  */
 
-// The signing key must come from the server environment. There is deliberately
-// no default: a public fallback would let anyone forge a token.
+// The signing key is read from jwt_secret.txt, one level above public_html
+// (api/ sits in public_html/mahamaintainpro/api), so it is never served to
+// visitors. There is deliberately no default: a public fallback would let
+// anyone forge a token.
 function jwtSecret() {
-    $secret = getenv('JWT_SECRET');
-    if (!$secret || strlen($secret) < 32) {
+    $file = dirname(__DIR__, 3) . '/jwt_secret.txt';
+    $secret = is_readable($file) ? trim((string) file_get_contents($file)) : '';
+    if (strlen($secret) < 32) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Server authentication is not configured']);
         exit();

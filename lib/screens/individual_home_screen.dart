@@ -39,7 +39,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
   late Timer _bannerTimer;
   late ScrollController _scrollController;
   bool isDarkMode = false;
-  int notificationCount = 3;
+  int notificationCount = 0;
   int _currentBannerIndex = 0;
   final int _totalBanners = 3;
   final int _bannerSlideDelay = 4;
@@ -65,7 +65,32 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     _loadUserName();
     _loadAddressDetails();
     _loadServices();
+    _loadNotificationCount();
     _startLiveRefresh();
+  }
+
+  // Unread count for the bell badge. The badge stays hidden if the lookup fails
+  // or the user has not logged in with OTP or M-PIN yet.
+  Future<void> _loadNotificationCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('authToken');
+      if (token == null) return;
+
+      final response = await http
+          .get(
+            Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-notifications.php'),
+            headers: {'Authorization': 'Bearer $token'},
+          )
+          .timeout(const Duration(seconds: 10));
+      if (!mounted || response.statusCode != 200) return;
+
+      final data = jsonDecode(response.body);
+      if (data['success'] != true) return;
+      setState(() => notificationCount = (data['unread_count'] ?? 0) as int);
+    } catch (e) {
+      // Keep the badge hidden if the lookup fails
+    }
   }
 
   void _startLiveRefresh() {
@@ -532,7 +557,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                              );
+                              ).then((_) => _loadNotificationCount());
                             },
                             child: Stack(
                               children: [
