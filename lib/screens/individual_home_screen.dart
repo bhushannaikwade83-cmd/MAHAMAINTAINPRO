@@ -217,7 +217,7 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
     try {
       final url = Uri.parse('https://digitrixmedia.com/mahamaintainpro/api/get-services.php');
       debugPrint('🔄 Fetching services from: $url');
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       debugPrint('🔄 API Response: ${response.statusCode}');
 
@@ -281,9 +281,13 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
       debugPrint('❌ Error loading services: $e');
       if (mounted) {
         setState(() {
-          _loadingServices = false;
           _services = [];
         });
+      }
+    } finally {
+      // Always stop the spinner, including on HTTP errors and bad responses.
+      if (mounted && _loadingServices) {
+        setState(() => _loadingServices = false);
       }
     }
   }
@@ -940,6 +944,28 @@ class _SearchScreenState extends State<IndividualHomeScreen> with WidgetsBinding
                       height: 200,
                       child: Center(
                         child: CircularProgressIndicator(color: AppTheme.saffron),
+                      ),
+                    )
+                  else if (_services.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Services could not be loaded.',
+                              style: TextStyle(color: Colors.black54),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() => _loadingServices = true);
+                                _loadServices();
+                              },
+                              child: const Text('Try again'),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   else
