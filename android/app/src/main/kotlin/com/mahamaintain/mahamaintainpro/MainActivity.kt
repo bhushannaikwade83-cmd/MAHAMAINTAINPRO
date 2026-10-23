@@ -1,0 +1,5 @@
+package com.mahamaintain.mahamaintainpro
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()

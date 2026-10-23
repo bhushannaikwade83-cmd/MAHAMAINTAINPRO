@@ -14,7 +14,13 @@ build/
 *.iml
 
 # Platform build artifacts (regenerate with `flutter create .`)
-android/
+# android/ is tracked so the APK can be built from the repo; only its local files are ignored.
+android/local.properties
+android/key.properties
+android/.gradle/
+android/.kotlin/
+android/app/build/
+*.jks
 ios/
 web/
 macos/

@@ -15,6 +15,8 @@ class AppRouter {
   // Each session's role is determined based on email during OTP verification
   // This prevents state bleeding between individual and society dashboards
   static String _userRole = 'individual'; // Default role, updated on login
+  // The router itself, so the splash timer can navigate without looking up a context.
+  static GoRouter? _router;
 
   // Demo emails for society users - used to determine user type
   static const List<String> _societyDemoEmails = [
@@ -39,7 +41,7 @@ class AppRouter {
   ];
 
   static GoRouter createRouter(SupabaseAuthRepository authRepository) {
-    return GoRouter(
+    final router = GoRouter(
       initialLocation: '/splash',
       redirect: (context, state) async {
         try {
@@ -83,7 +85,7 @@ class AppRouter {
           name: 'splash',
           builder: (context, state) => SplashScreen(
             onSplashComplete: () {
-              context.go('/login');
+              _router?.go('/login');
             },
           ),
         ),
@@ -159,6 +161,8 @@ class AppRouter {
       ],
       errorBuilder: (context, state) => const RouteErrorPage(),
     );
+    _router = router;
+    return router;
   }
 
   // Method to set user role from admin panel

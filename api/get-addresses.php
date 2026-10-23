@@ -58,17 +58,11 @@ try {
 
         $stmt->close();
     } else {
-        // If no phone number, fetch latest addresses (for testing)
-        $query = "SELECT id, address_type, full_address, building, building_name, street,
-                  pincode, area, latitude, longitude,
-                  label, delivery_instructions, created_at
-                  FROM addresses ORDER BY created_at DESC LIMIT 10";
-
-        $result = $conn->query($query);
-        $addresses = [];
-        while ($row = $result->fetch_assoc()) {
-            $addresses[] = $row;
-        }
+        // Never return other users' addresses: a phone number is required.
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'phone_number is required']);
+        $conn->close();
+        exit();
     }
 
     http_response_code(200);

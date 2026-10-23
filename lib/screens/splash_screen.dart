@@ -24,12 +24,20 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  Timer? _completeTimer;
+
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: 3500), () {
+    _completeTimer = Timer(const Duration(milliseconds: 3500), () {
       widget.onSplashComplete?.call();
     });
+  }
+
+  @override
+  void dispose() {
+    _completeTimer?.cancel();
+    super.dispose();
   }
 
   static const Color _bgNavy = Color(0xFF0A1020);
