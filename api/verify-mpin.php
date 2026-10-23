@@ -57,7 +57,7 @@ try {
     // Verify the M-PIN using password_verify
     if (password_verify($mpin, $storedHash)) {
         require_once 'jwt-auth.php';
-        $token = generateJWT(['phone_number' => $phoneNumber, 'type' => 'user_auth']);
+        $token = tryGenerateJWT(['phone_number' => $phoneNumber, 'type' => 'user_auth']);
         echo json_encode([
             'success' => true,
             'message' => 'M-PIN verified successfully',

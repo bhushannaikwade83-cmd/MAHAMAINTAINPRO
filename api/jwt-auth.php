@@ -1,35 +1,52 @@
 <?php
 /**
- * JWT Authentication Middleware
- * Include this in all protected API endpoints
+ * Session tokens for the app and the admin panel.
+ *
+ * Login (OTP or M-PIN) creates a random token and stores only its SHA-256 hash
+ * in the app_sessions table. Protected endpoints call verifyJWTToken(), which
+ * looks the token up there. No signing secret is used.
+ *
+ * Table: database/migrations/003_create_app_sessions.sql
  */
+require_once __DIR__ . '/config.php';
 
-// The signing key is read from jwt_secret.txt, one level above public_html
-// (api/ sits in public_html/mahamaintainpro/api), so it is never served to
-// visitors. There is deliberately no default: a public fallback would let
-// anyone forge a token.
-function jwtSecret() {
-    $file = dirname(__DIR__, 3) . '/jwt_secret.txt';
-    $secret = is_readable($file) ? trim((string) file_get_contents($file)) : '';
-    if (strlen($secret) < 32) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Server authentication is not configured']);
-        exit();
-    }
-    return $secret;
+define('SESSION_TTL_SECONDS', 86400); // 24 hours
+
+// Stores a new session and returns its token. Throws if the table is missing.
+function createSession(array $claims) {
+    global $pdo;
+    $token = bin2hex(random_bytes(32));
+    $stmt = $pdo->prepare(
+        'INSERT INTO app_sessions (token_hash, phone_number, role, expires_at) VALUES (?, ?, ?, ?)'
+    );
+    $stmt->execute([
+        hash('sha256', $token),
+        $claims['phone_number'] ?? null,
+        $claims['role'] ?? null,
+        date('Y-m-d H:i:s', time() + SESSION_TTL_SECONDS),
+    ]);
+    return $token;
 }
 
-// Issues a signed token. Only call this after OTP or M-PIN verification.
-function generateJWT(array $claims, int $ttlSeconds = 86400) {
-    $now = time();
-    $header = rtrim(strtr(base64_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT'])), '+/', '-_'), '=');
-    $payload = rtrim(strtr(base64_encode(json_encode($claims + ['iat' => $now, 'exp' => $now + $ttlSeconds])), '+/', '-_'), '=');
-    $signature = rtrim(strtr(base64_encode(hash_hmac('sha256', "$header.$payload", jwtSecret(), true)), '+/', '-_'), '=');
-    return "$header.$payload.$signature";
+// Used by OTP and M-PIN login. Returns null if the session cannot be stored,
+// so the login itself still succeeds.
+function tryGenerateJWT(array $claims) {
+    try {
+        return createSession($claims);
+    } catch (Throwable $e) {
+        error_log('Session not created: ' . $e->getMessage());
+        return null;
+    }
+}
+
+// Used by admin login. Throws if the session cannot be stored.
+function generateJWT(array $claims) {
+    return createSession($claims);
 }
 
 function verifyJWTToken() {
-    // Get token from Authorization header
+    global $pdo;
+
     $headers = getallheaders();
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 
@@ -39,50 +56,25 @@ function verifyJWTToken() {
         exit();
     }
 
-    // Extract token from "Bearer <token>"
-    if (!preg_match('/Bearer\s+(.+)/', $authHeader, $matches)) {
+    if (!preg_match('/Bearer\s+([a-f0-9]{64})/', $authHeader, $matches)) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'Invalid authorization format']);
         exit();
     }
 
-    $token = $matches[1];
+    $stmt = $pdo->prepare(
+        'SELECT phone_number, role FROM app_sessions WHERE token_hash = ? AND expires_at > ? LIMIT 1'
+    );
+    $stmt->execute([hash('sha256', $matches[1]), date('Y-m-d H:i:s')]);
+    $session = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Verify JWT
-    $parts = explode('.', $token);
-    if (count($parts) !== 3) {
+    if (!$session) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Invalid token format']);
+        echo json_encode(['success' => false, 'message' => 'Invalid or expired token']);
         exit();
     }
 
-    list($header, $payload, $signature) = $parts;
-
-    // Verify signature
-    $expectedSignature = rtrim(strtr(base64_encode(hash_hmac('sha256', "$header.$payload", jwtSecret(), true)), '+/', '-_'), '=');
-
-    if ($signature !== $expectedSignature) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Invalid token signature']);
-        exit();
-    }
-
-    // Decode and verify expiry
-    $decoded = json_decode(base64_decode(strtr($payload, '-_', '+/')), true);
-
-    if (!$decoded) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Invalid token data']);
-        exit();
-    }
-
-    if ($decoded['exp'] < time()) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token has expired']);
-        exit();
-    }
-
-    return $decoded; // Return decoded token with phone_number
+    return ['phone_number' => $session['phone_number'], 'role' => $session['role']];
 }
 
 function requireAdminRole() {

@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // OTP proves the caller owns this number, so issue a session token
     require_once 'jwt-auth.php';
-    $token = generateJWT(['phone_number' => $phone_number, 'type' => 'user_auth']);
+    $token = tryGenerateJWT(['phone_number' => $phone_number, 'type' => 'user_auth']);
 
     http_response_code(200);
     echo json_encode([
