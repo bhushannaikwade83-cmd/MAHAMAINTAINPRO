@@ -62,15 +62,17 @@ try {
     }
 
     // Insert order
-    $query = "INSERT INTO orders (order_id, user_id, phone_number, address_id, total_amount, service_count, payment_status, order_status)
-              VALUES (?, ?, ?, ?, ?, ?, 'pending', 'pending')";
+    // pincode comes from the saved address. Vendors are matched to orders by pincode,
+    // so an order without it never reaches them.
+    $query = "INSERT INTO orders (order_id, user_id, phone_number, address_id, pincode, total_amount, service_count, payment_status, order_status)
+              VALUES (?, ?, ?, ?, (SELECT pincode FROM addresses WHERE id = ? LIMIT 1), ?, ?, 'pending', 'pending')";
 
     $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $stmt->bind_param("sssidi", $orderId, $userId, $phoneNumber, $addressId, $totalAmount, $serviceCount);
+    $stmt->bind_param("sssiidi", $orderId, $userId, $phoneNumber, $addressId, $addressId, $totalAmount, $serviceCount);
 
     if (!$stmt->execute()) {
         throw new Exception("Execute failed: " . $stmt->error);
